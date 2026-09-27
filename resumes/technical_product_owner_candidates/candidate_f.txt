@@ -1,0 +1,18 @@
+Candidate F
+f.candidate@example.com
+
+Engineering lead who has also run product for a small API team.
+
+EXPERIENCE
+Engineering Lead, Quillpay (payments startup, 40 people) — 2022–present
+- Lead a team of 4 engineers building the invoicing API (Python, PostgreSQL, REST).
+- No dedicated PM on the team since 2023; I keep the Jira backlog, decide sprint scope with the CEO, and write tickets for new endpoints and webhook events.
+- Delayed a reconciliation feature by one quarter to fix duplicate-invoice bugs and add idempotency keys.
+- Talk to customers weekly about integration problems.
+
+Senior Software Engineer, Brightledger (accounting SaaS) — 2018–2022
+- Built bank-feed ingestion services and the internal reporting API.
+- Reviewed designs for the team's move to Kubernetes.
+
+SKILLS
+Python, PostgreSQL, REST, webhooks, Kubernetes, Jira

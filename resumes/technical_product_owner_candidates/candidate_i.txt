@@ -1,0 +1,23 @@
+Candidate I
+i.candidate@example.com | (555) 250-6689
+
+PROFILE
+Platform product manager, 7 years, owning internal infrastructure products used by engineering teams.
+
+EXPERIENCE
+Senior Product Manager, Internal Platform, Cartwheel (e-commerce marketplace) — 2021–present
+- Own the roadmap and backlog for the event streaming platform (Kafka) and service templates used by 120 internal teams.
+- Wrote requirements for the schema registry rollout: compatibility rules, retention defaults and a 99.95% availability SLO, with consumer-lag alerting in the acceptance criteria.
+- With the principal architect, traded two quarters of self-serve features for cluster upgrades and multi-AZ failover; platform incidents fell from 14 to 3 per quarter.
+- Defined adoption and reliability metrics (teams onboarded, produce latency p99, paved-road usage); paved-road usage grew from 35% to 80% of new services.
+- Product owner for two Scrum teams; run sprint reviews and quarterly platform reviews with engineering directors.
+
+Product Owner, Lumen Logistics (logistics SaaS) — 2018–2021
+- Owned the backlog for the carrier rates API; wrote endpoint specs and error-handling rules for 30 carrier integrations.
+- Queried API logs in SQL to find the carriers causing most failed quotes and prioritized fixes.
+
+Systems Analyst, Lumen Logistics — 2016–2018
+- Wrote SQL reports and supported the integration team.
+
+SKILLS
+Kafka, Kubernetes, AWS, REST, OpenAPI, SQL, PostgreSQL, SLOs, Jira, Scrum, roadmapping

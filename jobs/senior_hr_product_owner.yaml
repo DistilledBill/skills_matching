@@ -1,0 +1,75 @@
+# Job spec for the screener. Everything the model judges comes from here;
+# weights and thresholds are applied in code, so editing them re-ranks from
+# cached answers without new API calls.
+
+title: Senior Human Resources Product Owner
+summary: >
+  Own the internal HR technology products behind our payments company:
+  HRIS (Workday or SAP SuccessFactors style), recruiting/ATS, onboarding,
+  performance management, compensation, and employee self-service. Senior
+  product owners own the backlog and roadmap, turn HR stakeholder and
+  employee needs into requirements for agile engineering teams, manage
+  vendor/SaaS integrations, protect sensitive employee data under privacy
+  and compliance rules, and mentor other product owners and analysts.
+
+# Each must-have becomes one Noul: "does the resume show evidence of this?"
+must_haves:
+  - id: product_owner_professional
+    requirement: Has worked as a product owner or product manager in a paid role, owning a product backlog or roadmap (not only as a stakeholder or end user)
+  - id: hr_systems_experience
+    requirement: Has worked on HR technology such as an HRIS, ATS, onboarding, performance, compensation, or payroll system, as owner, implementer, or analyst
+
+# Each competency becomes one Score. Levels run from least to most and must
+# each describe a concrete situation on their own.
+competencies:
+  - id: product_ownership
+    weight: 0.30
+    question: How much experience does the candidate have owning a product backlog and roadmap in agile delivery, based on `resume`?
+    levels:
+      - No product ownership or backlog work mentioned
+      - Wrote user stories or requirements for a team, but did not own prioritization
+      - Owned the backlog for a single agile team, running refinement and sprint planning
+      - Owned the roadmap and backlog for a product, setting priorities and measuring outcomes
+      - Owned roadmaps across several products or teams, with evidence of measurable business results
+
+  - id: hr_tech_depth
+    weight: 0.25
+    question: How deep is the candidate's experience with HR technology products such as HRIS, ATS, onboarding, performance, or compensation systems, based on `resume`?
+    levels:
+      - No HR technology experience mentioned
+      - Used or supported an HR system as an end user or administrator, with no detail on configuration or delivery
+      - Configured, implemented, or delivered features for one HR system such as Workday, SuccessFactors, or an ATS
+      - Owned one or more HR systems end to end, including rollout, upgrades, or process redesign
+      - Led HR technology strategy across several HR domains, such as a platform replacement or multi-system HR ecosystem
+
+  - id: stakeholder_leadership
+    weight: 0.20
+    question: How much leadership has the candidate shown across stakeholders, such as aligning HR, finance, legal, and engineering or mentoring other product owners and analysts, based on `resume`?
+    levels:
+      - No stakeholder management or mentoring mentioned
+      - Worked with stakeholders from one team to gather requirements
+      - Aligned several stakeholder groups on priorities for a project, or mentored an individual analyst or product owner
+      - Led a cross-functional initiative with senior HR or business leaders and coached a group of product owners or analysts
+      - Set product direction for an HR or business function, owning executive stakeholder relationships and building a product practice
+
+  - id: integrations_and_data_privacy
+    weight: 0.15
+    question: How much experience does the candidate have with SaaS vendor integrations and handling sensitive personal data under privacy or compliance rules, based on `resume`?
+    levels:
+      - No integration, vendor, or data privacy work mentioned
+      - Worked with a SaaS vendor or on a system integration, with no further detail
+      - Defined requirements for integrations or data flows between systems, or for access controls on personal data
+      - Owned vendor relationships or integrations for sensitive data, with evidence of GDPR, SOC 2, or similar compliance work
+
+  - id: domain_relevance
+    weight: 0.10
+    question: How relevant is the candidate's industry experience to `job.summary`?
+    levels:
+      - Unrelated industry with no transferable domain exposure
+      - Adjacent domain, such as internal enterprise tools or B2B SaaS
+      - HR technology, or fintech, payments, or other regulated financial companies
+
+thresholds:
+  must_have_pass: 0.80    # at or above: requirement met
+  must_have_fail: 0.20    # below: requirement not shown; between: human review
+  min_confidence: 0.45    # a Score below this on a weight >= 0.2 competency goes to review

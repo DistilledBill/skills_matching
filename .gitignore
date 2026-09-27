@@ -1,0 +1,7 @@
+target/
+.cache/
+results/
+temp/
+.idea/
+*.iml
+.env

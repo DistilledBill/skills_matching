@@ -1,0 +1,21 @@
+Candidate J
+j.candidate@example.com | +1 555 671 0048 | linkedin.com/in/cand-j
+
+Engineering manager with a backend background; 13 years in software, the last 5 managing teams.
+
+EXPERIENCE
+Engineering Manager, Payments Platform, Brisco Commerce (online retail) — 2021–present
+- Manage 2 teams (11 engineers) responsible for checkout payments and refunds.
+- Oversaw the redesign of the refunds flow; approved the design proposals written by the teams' senior engineers.
+- Hire, coach, and run performance reviews; introduced quarterly planning with product and finance.
+- Coordinated the rollout of a new payment provider integration across 3 teams.
+
+Senior Software Engineer, Brisco Commerce — 2016–2021
+- Built Python and Go services for order management and tax calculation.
+- Worked with the architect on splitting the order monolith; implemented the order events service.
+
+Software Engineer, Pellwood Systems — 2012–2016
+- PHP and Python web applications for hotel booking.
+
+SKILLS
+Python, Go, PHP, PostgreSQL, MySQL, RabbitMQ, AWS, people management, agile delivery

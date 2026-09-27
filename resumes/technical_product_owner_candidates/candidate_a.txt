@@ -1,0 +1,19 @@
+Candidate A
+a.candidate@example.com | linkedin.com/in/cand-a
+
+PROFILE
+Product owner with 6 years in B2B SaaS, focused on customer workflows and integrations.
+
+EXPERIENCE
+Product Owner, Tallyhive (B2B SaaS, HR software) — 2021–present
+- Product owner for the Integrations team (5 engineers) in two-week Scrum sprints.
+- Manage the backlog for connectors to payroll and accounting systems; write user stories with the team and demo in sprint reviews.
+- Work with customer success to prioritize the most-requested connectors each quarter.
+- Coordinated the launch of a partner marketplace listing 20 integrations.
+
+Business Analyst, Orbitview (B2B SaaS) — 2018–2021
+- Gathered requirements from enterprise customers and turned them into specs for the development team.
+- Maintained release notes and ran UAT sessions.
+
+SKILLS
+Jira, Confluence, Scrum, user story mapping, UAT, Miro

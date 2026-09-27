@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: resume-screening
+  config:
+    # Local secrets (git-ignored); an exported environment variable still wins.
+    import: optional:file:.env[.properties]
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+typesafe:
+  api-key: ${TYPESAFE_API_KEY:}
+  base-url: https://api.typesafe.ai
+  model: jev-latest
+  max-concurrent: 8       # in-flight TypeSafe requests across the whole app
+  max-attempts: 4         # retries 429/529/5xx and connection errors
+  initial-backoff: 500ms  # doubled after each retry
+  timeout: 60s
+  cache-dir: .cache
+
+screening:
+  jobs-dir: jobs
+  resumes-dir: resumes    # /folder?path= is resolved inside this directory

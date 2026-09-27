@@ -1,0 +1,17 @@
+Candidate D
+d.candidate@example.com
+
+Backend engineer, 6 years, Python and Go.
+
+EXPERIENCE
+Senior Backend Engineer, MedTrack (health tech) — 2020–present
+- Own the appointments service (Python, Django REST Framework, PostgreSQL) used by 300 clinics.
+- Designed the move from a monolith to four services communicating over SQS; added retries and dead-letter handling.
+- Wrote the team's schema migration playbook; tuned slow queries on tables with 200M rows.
+- Led a 4-engineer project to add HIPAA audit logging.
+
+Backend Engineer, Routewise (logistics) — 2018–2020
+- Go services for driver dispatch; some Python for data jobs.
+
+SKILLS
+Python, Go, PostgreSQL, AWS (SQS, Lambda, RDS), Docker

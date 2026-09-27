@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jev Resume Screening</title>
+<meta name="description" content="How TypeSafe's Jev model works, what its numbers mean, and how this project turns them into a ranked shortlist.">
+<style>
+  :root {
+    --bg: #fbfbfa;
+    --surface: #ffffff;
+    --fg: #1d1d1f;
+    --muted: #5f6368;
+    --border: #e2e2df;
+    --code-bg: #f3f3f1;
+    --accent: #b0368f;
+    --accent-soft: #f7e6f2;
+    --bar: #8a8f98;
+    --good: #1f7a4d;
+    --warn: #9a6400;
+    --bad: #b3261e;
+    --comment: #7b8088;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151517;
+      --surface: #1c1c1f;
+      --fg: #ececec;
+      --muted: #a2a5ab;
+      --border: #313136;
+      --code-bg: #232327;
+      --accent: #f07ccf;
+      --accent-soft: #3a2233;
+      --bar: #7d828b;
+      --good: #5cc98f;
+      --warn: #e0a84a;
+      --bad: #f08a80;
+      --comment: #8d9199;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  a { color: var(--accent); }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88em; }
+  :not(pre) > code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    line-height: 1.5;
+    /* Examples are written to fit; wrapping is only a fallback on narrow screens, never a scrollbar. */
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  pre .c { color: var(--comment); }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+  nav.toc {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 16px 0 0;
+    font-size: 0.92em;
+  }
+  nav.toc strong { display: block; margin-bottom: 4px; }
+  nav.toc ol { margin: 0; padding-left: 1.2em; }
+  nav.toc a { color: var(--fg); text-decoration: none; }
+  nav.toc a:hover { color: var(--accent); }
+  main { min-width: 0; max-width: 780px; padding-bottom: 64px; }
+  @media (min-width: 1000px) {
+    .layout { grid-template-columns: 220px minmax(0, 1fr); gap: 48px; }
+    nav.toc {
+      position: sticky; top: 24px; align-self: start;
+      margin-top: 48px; border: none; background: none; padding: 0;
+    }
+  }
+  h1 { font-size: 2.1em; line-height: 1.2; margin: 40px 0 8px; }
+  .lede { color: var(--muted); font-size: 1.1em; margin: 0 0 8px; }
+  .tagline { color: var(--muted); font-size: 0.92em; font-style: italic; margin: 0 0 24px; }
+  h2 { font-size: 1.5em; margin: 56px 0 12px; padding-top: 16px; border-top: 1px solid var(--border); }
+  h3 { font-size: 1.15em; margin: 32px 0 8px; }
+  .note {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 10px 14px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+  }
+  .table-wrap { overflow-x: auto; margin: 16px 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.93em; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; white-space: nowrap; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.total td { font-weight: 600; border-bottom: none; }
+  .pill { display: inline-block; padding: 0 8px; border-radius: 999px; font-size: 0.85em; font-weight: 600; border: 1px solid currentColor; }
+  .meets { color: var(--good); }
+  .review { color: var(--warn); }
+  .missing { color: var(--bad); }
+  figure { margin: 20px 0; }
+  figcaption { color: var(--muted); font-size: 0.88em; margin-top: 6px; }
+  .scroll-x { overflow-x: auto; }
+  .flow svg { min-width: 560px; width: 100%; height: auto; display: block; }
+  .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
+  .chart { border: 1px solid var(--border); background: var(--surface); border-radius: 10px; padding: 12px; }
+  .chart h4 { margin: 0 0 2px; font-size: 0.95em; }
+  .chart p { margin: 0 0 6px; color: var(--muted); font-size: 0.85em; }
+  .chart svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; fill: var(--fg); }
+  svg .muted { fill: var(--muted); }
+  svg .box { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; }
+  svg .box.jev { fill: var(--accent-soft); stroke: var(--accent); }
+  svg .arrow { stroke: var(--muted); stroke-width: 1.6; fill: none; marker-end: url(#arrowhead); }
+  svg .bar { fill: var(--bar); }
+  svg .axis { stroke: var(--muted); stroke-width: 1.5; }
+  svg .marker { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+  ul, ol { padding-left: 1.3em; }
+  li { margin: 4px 0; }
+  .formula { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg); border-radius: 8px; padding: 10px 14px; margin: 12px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .caption { color: var(--muted); font-size: 0.88em; margin-top: -6px; }
+  @media print {
+    body { background: #fff; color: #000; font-size: 11pt; }
+    nav.toc { display: none; }
+    .layout { display: block; max-width: none; padding: 0; }
+    main { max-width: none; padding-bottom: 0; }
+    h1 { margin-top: 0; }
+    h2 { margin-top: 28px; }
+    h2, h3 { break-after: avoid; }
+    pre, .formula { font-size: 8.5pt; }
+    pre, .formula, figure, tr, .note, .chart { break-inside: avoid; }
+    .table-wrap, .scroll-x { overflow: visible; }
+    table { font-size: 9pt; }
+    th, td { padding: 5px 6px; }
+    th { white-space: normal; }
+    .flow svg { min-width: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="toc" aria-label="Contents">
+    <strong>Contents</strong>
+    <ol>
+      <li><a href="#what-jev-is">What Jev is</a></li>
+      <li><a href="#building-blocks">The building blocks</a></li>
+      <li><a href="#numbers">What the numbers mean</a></li>
+      <li><a href="#applied">How this project applies Jev</a></li>
+      <li><a href="#reading">Reading a result</a></li>
+      <li><a href="#tuning">Tuning and limits</a></li>
+      <li><a href="#glossary">Glossary</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <h1>Jev and the resume screener</h1>
+    <p class="lede">How TypeSafe's Jev model works, what its numbers mean, and how this project turns them into a ranked shortlist.</p>
+    <p class="tagline">Co-designed and implemented with Claude and Bill Stamatakis</p>
+
+    <div class="note">
+      <strong>Where the numbers come from.</strong> Every example below is real output from <code>jev-1.13.0</code> (reached through the <code>jev-latest</code> alias) on the four original sample resumes (<code>candidate_a</code> to <code>candidate_d</code>) in <a href="../resumes/senior_backend_engineer_candidates/"><code>resumes/senior_backend_engineer_candidates/</code></a>, screened against <a href="../jobs/senior_backend_engineer.yaml"><code>jobs/senior_backend_engineer.yaml</code></a> on 2026-09-24. If you rerun it you may see small differences, especially after the alias moves to a newer model.
+    </div>
+
+    <!-- 1 -->
+    <h2 id="what-jev-is">1. What Jev is</h2>
+    <p>Jev is TypeSafe's flagship model and its first <strong>System One</strong> model. The name comes from Kahneman's <em>Thinking, Fast and Slow</em>: System 1 is the fast, intuitive kind of thinking. Like an LLM, Jev reads natural language. Unlike an LLM, <strong>it never writes text</strong>. You give it some content and a set of questions whose possible answers you define. It returns a typed answer and probabilities for each question.</p>
+
+    <div class="table-wrap"><table>
+      <thead><tr><th></th><th>Chat LLM</th><th>Reasoning model</th><th>Jev (System One)</th></tr></thead>
+      <tbody>
+        <tr><th>Output</th><td>Free-form text</td><td>Text after a chain of reasoning</td><td>Typed answers with probabilities</td></tr>
+        <tr><th>Trained for</th><td>Responses people prefer (RLHF)</td><td>Verifiable answers such as math (RLVR)</td><td><strong>Calibrated decisions</strong> (RLCD)</td></tr>
+        <tr><th>Explains itself</th><td>Yes, in prose</td><td>Yes, at length</td><td>No. Your code gives the reasons</td></tr>
+        <tr><th>Speed and cost</th><td>Moderate</td><td>Slow and expensive</td><td>Fast and cheap; many questions per call</td></tr>
+        <tr><th>Good at</th><td>Writing, conversation</td><td>Multi-step problems</td><td>Quick, focused judgments that code consumes</td></tr>
+      </tbody>
+    </table></div>
+
+    <p>What matters for this project:</p>
+    <ul>
+      <li><strong>Calibrated.</strong> Jev is trained so its probabilities match reality across many predictions: of all the answers it gives 0.8, about 80% should turn out true. That holds for groups of answers, not for any single one.</li>
+      <li><strong>Constrained.</strong> An answer is always one of the options or levels you supplied, so there is never prose to parse.</li>
+      <li><strong>Stateless and shared.</strong> Everyone uses the same model weights. Jev is not fine-tuned per customer and is not trained on your requests. You adapt it to your domain only through what you send: the content, the question wording, and the answer definitions.</li>
+      <li><strong>Text only.</strong> Input is a string, JSON object, or array of text. PDFs must be converted to text first, which this project does with PDFBox.</li>
+      <li><strong>Limits</strong> (jev-1.13): 64k tokens per request, of which the content plus the longest single question must fit in 32k. English works best. Pricing is per input token ($0.042 per million), and output tokens are free. One resume in this project costs about 1,200 input tokens.</li>
+      <li><strong>Model names.</strong> <code>jev-latest</code> is an alias that currently points to <code>jev-1.13.0</code>. Every response reports which model actually answered.</li>
+    </ul>
+    <p>Sources: <a href="https://docs.typesafe.ai/concepts/system-one">System One</a>, <a href="https://docs.typesafe.ai/introduction/machine-learning-primer">AI primer</a>, <a href="https://docs.typesafe.ai/models">Models</a>.</p>
+
+    <!-- 2 -->
+    <h2 id="building-blocks">2. The building blocks</h2>
+    <p>Every call is <code>POST https://api.typesafe.ai/v1/systemone</code> with three fields:</p>
+<pre><code>{
+  "model": "jev-latest",
+  "state": { "...the content to judge..." },
+  "questions": {
+    "my_id": {
+      "type": "noul | score | choice",
+      "instructions": "...",
+      "criteria": "..."
+    }
+  }
+}</code></pre>
+    <ul>
+      <li><strong>State</strong> is the content to judge, as a string or structured JSON. Here it is <code>{ "job": {title, summary}, "resume": "&lt;redacted text&gt;" }</code>. Questions can point at parts of the state with backticked paths such as <code>`resume`</code> or <code>`job.summary`</code>.</li>
+      <li><strong>Question</strong> is one judgment about the state:
+        <ul>
+          <li>The <strong>id</strong> (such as <code>comp_python_depth</code>) is only for your code. It is <strong>not sent to the model</strong>, so the instructions must be complete on their own.</li>
+          <li><strong><code>instructions</code></strong> is the question itself. It can be a string, or an object that holds the question plus data it refers to.</li>
+          <li><strong><code>criteria</code></strong> defines the possible answers.</li>
+        </ul>
+      </li>
+      <li><strong>Primitives</strong> are the three question types:</li>
+    </ul>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Type</th><th>Asks</th><th>Returns</th><th>Used here for</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Noul</strong></td><td>Is this true?</td><td><code>noul</code>: probability of yes, 0 to 1</td><td>Must-have requirements</td></tr>
+        <tr><td><strong>Score</strong></td><td>Where on this scale?</td><td><code>score</code>, <code>probabilities</code>, <code>legend</code>, <code>confidence</code></td><td>Graded competencies</td></tr>
+        <tr><td><strong>Choice</strong></td><td>Which one of these options?</td><td><code>choice</code>, <code>probabilities</code>, <code>confidence</code></td><td>Not used in this project</td></tr>
+      </tbody>
+    </table></div>
+    <ul>
+      <li><strong>Parallel and independent.</strong> Every question in a request sees the same state and is answered in parallel. No answer is visible to another question. Adding questions barely changes latency, so this project asks all seven in <strong>one request per resume</strong>.</li>
+    </ul>
+    <p>Source: <a href="https://docs.typesafe.ai/primitives">Primitives</a>.</p>
+
+    <!-- 3 -->
+    <h2 id="numbers">3. What the numbers mean</h2>
+    <p>This section covers the numbers Jev returns and the numbers this project computes from them. Keeping the two apart is the most important idea in this document.</p>
+
+    <h3 id="noul">3.1 Noul: <code>noul</code> is a probability, not a grade</h3>
+    <p>A Noul answer is one number: <strong>the probability that the answer is yes.</strong></p>
+    <div class="table-wrap"><table>
+      <thead><tr><th><code>noul</code></th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>near 1</td><td>Confident yes</td></tr>
+        <tr><td>near 0.5</td><td><strong>Can't tell</strong>: yes and no are about equally likely</td></tr>
+        <tr><td>near 0</td><td>Confident no</td></tr>
+      </tbody>
+    </table></div>
+    <p>A value of 0.5 does <strong>not</strong> mean "medium". Asking "Is this candidate strong in Python?" and reading 0.5 as "moderately strong" is a common mistake. A Noul is only for a condition with a clear yes/no boundary. To measure <em>how much</em>, use a Score.</p>
+    <p>Nouls have no separate <code>confidence</code>, because the single number already says how sure the model is.</p>
+    <p>Real answers for the must-have "Has used Python in a paid engineering role (not only coursework or hobby projects)":</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Resume</th><th class="num"><code>noul</code></th><th>Reading</th></tr></thead>
+      <tbody>
+        <tr><td>candidate_a (9 years of Python in payments)</td><td class="num"><strong>0.99</strong></td><td>Clear yes</td></tr>
+        <tr><td>candidate_d (Django REST in health tech)</td><td class="num"><strong>0.99</strong></td><td>Clear yes</td></tr>
+        <tr><td>candidate_b (full-stack; "Python scripts for nightly catalog imports")</td><td class="num"><strong>0.93</strong></td><td>Yes, a little less sure</td></tr>
+        <tr><td>candidate_c (Java and Kotlin only)</td><td class="num"><strong>0.03</strong></td><td>Clear no</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 id="score">3.2 Score: <code>score</code> is a position on levels you wrote</h3>
+    <p>You give an ordered list of levels. Jev returns a <strong>probability for each level</strong>, and <code>score</code> is their weighted average:</p>
+    <div class="formula">score = Σ (level index × probability of that level)</div>
+    <p>So <code>score</code> <strong>can land between levels</strong>. Real answer for candidate_a on <em>"How deep is the candidate's professional Python experience?"</em>:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th class="num">Level</th><th>Description</th><th class="num">Probability</th></tr></thead>
+      <tbody>
+        <tr><td class="num">0</td><td>No Python experience mentioned</td><td class="num">0.00</td></tr>
+        <tr><td class="num">1</td><td>Python mentioned, but no detail about what was built</td><td class="num">0.00</td></tr>
+        <tr><td class="num">2</td><td>Used Python on some projects, with a few specifics</td><td class="num">0.00</td></tr>
+        <tr><td class="num">3</td><td>Python was the primary language across multiple roles or projects</td><td class="num"><strong>0.37</strong></td></tr>
+        <tr><td class="num">4</td><td>Deep Python expertise, such as performance tuning, library internals…</td><td class="num"><strong>0.63</strong></td></tr>
+      </tbody>
+    </table></div>
+    <p><code>score = 3 × 0.37 + 4 × 0.63 = 3.63</code>. The model thinks this candidate is between "primary language" and "deep expertise", leaning towards deep. <code>legend</code> in the response repeats the level text by index, and <code>probabilities</code> holds the column above.</p>
+
+    <h3 id="confidence">3.3 <code>confidence</code>: how concentrated the probabilities are</h3>
+    <p>Score and Choice answers also carry <strong><code>confidence</code>, from 0 to 1</strong>. TypeSafe computes it from the shape of the probabilities: all probability on one level gives 1.0, and the more evenly it is spread, the lower it goes.</p>
+    <p>The same <code>python_depth</code> question for three resumes. The bars are Jev's probabilities per level, and the ◆ is where <code>score</code> lands:</p>
+
+    <figure>
+      <div class="charts">
+        <div class="chart">
+          <h4>candidate_b</h4>
+          <p>score 1.99 · confidence 0.99</p>
+          <svg viewBox="0 0 300 160" role="img" aria-label="candidate_b python_depth probabilities: level 1 1%, level 2 99%; score 1.99, confidence 0.99">
+            <rect class="bar" x="67" y="119" width="36" height="1"/>
+            <rect class="bar" x="132" y="21" width="36" height="99"/>
+            <text x="85" y="113" text-anchor="middle" font-size="12">1%</text>
+            <text x="150" y="16" text-anchor="middle" font-size="12">99%</text>
+            <line class="axis" x1="0" y1="120" x2="300" y2="120"/>
+            <polygon class="marker" points="149.4,111 158.4,120 149.4,129 140.4,120"/>
+            <g class="muted" font-size="12" text-anchor="middle">
+              <text class="muted" x="20" y="148">0</text><text class="muted" x="85" y="148">1</text><text class="muted" x="150" y="148">2</text><text class="muted" x="215" y="148">3</text><text class="muted" x="280" y="148">4</text>
+            </g>
+          </svg>
+        </div>
+        <div class="chart">
+          <h4>candidate_a</h4>
+          <p>score 3.63 · confidence 0.69</p>
+          <svg viewBox="0 0 300 160" role="img" aria-label="candidate_a python_depth probabilities: level 3 37%, level 4 63%; score 3.63, confidence 0.69">
+            <rect class="bar" x="197" y="83" width="36" height="37"/>
+            <rect class="bar" x="262" y="57" width="36" height="63"/>
+            <text x="215" y="78" text-anchor="middle" font-size="12">37%</text>
+            <text x="280" y="52" text-anchor="middle" font-size="12">63%</text>
+            <line class="axis" x1="0" y1="120" x2="300" y2="120"/>
+            <polygon class="marker" points="256,111 265,120 256,129 247,120"/>
+            <g font-size="12" text-anchor="middle">
+              <text class="muted" x="20" y="148">0</text><text class="muted" x="85" y="148">1</text><text class="muted" x="150" y="148">2</text><text class="muted" x="215" y="148">3</text><text class="muted" x="280" y="148">4</text>
+            </g>
+          </svg>
+        </div>
+        <div class="chart">
+          <h4>candidate_d</h4>
+          <p>score 2.97 · confidence 0.57</p>
+          <svg viewBox="0 0 300 160" role="img" aria-label="candidate_d python_depth probabilities: level 2 28%, level 3 48%, level 4 24%; score 2.97, confidence 0.57">
+            <rect class="bar" x="132" y="92" width="36" height="28"/>
+            <rect class="bar" x="197" y="72" width="36" height="48"/>
+            <rect class="bar" x="262" y="96" width="36" height="24"/>
+            <text x="150" y="87" text-anchor="middle" font-size="12">28%</text>
+            <text x="215" y="67" text-anchor="middle" font-size="12">48%</text>
+            <text x="280" y="91" text-anchor="middle" font-size="12">24%</text>
+            <line class="axis" x1="0" y1="120" x2="300" y2="120"/>
+            <polygon class="marker" points="213.1,111 222.1,120 213.1,129 204.1,120"/>
+            <g font-size="12" text-anchor="middle">
+              <text class="muted" x="20" y="148">0</text><text class="muted" x="85" y="148">1</text><text class="muted" x="150" y="148">2</text><text class="muted" x="215" y="148">3</text><text class="muted" x="280" y="148">4</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <figcaption>Levels 0–4: none · mentioned · some projects · primary language · deep expertise. The more the probability spreads out, the lower the confidence.</figcaption>
+    </figure>
+
+    <p>Jev is sure candidate_b is at level 2. For candidate_d it spreads its answer across levels 2, 3 and 4. The resume says Python and Go, owns a Django service, and also mentions "some Python for data jobs", so the evidence really does sit between levels.</p>
+    <p>What confidence <strong>is not</strong>:</p>
+    <ul>
+      <li>It is not the probability that the answer is correct.</li>
+      <li>It is not permission to act. The same confidence can be fine for a cheap decision and too low for an expensive one.</li>
+      <li>Low confidence usually means the levels overlap or blur several things together, or the resume doesn't say enough. It is a signal to send the case to a person, or to reword the levels.</li>
+    </ul>
+    <p>Sources: <a href="https://docs.typesafe.ai/confidence">Confidence</a>, <a href="https://docs.typesafe.ai/primitives/score">Score</a>, <a href="https://docs.typesafe.ai/primitives/noul">Noul</a>.</p>
+
+    <h3 id="derived">3.4 Numbers this project computes (not Jev)</h3>
+    <p>Everything below is plain Java in <a href="../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java"><code>ScreeningPolicy.java</code></a>. Jev never sees the weights, thresholds or statuses.</p>
+    <p><strong>Normalized score</strong> (the <code>scores</code> field in the output). This puts every competency on a 0 to 1 scale, whatever its number of levels:</p>
+    <div class="formula">normalized = score / (number of levels − 1)</div>
+    <p>candidate_a's python_depth is 3.63 / 4 = <strong>0.9075</strong>. data_stores has 4 levels, so a 3.0 there becomes 3.0 / 3 = <strong>1.0</strong>.</p>
+    <p><strong>Composite</strong> (the <code>composite</code> field). A weighted average of the normalized scores, using the weights from the job YAML:</p>
+    <div class="formula">composite = Σ (weight / total weight × normalized)</div>
+    <p>candidate_a:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Competency</th><th class="num">Weight</th><th class="num">Normalized</th><th class="num">Contribution</th></tr></thead>
+      <tbody>
+        <tr><td>python_depth</td><td class="num">0.30</td><td class="num">0.9075</td><td class="num">0.272</td></tr>
+        <tr><td>distributed_systems</td><td class="num">0.25</td><td class="num">0.935</td><td class="num">0.234</td></tr>
+        <tr><td>data_stores</td><td class="num">0.15</td><td class="num">1.000</td><td class="num">0.150</td></tr>
+        <tr><td>technical_leadership</td><td class="num">0.20</td><td class="num">0.750</td><td class="num">0.150</td></tr>
+        <tr><td>domain_relevance</td><td class="num">0.10</td><td class="num">1.000</td><td class="num">0.100</td></tr>
+        <tr class="total"><td>Composite</td><td class="num">1.00</td><td class="num"></td><td class="num">0.906</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Status</strong>, using the thresholds in the job YAML:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Status</th><th>Rule</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill missing">missing</span></td><td>Any must-have <code>noul</code> is <strong>below <code>must_have_fail</code> (0.20)</strong></td></tr>
+        <tr><td><span class="pill review">review</span></td><td>Otherwise, if any must-have <code>noul</code> is <strong>between 0.20 and <code>must_have_pass</code> (0.80)</strong>, or any competency weighted <strong>0.2 or more</strong> has <code>confidence</code> <strong>below <code>min_confidence</code> (0.45)</strong></td></tr>
+        <tr><td><span class="pill meets">meets</span></td><td>Otherwise</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Rank.</strong> Candidates are sorted by status first (<code>meets</code>, then <code>review</code>, then <code>missing</code>) and by composite within each status. A <code>missing</code> candidate therefore ranks last even with a high composite.</p>
+    <p><strong>Reasons</strong> (the <code>reasons</code> field) are strings <strong>written by the code</strong> to say which rule fired, such as <code>not shown: python_professional (0.03)</code>. They are not an explanation from Jev, which never explains itself.</p>
+
+    <!-- 4 -->
+    <h2 id="applied">4. How this project applies Jev</h2>
+    <h3>4.1 The flow</h3>
+    <figure class="flow">
+      <div class="scroll-x">
+        <svg viewBox="0 0 700 250" role="img" aria-label="Flow: resumes, ResumeLoader, Redactor, request with state and seven questions, Jev, ScreeningPolicy, rank, JSON or CSV output">
+          <defs>
+            <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/>
+            </marker>
+          </defs>
+          <!-- row 1 -->
+          <rect class="box" x="10" y="20" width="140" height="62" rx="8"/>
+          <text x="80" y="46" text-anchor="middle" font-size="15" font-weight="600">Resumes</text>
+          <text class="muted" x="80" y="66" text-anchor="middle" font-size="12">upload or folder</text>
+
+          <rect class="box" x="190" y="20" width="140" height="62" rx="8"/>
+          <text x="260" y="46" text-anchor="middle" font-size="15" font-weight="600">ResumeLoader</text>
+          <text class="muted" x="260" y="66" text-anchor="middle" font-size="12">txt · md · pdf → text</text>
+
+          <rect class="box" x="370" y="20" width="140" height="62" rx="8"/>
+          <text x="440" y="46" text-anchor="middle" font-size="15" font-weight="600">Redactor</text>
+          <text class="muted" x="440" y="66" text-anchor="middle" font-size="12">email · phone · links</text>
+
+          <rect class="box" x="550" y="20" width="140" height="62" rx="8"/>
+          <text x="620" y="46" text-anchor="middle" font-size="15" font-weight="600">Request</text>
+          <text class="muted" x="620" y="66" text-anchor="middle" font-size="12">state + 7 questions</text>
+
+          <line class="arrow" x1="150" y1="51" x2="188" y2="51"/>
+          <line class="arrow" x1="330" y1="51" x2="368" y2="51"/>
+          <line class="arrow" x1="510" y1="51" x2="548" y2="51"/>
+          <line class="arrow" x1="620" y1="82" x2="620" y2="166"/>
+          <text class="muted" x="610" y="128" text-anchor="end" font-size="12">one request per resume</text>
+          <text class="muted" x="610" y="144" text-anchor="end" font-size="12">(cached in .cache/)</text>
+
+          <!-- row 2 -->
+          <rect class="box jev" x="550" y="168" width="140" height="62" rx="8"/>
+          <text x="620" y="194" text-anchor="middle" font-size="15" font-weight="600">Jev</text>
+          <text class="muted" x="620" y="214" text-anchor="middle" font-size="12">2 nouls + 5 scores</text>
+
+          <rect class="box" x="370" y="168" width="140" height="62" rx="8"/>
+          <text x="440" y="194" text-anchor="middle" font-size="15" font-weight="600">ScreeningPolicy</text>
+          <text class="muted" x="440" y="214" text-anchor="middle" font-size="12">weights · thresholds</text>
+
+          <rect class="box" x="190" y="168" width="140" height="62" rx="8"/>
+          <text x="260" y="194" text-anchor="middle" font-size="15" font-weight="600">Rank</text>
+          <text class="muted" x="260" y="214" text-anchor="middle" font-size="12">status, then composite</text>
+
+          <rect class="box" x="10" y="168" width="140" height="62" rx="8"/>
+          <text x="80" y="194" text-anchor="middle" font-size="15" font-weight="600">JSON / CSV</text>
+          <text class="muted" x="80" y="214" text-anchor="middle" font-size="12">with reasons</text>
+
+          <line class="arrow" x1="550" y1="199" x2="512" y2="199"/>
+          <line class="arrow" x1="370" y1="199" x2="332" y2="199"/>
+          <line class="arrow" x1="190" y1="199" x2="152" y2="199"/>
+        </svg>
+      </div>
+      <figcaption>Only the highlighted step is the model. Everything else is ordinary, testable Java.</figcaption>
+    </figure>
+    <ol>
+      <li><strong>Load.</strong> <a href="../src/main/java/com/example/resumescreening/screening/ResumeLoader.java"><code>ResumeLoader</code></a> reads uploads or a folder under <code>resumes/</code> and extracts text from PDFs.</li>
+      <li><strong>Redact.</strong> <a href="../src/main/java/com/example/resumescreening/screening/Redactor.java"><code>Redactor</code></a> replaces emails, phone numbers and GitHub/LinkedIn links with <code>[email]</code>, <code>[phone]</code> and <code>[link]</code>. They carry no job-related signal.</li>
+      <li><strong>Build the request.</strong> <a href="../src/main/java/com/example/resumescreening/screening/ScreeningService.java"><code>ScreeningService</code></a> builds the state, and <a href="../src/main/java/com/example/resumescreening/screening/QuestionBuilder.java"><code>QuestionBuilder</code></a> turns the job YAML into questions.</li>
+      <li><strong>Ask Jev.</strong> <a href="../src/main/java/com/example/resumescreening/typesafe/TypeSafeClient.java"><code>TypeSafeClient</code></a> sends one request per resume, several resumes at once. It retries 429, 500, 502, 503, 504 and 529 responses and connection errors with exponential backoff, and caps how many requests are in flight.</li>
+      <li><strong>Decide.</strong> <a href="../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java"><code>ScreeningPolicy</code></a> applies the rules in <a href="#derived">section 3.4</a>.</li>
+      <li><strong>Return.</strong> <a href="../src/main/java/com/example/resumescreening/web/ScreeningController.java"><code>ScreeningController</code></a> returns the ranked list as JSON or CSV.</li>
+    </ol>
+
+    <h3>4.2 The seven questions</h3>
+    <p>All of them come from <a href="../jobs/senior_backend_engineer.yaml"><code>jobs/senior_backend_engineer.yaml</code></a>. Adding a role means writing a new YAML file, not Java. The project also includes specs for a Senior HR Product Owner, a Technical Product Owner and a Senior Software Application Designer. They have the same shape (two must-haves and five competencies, so seven questions), and this document uses the backend spec as its worked example. The <a href="job-spec-guide.html">job spec guide</a> explains every field of a spec.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Id</th><th>Type</th><th class="num">Weight</th><th>Why this type</th></tr></thead>
+      <tbody>
+        <tr><td><code>must_python_professional</code></td><td>Noul</td><td class="num">gate</td><td>A requirement is met or not, with a clear boundary ("paid role, not coursework")</td></tr>
+        <tr><td><code>must_backend_services</code></td><td>Noul</td><td class="num">gate</td><td>Same</td></tr>
+        <tr><td><code>comp_python_depth</code></td><td>Score, 5 levels</td><td class="num">0.30</td><td>Depth is a matter of degree, so each level describes a concrete situation</td></tr>
+        <tr><td><code>comp_distributed_systems</code></td><td>Score, 5 levels</td><td class="num">0.25</td><td>Same</td></tr>
+        <tr><td><code>comp_data_stores</code></td><td>Score, 4 levels</td><td class="num">0.15</td><td>Same</td></tr>
+        <tr><td><code>comp_technical_leadership</code></td><td>Score, 5 levels</td><td class="num">0.20</td><td>Same</td></tr>
+        <tr><td><code>comp_domain_relevance</code></td><td>Score, 3 levels</td><td class="num">0.10</td><td>Same</td></tr>
+      </tbody>
+    </table></div>
+    <p>Each must-have Noul uses structured instructions. The requirement text goes in its own field and the fixed question refers to it by name:</p>
+<pre><code>"must_python_professional": {
+  "type": "noul",
+  "instructions": {
+    "requirement": "Has used Python in a paid engineering role
+      (not only coursework or hobby projects)",
+    "question": "Does `resume` show evidence that the candidate
+      meets `requirement`?"
+  },
+  "criteria": {
+    "true": "The resume describes experience that satisfies
+      the requirement",
+    "false": "The resume does not mention it, or what it
+      describes falls short of the requirement"
+  }
+}</code></pre>
+    <p class="caption">Long strings are wrapped here to fit the page. In the real request each one is a single line.</p>
+    <p>To see the exact request for any resume without calling Jev: <code>POST /api/screenings/senior_backend_engineer/preview?path=senior_backend_engineer_candidates</code>.</p>
+
+    <h3>4.3 Design choices</h3>
+    <ul>
+      <li><strong>One narrow question per aspect.</strong> A single "rate this candidate 1–10" question would mix five judgments into one opaque number. Separate questions keep each answer interpretable and let you reweight them.</li>
+      <li><strong>Policy in code, judgment in Jev.</strong> Jev answers "what does this resume show?" The code decides what that means for this job. Anyone can read the rules, test them, and change them without touching a prompt.</li>
+      <li><strong>One request per resume.</strong> The seven questions share the state, so they go together. This is cheaper and faster than seven calls, and gives the same answers.</li>
+      <li><strong>Cache.</strong> <a href="../src/main/java/com/example/resumescreening/typesafe/AnswerCache.java"><code>AnswerCache</code></a> stores each raw response under a hash of the full request. Weights and thresholds are not in the request, so changing them and restarting <strong>re-ranks with no API calls</strong>. Changing a question's wording or levels changes the hash, so those resumes are asked again.</li>
+    </ul>
+
+    <!-- 5 -->
+    <h2 id="reading">5. Reading a result</h2>
+    <p>The real ranked output for <code>candidate_a</code> to <code>candidate_d</code> (<code>POST /api/screenings/senior_backend_engineer/folder?path=senior_backend_engineer_candidates</code>, key CSV columns only; the full CSV also has each must-have and each confidence). The folder now holds more sample resumes, so a rerun returns more rows:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th class="num">Rank</th><th>Candidate</th><th>Status</th><th class="num">Composite</th><th class="num">py depth</th><th class="num">dist sys</th><th class="num">data stores</th><th class="num">leadership</th><th class="num">domain</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>candidate_a</td><td><span class="pill meets">meets</span></td><td class="num">0.906</td><td class="num">0.91</td><td class="num">0.94</td><td class="num">1.00</td><td class="num">0.75</td><td class="num">1.00</td></tr>
+        <tr><td class="num">2</td><td>candidate_d</td><td><span class="pill meets">meets</span></td><td class="num">0.706</td><td class="num">0.74</td><td class="num">0.75</td><td class="num">1.00</td><td class="num">0.53</td><td class="num">0.42</td></tr>
+        <tr><td class="num">3</td><td>candidate_b</td><td><span class="pill meets">meets</span></td><td class="num">0.368</td><td class="num">0.50</td><td class="num">0.25</td><td class="num">0.37</td><td class="num">0.25</td><td class="num">0.50</td></tr>
+        <tr><td class="num">4</td><td>candidate_c</td><td><span class="pill missing">missing</span></td><td class="num">0.649</td><td class="num">0.00</td><td class="num">0.96</td><td class="num">0.73</td><td class="num">1.00</td><td class="num">1.00</td></tr>
+      </tbody>
+    </table></div>
+    <p>Here is candidate_c from the JSON output, annotated (long decimals shortened):</p>
+<pre><code>{
+  "rank": 4,
+  "name": "candidate_c",
+  "status": "missing",              <span class="c">// a must-have fell below 0.20</span>
+  "composite": 0.649125,            <span class="c">// 3rd on skills alone...</span>
+  "reasons": [                      <span class="c">// ...but the gate comes first</span>
+    "not shown: python_professional (0.03)"
+  ],
+  "mustHaves": {
+    "python_professional": 0.03,    <span class="c">// 97% "no": no Python on it</span>
+    "backend_services": 0.96        <span class="c">// clearly built prod services</span>
+  },
+  "scores": {                       <span class="c">// normalized 0 to 1</span>
+    "python_depth": 0.0025,         <span class="c">// raw 0.01 of 4: no Python</span>
+    "distributed_systems": 0.9575,  <span class="c">// raw 3.83: 2M msg/sec platform</span>
+    "data_stores": 0.7267,          <span class="c">// raw 2.18 of 3: designed schemas</span>
+    "technical_leadership": 1.0,    <span class="c">// raw 4.0: direction for 3 teams</span>
+    "domain_relevance": 1.0         <span class="c">// raw 2.0: clearing is fintech</span>
+  },
+  "confidences": {
+    "python_depth": 1.0, "distributed_systems": 0.86,
+    "data_stores": 0.82, "technical_leadership": 1.0,
+    "domain_relevance": 1.0
+  }
+}</code></pre>
+    <p>What the four results show:</p>
+    <ul>
+      <li><strong>candidate_a vs candidate_d.</strong> Both meet every requirement. candidate_a scores higher on every weighted competency. candidate_d's lower <code>domain_relevance</code> (0.42, health tech) costs little, because that competency is weighted only 0.10.</li>
+      <li><strong>candidate_c.</strong> A very strong engineer with no Python. The composite alone would put them above candidate_b, but the must-have gate puts them last and says why. A recruiter might still decide to talk to them. The output makes that trade-off visible instead of hiding it inside one number.</li>
+      <li><strong>candidate_b.</strong> Must-haves at 0.93 and 0.86 are above the 0.80 pass line, so the status is <code>meets</code>, but the composite is low. Python "scripts for nightly catalog imports" counted as paid Python work. If your team wouldn't count that, tighten the requirement text (for example, "…as a primary language for production services") or raise <code>must_have_pass</code>. That kind of decision belongs in the spec, not the model.</li>
+      <li><strong>No <code>review</code> cases in this run.</strong> The least confident heavy competency was candidate_d's python_depth at 0.57, which is above the 0.45 floor. With real applicant volume you should expect some.</li>
+    </ul>
+
+    <!-- 6 -->
+    <h2 id="tuning">6. Tuning and limits</h2>
+    <h3>What to change, and what it costs</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Change</th><th>Where</th><th>API calls</th></tr></thead>
+      <tbody>
+        <tr><td>Weights, thresholds</td><td>Job YAML, then restart</td><td><strong>None</strong>, re-ranked from cache</td></tr>
+        <tr><td>Question wording, levels, requirements</td><td>Job YAML, then restart</td><td>Re-asks the affected requests</td></tr>
+        <tr><td>New role</td><td>New <code>jobs/&lt;id&gt;.yaml</code>, resumes in <code>resumes/&lt;id&gt;_candidates/</code></td><td>One request per resume screened</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Good practice</h3>
+    <ul>
+      <li><strong>Calibrate on your own data.</strong> Run 20–50 resumes your recruiters have already judged, and set <code>must_have_pass</code>, <code>must_have_fail</code> and <code>min_confidence</code> so the statuses match what they would do. The values in the sample specs are starting points, not recommendations.</li>
+      <li><strong>Write levels as concrete situations.</strong> Each Score level should describe one situation that makes sense on its own ("Owned the design of a multi-service system handling significant traffic"), not a word like "good". Vague or overlapping levels show up as low confidence.</li>
+      <li><strong>Keep one idea per question.</strong> If a question needs "and", split it into two.</li>
+      <li><strong>Pin the model once tuned.</strong> <code>jev-latest</code> moves when TypeSafe ships a new version, and the answers behind it can shift. After tuning thresholds, set <code>typesafe.model: jev-1.13.0</code> in <code>application.yml</code> and upgrade on your own schedule. The cache includes the model name, so an upgrade re-asks everything.</li>
+    </ul>
+    <h3>Limits to keep in mind</h3>
+    <ul>
+      <li><strong>A typed answer is not necessarily a true one.</strong> The format is guaranteed; correctness is not. Calibration holds across many answers, not for each candidate.</li>
+      <li><strong>Jev judges only what the resume says.</strong> It can't verify claims, and it will score a well-written resume above an equally strong but terse one.</li>
+      <li><strong>English works best.</strong> Test before screening resumes in other languages, and watch confidence.</li>
+      <li><strong>Fairness.</strong> Criteria must be job-related. Contact details are removed, but names, schools and employment dates still reach the model. Check outcomes for bias before relying on them. Use the output to decide <strong>which resumes a person reads first</strong>, not who gets hired.</li>
+    </ul>
+
+    <!-- 7 -->
+    <h2 id="glossary">7. Glossary</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Jev</strong></td><td>TypeSafe's System One model; <code>jev-latest</code> currently points to <code>jev-1.13.0</code></td></tr>
+        <tr><td><strong>System One model</strong></td><td>A model that returns typed decisions and probabilities instead of text</td></tr>
+        <tr><td><strong>RLCD</strong></td><td>Reinforcement learning for calibrated decisions, the method used to train Jev</td></tr>
+        <tr><td><strong>Calibrated</strong></td><td>Across many answers, stated probabilities match how often things turn out true</td></tr>
+        <tr><td><strong>State</strong></td><td>The content Jev judges; here <code>{job, resume}</code></td></tr>
+        <tr><td><strong>Question id</strong></td><td>Your key for an answer, never sent to the model</td></tr>
+        <tr><td><strong>Noul</strong></td><td>Yes/no question; <code>noul</code> is the probability of yes</td></tr>
+        <tr><td><strong>Score</strong></td><td>Question with ordered levels; <code>score</code> is the probability-weighted level</td></tr>
+        <tr><td><strong><code>probabilities</code></strong></td><td>How much probability Jev puts on each level or option</td></tr>
+        <tr><td><strong><code>legend</code></strong></td><td>Level index mapped back to the level text</td></tr>
+        <tr><td><strong><code>confidence</code></strong></td><td>How concentrated <code>probabilities</code> is, 0 to 1 (Score and Choice only)</td></tr>
+        <tr><td><strong>Normalized score</strong></td><td><code>score / (levels − 1)</code>, computed by this project</td></tr>
+        <tr><td><strong>Composite</strong></td><td>Weighted average of normalized scores, computed by this project</td></tr>
+        <tr><td><strong>Status</strong></td><td><code>meets</code> / <code>review</code> / <code>missing</code>, computed by this project from thresholds</td></tr>
+      </tbody>
+    </table></div>
+  </main>
+</div>
+</body>
+</html>

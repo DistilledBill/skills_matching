@@ -1,0 +1,20 @@
+Candidate E
+e.candidate@example.com | linkedin.com/in/cand-e
+
+PROFILE
+Site reliability engineer, 8 years, running Kubernetes platforms and carrying the pager for customer-facing services.
+
+EXPERIENCE
+Senior Site Reliability Engineer, Tripcove (travel booking) — 2020–present
+- Primary on-call owner for the booking and search APIs (~1,200 req/s); led 40+ incident reviews and drove the follow-up fixes.
+- Migrated 70 services from EC2 to EKS with Terraform and Argo CD; deploy time went from 25 minutes to 6.
+- Wrote and maintain the internal release service (Python, Flask, PostgreSQL) that gates every production deploy.
+- Built SLO dashboards and alerting in Prometheus and Grafana, now used by 12 teams.
+- Mentored two junior SREs through their first on-call rotations.
+
+DevOps Engineer, Quillstack (B2B SaaS) — 2016–2020
+- Ran PostgreSQL on RDS: backups, failover drills, and two major-version upgrades.
+- Python and Bash automation for provisioning, certificate renewal, and log shipping.
+
+SKILLS
+Kubernetes, Terraform, AWS, Python, Bash, Prometheus, Grafana, PostgreSQL, Kafka (operations), Argo CD

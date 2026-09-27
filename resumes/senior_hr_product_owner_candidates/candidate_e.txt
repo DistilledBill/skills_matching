@@ -1,0 +1,23 @@
+Candidate E
+e.candidate@example.com | (555) 388-0921
+
+SUMMARY
+HR technology product leader with 13 years across HRIS, talent, and compensation systems in healthcare.
+
+EXPERIENCE
+Director of Product, HR Technology, Meridale Health Partners (hospital network) — 2020–present
+- Set product strategy for the people technology portfolio (HRIS, ATS, learning, compensation, scheduling) supporting 18,000 employees across 11 hospitals.
+- Led the replacement of on-premise PeopleSoft HR with SAP SuccessFactors; 26-month program, $9M budget, went live on schedule.
+- Own roadmaps for three product teams; built the product owner practice from scratch and hired and coach 4 product owners and 2 analysts.
+- Chair the people systems steering committee with the CHRO, CFO, CIO, and general counsel.
+- Own contracts and integrations with SuccessFactors, iCIMS, and the payroll vendor; defined access controls on employee data for HIPAA and state privacy laws and passed two external audits with no findings.
+
+Senior Product Owner, Talent Systems, Meridale Health Partners — 2016–2020
+- Owned the iCIMS backlog; cut nurse time-to-hire from 54 to 33 days by redesigning requisition approval and offer workflows.
+- Ran refinement and sprint planning for a team of 7.
+
+HRIS Analyst, Cardinal Valley Clinics (healthcare) — 2013–2016
+- Configured PeopleSoft HR and built benefits enrollment reports.
+
+SKILLS
+SAP SuccessFactors, PeopleSoft HR, iCIMS, Jira Align, Confluence, Power BI, HIPAA, vendor management, roadmapping, OKRs

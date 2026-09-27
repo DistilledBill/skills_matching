@@ -1,0 +1,21 @@
+Candidate G
+g.candidate@example.com | +1 555 233 6071 | github.com/cand-g
+
+Senior Python engineer, 9 years, payments and banking. Known for fast, reliable delivery.
+
+EXPERIENCE
+Senior Software Engineer, Tallis Pay (payment gateway) — 2020–present
+- Implement services from the design specs produced by the application design team: card tokenization, the 3DS challenge flow, and payout batching (Python, FastAPI, PostgreSQL, Kafka).
+- Top contributor to the payout batching build: 60+ merged PRs; cut batch runtime from 40 to 9 minutes.
+- Build Kafka producers and consumers against the event schemas published by the platform team.
+- On-call lead for the gateway; wrote 12 runbooks and fixed the top recurring incident causes.
+
+Software Engineer, Oakridge Bank (retail banking) — 2016–2020
+- Built features on the online banking backend from Jira stories; migrated 5 services from Python 2 to 3.
+- Wrote unit and contract tests for partner APIs.
+
+Junior Developer, Minted Apps — 2015–2016
+- Bug fixes and small features on client mobile backends.
+
+SKILLS
+Python, FastAPI, Flask, PostgreSQL, Kafka, Redis, Docker, Kubernetes, AWS, pytest

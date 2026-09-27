@@ -1,0 +1,22 @@
+Candidate A
+a.candidate@example.com | (555) 201-3344 | github.com/cand-a
+
+SUMMARY
+Backend engineer with 9 years building Python services, most recently in payments.
+
+EXPERIENCE
+Staff Engineer, Ledgerly (payments infrastructure) — 2021–present
+- Tech lead for the settlement team (6 engineers); set the service architecture for moving batch settlement to event-driven processing on Kafka.
+- Designed the idempotent payment-intent API (Python, FastAPI, PostgreSQL) handling ~4k requests/sec at peak.
+- Led the migration of a 3 TB PostgreSQL ledger to partitioned tables with zero downtime.
+- Mentor for four engineers; runs the backend design review.
+
+Senior Software Engineer, ShopWave (e-commerce) — 2017–2021
+- Built order and inventory microservices in Python (Django, Celery, Redis).
+- Cut p99 latency of checkout from 900ms to 180ms by profiling and rewriting hot paths.
+
+Software Engineer, DataPoint — 2015–2017
+- Python ETL pipelines and internal Flask APIs.
+
+SKILLS
+Python, Go, PostgreSQL, Kafka, Redis, Kubernetes, AWS, Terraform

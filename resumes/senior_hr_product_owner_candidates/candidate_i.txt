@@ -1,0 +1,18 @@
+Candidate I
+i.candidate@example.com | (555) 902-5561 | linkedin.com/in/cand-i
+
+SUMMARY
+Senior product owner in payments, focused on merchant onboarding and compliance.
+
+EXPERIENCE
+Senior Product Owner, Merchant Onboarding, Clearpath Pay (payments) — 2020–present
+- Own the roadmap and backlogs for merchant onboarding and KYC across two agile teams (14 engineers).
+- Cut median merchant approval time from 4 days to 6 hours by automating document checks.
+- Manage integrations with three identity-verification vendors; wrote data minimization and retention requirements for GDPR and PCI DSS.
+- Align risk, compliance, legal, and sales on quarterly priorities; coach two junior product owners.
+
+Product Owner, Brindle Lending (consumer lending) — 2016–2020
+- Owned the loan application backlog for one scrum team; application completion up 18%.
+
+SKILLS
+Jira, Confluence, Productboard, KYC/AML, PCI DSS, GDPR, REST APIs, SQL, OKRs

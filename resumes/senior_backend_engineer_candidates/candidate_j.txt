@@ -1,0 +1,23 @@
+Candidate J
+j.candidate@example.com | (555) 780-2263
+
+SUMMARY
+Backend engineer with nine years of Python, the last five on core banking systems.
+
+EXPERIENCE
+Lead Backend Engineer, Kiteharbor Bank (digital banking) — 2021–present
+- Tech lead for the accounts and transfers team (5 engineers); owns the double-entry ledger service (Python, FastAPI, PostgreSQL).
+- Designed the outbox pattern and Kafka consumers that keep balances consistent across six services; no ledger drift across 90M transfers.
+- Moved hot balance reads behind a Redis cache with write-through invalidation; p95 fell from 140ms to 22ms.
+- Planned and ran the PostgreSQL 11 to 15 upgrade and a ledger repartitioning with under a minute of write downtime.
+- Co-wrote the company's API design guidelines, now used by 9 teams.
+
+Backend Engineer, Oakmere Insurance (insurtech) — 2018–2021
+- Built the claims intake API in Python (Django REST Framework) on AWS, plus an SQS-based document processing pipeline.
+- Rewrote the premium reporting SQL and added indexes; the monthly run went from 6 hours to 40 minutes.
+
+Junior Developer, Sunbright Tours (travel) — 2017–2018
+- Python scripts and a small Flask admin tool for booking operations.
+
+SKILLS
+Python, FastAPI, Django, PostgreSQL, Kafka, Redis, AWS, Kubernetes, Docker

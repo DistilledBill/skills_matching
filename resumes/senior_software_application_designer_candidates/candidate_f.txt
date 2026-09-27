@@ -1,0 +1,20 @@
+Candidate F
+f.candidate@example.com
+
+PROFILE
+Application designer at a pensions administrator, 7 years in design roles.
+
+EXPERIENCE
+Application Designer, Stellmoor Pensions (pensions administration) — 2019–present
+- Design the member contributions and benefit statements applications: component diagrams, PostgreSQL data models, and month-end batch workflows.
+- Specify the REST interface between the contributions app and the payroll-file gateway; agree field mappings with the integration team.
+- Write design specs and sequence diagrams for the offshore development team and answer their questions during build.
+
+Junior Designer / Analyst, Stellmoor Pensions — 2017–2019
+- Documented existing applications and wrote change specs under a senior designer.
+
+Graduate Technology Programme, Stellmoor Pensions — 2016–2017
+- Rotations in testing, support, and development; built an internal reporting tool in Python.
+
+SKILLS
+UML, sequence diagrams, SQL, PostgreSQL, REST, Python (basic), Visio, Confluence

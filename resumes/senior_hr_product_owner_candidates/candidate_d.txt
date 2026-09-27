@@ -1,0 +1,20 @@
+Candidate D
+d.candidate@example.com | linkedin.com/in/cand-d
+
+Product manager, 8 years building consumer mobile apps.
+
+EXPERIENCE
+Senior Product Manager, Forkful (food delivery app) — 2021–present
+- Own the roadmap for search and discovery across iOS, Android, and web; 3 squads, 22 engineers.
+- Launched a personalized home feed; order conversion up 11% and weekly active users up 7%.
+- Run quarterly planning with design, marketing, and data science; mentor two associate PMs.
+
+Product Manager, Tuneloop (music streaming) — 2018–2021
+- Owned the playlist and social sharing backlog for one scrum team.
+- Ran A/B tests on the onboarding screens; day-7 retention improved from 31% to 38%.
+
+Associate Product Manager, Pixelnest (mobile games) — 2016–2018
+- Wrote specs for in-app purchase flows and worked with the app store billing SDKs.
+
+SKILLS
+Product strategy, A/B testing, Amplitude, Mixpanel, Jira, Figma, SQL, iOS and Android release management

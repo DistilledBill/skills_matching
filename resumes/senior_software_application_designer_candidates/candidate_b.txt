@@ -1,0 +1,24 @@
+Candidate B
+b.candidate@example.com | (555) 318-7720 | linkedin.com/in/cand-b
+
+PROFILE
+Application designer and former Python engineer, 12 years, the last 6 designing payment applications.
+
+EXPERIENCE
+Lead Application Designer, Corvane Payments (card acquiring) — 2020–present
+- Owned the application designs for merchant onboarding, dispute management, and the refunds engine: component structure, PostgreSQL data models, and workflow state machines.
+- Designed the REST and gRPC contracts between 9 services and the Kafka event schemas (Avro, schema registry) for authorization and settlement events, including versioning and idempotency rules.
+- Wrote the NFR section of each design: PCI DSS scope reduction, 99.95% availability targets, p99 under 250ms on authorization paths.
+- Introduced the design spec template and C4/sequence-diagram conventions now used by 7 teams; chair the weekly design review.
+- Work with business analysts and the enterprise architect to turn card scheme rule changes into designs; review pull requests for conformance to the design.
+- Mentor three designers and several senior engineers.
+
+Senior Software Engineer, Brightledger (banking software) — 2014–2020
+- Wrote production Python services for loan servicing (Django, PostgreSQL, RabbitMQ).
+- Designed the repayment scheduling component and its data model, then led its build with 4 engineers.
+
+Software Engineer, Quillon Systems — 2012–2014
+- Python and Java back-office applications for an insurance client.
+
+SKILLS
+Python, Django, FastAPI, PostgreSQL, Kafka, Avro, gRPC, OpenAPI, Kubernetes, AWS, C4, PlantUML, UML

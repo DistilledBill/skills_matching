@@ -1,0 +1,18 @@
+Candidate F
+f.candidate@example.com | +1 555 612 4057
+
+PROFILE
+Product owner for internal employee tools at a mid-size insurer.
+
+EXPERIENCE
+Product Owner, Employee Experience, Oakridge Assurance (insurance) — 2021–present
+- Own the backlog for the intranet and employee service portal used by 6,000 staff; one scrum team of 6.
+- Added a PTO request form and a "my profile" page that read and write through an API to the company's HR system.
+- Prioritized a new-starter checklist page with the people team and IT; saves roughly a day of first-week setup.
+- Worked with the portal vendor on SSO and on hiding personal fields from managers' views.
+
+Business Systems Analyst, Oakridge Assurance (insurance) — 2017–2021
+- Requirements and testing for claims and policy administration tools; wrote user stories for two teams.
+
+SKILLS
+Jira, Confluence, ServiceNow, SharePoint, REST APIs, Okta, backlog refinement, user research

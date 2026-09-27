@@ -1,0 +1,24 @@
+Candidate I
+i.candidate@example.com | github.com/cand-i
+
+SUMMARY
+Staff engineer who designs and builds multi-tenant SaaS applications; 11 years in Python.
+
+EXPERIENCE
+Staff Software Engineer, Design Lead, Quotient Cloud (B2B billing SaaS) — 2020–present
+- Design lead for the subscriptions and invoicing applications: wrote the design docs covering service boundaries, the PostgreSQL tenancy model (schema-per-tenant to row-level security), and invoice lifecycle workflows.
+- Designed the gRPC contracts between 6 internal services and the public REST API (OpenAPI 3, cursor pagination, idempotency keys, deprecation policy); webhooks delivered through Kafka with at-least-once guarantees.
+- Built SOC 2 controls into the designs: field-level encryption for billing contacts, audit trails, tenant isolation tests.
+- Wrote the RFC process and design doc template adopted engineering-wide (~80 engineers); review 3–4 designs a week.
+- Partner with product managers and the principal architect on the quarterly roadmap; mentor 5 senior engineers.
+- Write production Python most days (Django, Celery) on Kubernetes (EKS).
+
+Senior Software Engineer, Marketwise (e-commerce marketplace) — 2015–2020
+- Designed and built the seller payouts component and its reconciliation data model.
+- Built order and catalog services in Python; owned the search indexing pipeline.
+
+Software Engineer, Tinbox Labs — 2013–2015
+- Python web apps and internal APIs.
+
+SKILLS
+Python, Django, Celery, PostgreSQL, gRPC, REST, OpenAPI, Kafka, Kubernetes, AWS (EKS, RDS), C4, Mermaid

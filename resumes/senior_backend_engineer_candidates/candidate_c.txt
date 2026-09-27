@@ -1,0 +1,16 @@
+Candidate C
+c.candidate@example.com | +1 555 990 1122
+
+Senior Java engineer with 10 years on high-throughput trading and risk systems.
+
+EXPERIENCE
+Principal Engineer, Northgate Capital — 2018–present
+- Architected a low-latency order-routing platform (Java, Aeron, Kafka) processing 2M messages/sec.
+- Set technical direction for three teams working on risk and clearing.
+- Owned Oracle and PostgreSQL schema design for the clearing ledger.
+
+Senior Engineer, Finexa — 2014–2018
+- Built Java microservices for a card-issuing platform; introduced Kafka for event sourcing.
+
+SKILLS
+Java, Kotlin, Kafka, PostgreSQL, Oracle, Kubernetes

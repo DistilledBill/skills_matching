@@ -1,0 +1,20 @@
+Candidate C
+c.candidate@example.com | github.com/cand-c
+
+Senior backend engineer, 8 years, Python and Go, mostly on payments and billing services.
+
+EXPERIENCE
+Senior Software Engineer, Remitto (cross-border payments) — 2020–present
+- Built the payout API (Python, FastAPI, PostgreSQL) serving 40 partner banks; wrote its OpenAPI spec and client SDK.
+- Moved FX quote generation to Kafka consumers, cutting quote latency from 1.2s to 200ms.
+- Join sprint planning and estimate work; break epics from the product manager into technical tasks.
+- On-call lead; wrote runbooks for the payouts service on Kubernetes (EKS).
+
+Software Engineer, Billgrid (SaaS billing) — 2017–2020
+- Go services for invoice generation and dunning; added gRPC interfaces between billing and ledger services.
+
+Junior Developer, Nexa Systems — 2016–2017
+- Maintained internal PHP tools and MySQL reports.
+
+SKILLS
+Python, Go, FastAPI, gRPC, PostgreSQL, Kafka, Kubernetes, AWS, Terraform

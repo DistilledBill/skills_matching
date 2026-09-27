@@ -1,0 +1,20 @@
+Candidate H
+h.candidate@example.com | +1 555 409 7713
+
+Certified Scrum Master with a background in business analysis.
+
+EXPERIENCE
+Scrum Master, Harborline Insurance (insurance) — 2021–present
+- Scrum master for two claims-processing teams; facilitate planning, stand-ups, reviews and retrospectives.
+- Coach the product owners on backlog refinement and story splitting.
+- Introduced flow metrics (cycle time, throughput); average cycle time went from 11 days to 6.
+
+Business Analyst, Harborline Insurance — 2017–2021
+- Documented current and future-state processes for claims intake; wrote business requirements documents signed off by claims operations.
+- Ran UAT with adjusters for the claims portal release.
+
+Customer Service Team Lead, Harborline Insurance — 2014–2017
+- Led a team of 12 handling policyholder calls.
+
+SKILLS
+Scrum, Kanban, Jira, Confluence, Visio, BPMN, facilitation, CSM, UAT

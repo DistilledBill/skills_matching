@@ -1,0 +1,72 @@
+# Job spec for the screener. Everything the model judges comes from here;
+# weights and thresholds are applied in code, so editing them re-ranks from
+# cached answers without new API calls.
+
+title: Senior Backend Engineer
+summary: >
+  Build and operate the Python services behind our payments platform:
+  REST/gRPC APIs on PostgreSQL, event pipelines on Kafka, deployed to
+  Kubernetes on AWS. Senior engineers own services end to end, lead designs
+  across teams, and mentor other engineers.
+
+# Each must-have becomes one Noul: "does the resume show evidence of this?"
+must_haves:
+  - id: python_professional
+    requirement: Has used Python in a paid engineering role (not only coursework or hobby projects)
+  - id: backend_services
+    requirement: Has built or maintained server-side services or APIs that ran in production
+
+# Each competency becomes one Score. Levels run from least to most and must
+# each describe a concrete situation on their own.
+competencies:
+  - id: python_depth
+    weight: 0.30
+    question: How deep is the candidate's professional Python experience, based on `resume`?
+    levels:
+      - No Python experience mentioned
+      - Python mentioned, but no detail about what was built
+      - Used Python on some projects, with a few specifics
+      - Python was the primary language across multiple roles or projects
+      - Deep Python expertise, such as performance tuning, library internals, or authoring widely used packages
+
+  - id: distributed_systems
+    weight: 0.25
+    question: How much experience does the candidate have designing and running distributed or high-scale backend systems, based on `resume`?
+    levels:
+      - No backend systems work mentioned
+      - Worked on a single service or monolith without scale or reliability concerns
+      - Built services that talk to queues, caches, or other services, with some attention to reliability
+      - Owned the design of a multi-service system handling significant traffic or data volume
+      - Designed high-scale systems across several domains, with evidence of reliability, consistency, and performance trade-offs
+
+  - id: data_stores
+    weight: 0.15
+    question: How much hands-on experience does the candidate have with relational databases such as PostgreSQL in production, based on `resume`?
+    levels:
+      - No database experience mentioned
+      - Used a database through an ORM with no further detail
+      - Designed schemas or wrote non-trivial SQL for production systems
+      - Owned database performance, migrations, or scaling for a production system
+
+  - id: technical_leadership
+    weight: 0.20
+    question: How much technical leadership has the candidate shown, such as leading designs, projects, or mentoring engineers, based on `resume`?
+    levels:
+      - No leadership or mentoring mentioned
+      - Mentored individuals or reviewed others' code
+      - Led a project or feature involving several engineers
+      - Tech lead for a team, owning its technical direction
+      - Set technical direction across multiple teams or an organization
+
+  - id: domain_relevance
+    weight: 0.10
+    question: How relevant is the candidate's industry experience to `job.summary`?
+    levels:
+      - Unrelated industry with no transferable domain exposure
+      - Adjacent domain, such as general e-commerce or B2B SaaS
+      - Fintech, payments, or other regulated financial systems
+
+thresholds:
+  must_have_pass: 0.80    # at or above: requirement met
+  must_have_fail: 0.20    # below: requirement not shown; between: human review
+  min_confidence: 0.45    # a Score below this on a weight >= 0.2 competency goes to review

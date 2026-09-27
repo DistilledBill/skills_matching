@@ -1,0 +1,17 @@
+Candidate J
+j.candidate@example.com | linkedin.com/in/cand-j
+
+Product owner in retail banking, 5 years.
+
+EXPERIENCE
+Product Owner, Firstcrest Bank (retail banking) — 2022–present
+- Product owner for the savings accounts team in the mobile banking app.
+- Refine the backlog with the team and business stakeholders; write user stories.
+- Also picked up the backlog for the bank's open banking API work in 2024, working with the integration team and the compliance office.
+- Take part in quarterly planning led by the head of digital channels.
+
+Business Analyst, Firstcrest Bank — 2019–2022
+- Requirements for online banking releases; supported testing.
+
+SKILLS
+Jira, Confluence, Scrum, stakeholder management, requirements gathering

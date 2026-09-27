@@ -1,0 +1,17 @@
+Candidate B
+b.candidate@example.com
+
+PROFILE
+Full-stack developer, 5 years. Comfortable across React, Node.js and Python.
+
+EXPERIENCE
+Software Engineer II, Brightcart (e-commerce) — 2021–present
+- Built customer-facing React features and the Node.js BFF layer.
+- Wrote Python scripts for nightly catalog imports into MySQL.
+- Reviewed pull requests and onboarded two new hires.
+
+Software Engineer, AppForge (agency) — 2019–2021
+- Built marketing sites and small Express APIs for clients.
+
+SKILLS
+JavaScript, TypeScript, React, Node.js, Python, MySQL, Docker

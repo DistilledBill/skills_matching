@@ -1,0 +1,17 @@
+Candidate G
+g.candidate@example.com | (555) 730-1186 | linkedin.com/in/cand-g
+
+HRIS analyst, 6 years administering Workday for mid-size employers.
+
+EXPERIENCE
+HRIS Analyst, Northvale Freight (logistics) — 2020–present
+- Primary Workday administrator for 2,600 employees: business processes, security groups, and calculated fields.
+- Handle about 60 HR system tickets a month from HR operations and payroll; brought the open ticket backlog down from 140 to 25.
+- Build and maintain custom reports and dashboards for HR leadership.
+- Run regression testing for the twice-yearly Workday releases and set up benefits open enrollment each fall.
+
+HR Coordinator, Stonebridge Dental Group (healthcare) — 2017–2020
+- Entered new hires and job changes in ADP; maintained personnel files.
+
+SKILLS
+Workday HCM, Workday Report Writer, calculated fields, EIB, ADP Workforce Now, Excel, SQL basics

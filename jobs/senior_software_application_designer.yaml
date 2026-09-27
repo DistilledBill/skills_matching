@@ -1,0 +1,76 @@
+# Job spec for the screener. Everything the model judges comes from here;
+# weights and thresholds are applied in code, so editing them re-ranks from
+# cached answers without new API calls.
+
+title: Senior Software Application Designer
+summary: >
+  Design the applications behind our payments platform before and during
+  build: turn business requirements into application designs covering
+  component structure, data models on PostgreSQL, REST/gRPC API and Kafka
+  integration contracts, workflows, and non-functional requirements such as
+  security, performance, and availability, for Python services on Kubernetes
+  on AWS. Senior designers own the design of significant applications, work
+  between business analysts, architects, and development teams, review
+  implementations for conformance, and guide other designers and engineers.
+
+# Each must-have becomes one Noul: "does the resume show evidence of this?"
+must_haves:
+  - id: application_design_ownership
+    requirement: Has produced the design for a software application or major component in a professional role, such as design specs, data models, or API contracts, not only implemented designs made by others
+  - id: hands_on_development
+    requirement: Has worked as a software developer or engineer writing production code in a paid role
+
+# Each competency becomes one Score. Levels run from least to most and must
+# each describe a concrete situation on their own.
+competencies:
+  - id: application_design_depth
+    weight: 0.30
+    question: How much experience does the candidate have designing software applications, such as component structure, data models, and workflows, based on `resume`?
+    levels:
+      - No application design work mentioned
+      - Contributed to designs led by others, or designed small features within an existing application
+      - Designed a complete application or major component, including its structure, data model, and workflows
+      - Owned the designs of several significant applications, balancing functional needs with non-functional requirements such as security, performance, and availability
+      - Defined design approaches or standards adopted across multiple applications or teams, with evidence of complex trade-offs
+
+  - id: integration_and_api_design
+    weight: 0.20
+    question: How much experience does the candidate have designing APIs and integration contracts between applications, such as REST or gRPC interfaces and event or message schemas, based on `resume`?
+    levels:
+      - No API or integration work mentioned
+      - Consumed or implemented APIs or integrations specified by others
+      - Designed APIs or integration contracts for a single application
+      - Designed integration contracts across several services or systems, including versioning, error handling, or event-driven messaging such as Kafka
+      - Set API or integration standards across an organization, or designed integration architecture for a large multi-system platform
+
+  - id: design_documentation
+    weight: 0.15
+    question: How much experience does the candidate have producing design documentation, such as design specs, UML or C4 diagrams, or sequence diagrams, based on `resume`?
+    levels:
+      - No design documentation mentioned
+      - Wrote technical documentation or informal diagrams for their own work
+      - Authored design specifications or modeling diagrams such as UML, C4, or sequence diagrams used by a development team
+      - Established design documentation templates, modeling practices, or design review processes used across teams
+
+  - id: stakeholder_and_design_leadership
+    weight: 0.25
+    question: How much has the candidate led design work and bridged business and technical stakeholders, such as translating requirements, running design reviews, or guiding other designers and engineers, based on `resume`?
+    levels:
+      - No leadership or stakeholder-facing work mentioned
+      - Gathered or clarified requirements with business analysts or product owners, or reviewed others' code
+      - Translated business requirements into designs for a development team and reviewed implementations against them
+      - Design lead for a team or application, running design reviews and mentoring other designers or engineers
+      - Guided design across multiple teams or an organization, working with architects and business stakeholders on direction
+
+  - id: domain_relevance
+    weight: 0.10
+    question: How relevant is the candidate's industry experience to `job.summary`?
+    levels:
+      - Unrelated industry with no transferable domain exposure
+      - Adjacent domain, such as general e-commerce or B2B SaaS
+      - Fintech, payments, or other regulated financial systems
+
+thresholds:
+  must_have_pass: 0.80    # at or above: requirement met
+  must_have_fail: 0.20    # below: requirement not shown; between: human review
+  min_confidence: 0.45    # a Score below this on a weight >= 0.2 competency goes to review

@@ -1,0 +1,25 @@
+Candidate E
+e.candidate@example.com | (555) 604-2210 | github.com/cand-e
+
+SUMMARY
+Product manager for developer platforms and APIs; 6 years as an engineer and architect before moving into product.
+
+EXPERIENCE
+Group Product Manager, Stackforge (developer tools) — 2022–present
+- Set the roadmap for the public API, CLI and SDKs (Python, TypeScript, Go) across three teams; about 60k monthly active developers.
+- Led the design of API v3 with the chief architect: resource-oriented REST, cursor pagination, and gRPC for high-volume customers; wrote the v2 deprecation policy.
+- Wrote the platform requirements standard (endpoint contracts, rate-limit behavior, SLOs, backward-compatibility checks) that product owners on all API teams follow.
+- Held back a quarter of feature work to rebuild auth tokens and rate limiting after abuse incidents; enterprise churn dropped 3 points the following year.
+- Track weekly API calls, time-to-first-call and SDK error rates; brought time-to-first-call from 22 minutes to 7.
+
+Product Manager, Stackforge — 2019–2022
+- Product owner for the CI integrations team in Scrum; owned the backlog, ran sprint reviews, accepted stories.
+
+Software Architect, Codewell (B2B SaaS) — 2016–2019
+- Designed the multi-tenant PostgreSQL data model and internal service APIs.
+
+Senior Software Engineer, Codewell — 2013–2016
+- Java and Python backend services.
+
+SKILLS
+API design, OpenAPI, REST, gRPC, SDK strategy, PostgreSQL, SQL, Kubernetes, AWS, Jira, Scrum

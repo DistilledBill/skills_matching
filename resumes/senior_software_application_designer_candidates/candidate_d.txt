@@ -1,0 +1,20 @@
+Candidate D
+d.candidate@example.com | linkedin.com/in/cand-d
+
+Solution designer, 14 years in banking and insurance IT, moved from business analysis into application and solution design.
+
+EXPERIENCE
+Principal Solution Designer, Harrowgate Bank (retail banking) — 2017–present
+- Own the solution and application designs for the payments hub modernization: component models, logical data models, and interface specifications for 14 upstream and downstream systems.
+- Defined the bank's API design guidelines (OpenAPI, versioning, standard error model) adopted by 11 delivery teams.
+- Produce UML and C4 models in Sparx EA; set up the design authority review that every change must pass.
+- Work with business stakeholders, enterprise architecture, and vendor delivery teams; review vendor designs against bank standards.
+
+Senior Business Analyst / Solution Designer, Merrow Insurance — 2011–2017
+- Requirements and functional specs for the claims platform; later owned integration designs to the policy admin system.
+
+Business Analyst, Kestrel Consulting — 2010–2011
+- Process mapping and requirements for financial services clients.
+
+SKILLS
+Solution design, UML, C4, Sparx EA, BPMN, OpenAPI, ISO 20022, SQL (querying), TOGAF

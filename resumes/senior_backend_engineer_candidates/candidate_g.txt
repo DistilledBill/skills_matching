@@ -1,0 +1,18 @@
+Candidate G
+g.candidate@example.com | +1 555 474 2019
+
+Backend engineer, 7 years, mainly Ruby on Rails with some Go, the last four in consumer lending.
+
+EXPERIENCE
+Senior Backend Engineer, Hearthloan (consumer lending) — 2019–present
+- Own the loan-servicing API (Rails, PostgreSQL) that manages repayment schedules for 400k active loans.
+- Moved payment reconciliation from a nightly cron to Sidekiq workers with idempotency keys; reconciliation lag dropped from 24 hours to 15 minutes.
+- Split the 600M-row ledger table online using a dual-write and backfill plan.
+- Prototyped a fraud-scoring sidecar in Python during a hack week; the team later rebuilt it in Go.
+- Led a 3-engineer project to integrate a second ACH processor.
+
+Software Engineer, Marrow & Pine (digital agency) — 2017–2019
+- Rails backends and background jobs for client apps.
+
+SKILLS
+Ruby, Rails, Go, PostgreSQL, Redis, Sidekiq, Python (basic), AWS

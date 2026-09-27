@@ -1,0 +1,16 @@
+Candidate H
+h.candidate@example.com | (555) 580-2266
+
+Business analyst, 8 years in payments and card issuing.
+
+EXPERIENCE
+Senior Business Analyst, Verity Card Services (card issuing) — 2020–present
+- Gather requirements from operations, compliance, and product for chargeback and card-controls changes; write user stories and acceptance criteria.
+- Map current and future-state processes in BPMN; facilitate workshops with up to 20 stakeholders.
+- Work with the solution designer and dev team to clarify requirements during build; lead UAT with 300+ test cases.
+
+Business Analyst, Crestway Bank — 2016–2020
+- Requirements and process documentation for mortgage origination; wrote SQL queries for data reconciliation.
+
+SKILLS
+Requirements elicitation, user stories, BPMN, Jira, Confluence, SQL, UAT, Visio

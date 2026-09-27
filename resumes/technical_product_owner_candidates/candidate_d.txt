@@ -1,0 +1,22 @@
+Candidate D
+d.candidate@example.com | +1 555 742 0198
+
+PROFILE
+Product owner for consumer mobile and web experiences, 7 years.
+
+EXPERIENCE
+Senior Product Owner, Nestora (home-goods e-commerce) — 2020–present
+- Own the backlog and quarterly roadmap for mobile app checkout and product pages (iOS, Android, web).
+- Write user stories with acceptance criteria and Figma links; product owner for two Scrum teams, accepting work in sprint reviews.
+- Ran 40+ A/B tests on checkout layout; raised mobile conversion from 2.1% to 2.8% over 18 months.
+- Balance the UI bug backlog against new features; reserved one sprint in five for accessibility fixes (WCAG 2.1 AA).
+
+Product Owner, Kindly Travel (consumer travel) — 2017–2020
+- Owned the hotel search and booking flow on web; a redesign of search filters lifted bookings per session by 12%.
+- Worked with UX research to run monthly usability tests.
+
+Associate Product Manager, Kindly Travel — 2016–2017
+- Wrote copy and stories for onboarding screens and email flows.
+
+SKILLS
+Jira, Figma, Amplitude, Optimizely, A/B testing, Scrum, user research

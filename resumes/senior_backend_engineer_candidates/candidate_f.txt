@@ -1,0 +1,24 @@
+Candidate F
+f.candidate@example.com | (555) 318-4470 | github.com/cand-f
+
+SUMMARY
+Backend engineer, 11 years, mostly Python. I like owning the unglamorous, reliable parts of high-traffic systems.
+
+EXPERIENCE
+Principal Engineer, Cadenza Media (music streaming) — 2020–present
+- Set technical direction for the playback and entitlements group (3 teams, 17 engineers).
+- Designed the play-event pipeline: Python producers and consumers on Kafka, ~2B events/day, deduplicated and aggregated into PostgreSQL and S3.
+- Led the entitlements API rewrite (Python, gRPC, PostgreSQL); 99.99% availability across two AWS regions.
+- Traced a GIL-bound serialization bottleneck in the royalty calculator and moved it into a small Cython extension; 3x throughput.
+- Maintainer of an open-source asyncio Kafka client (~1.5k GitHub stars).
+
+Senior Software Engineer, Pixelroad (online advertising) — 2015–2020
+- Built the bid-logging and budget-pacing services in Python (Tornado, Redis, PostgreSQL) at 150k QPS.
+- Owned schema design and partitioning for the 8 TB campaign spend database.
+- Ran the team's design reviews and mentored five engineers.
+
+Software Engineer, Lumen Labs (analytics SaaS) — 2013–2015
+- Django APIs and Celery workers for scheduled report generation.
+
+SKILLS
+Python, Cython, asyncio, gRPC, Kafka, PostgreSQL, Redis, Kubernetes, AWS, Terraform

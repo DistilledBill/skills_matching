@@ -1,0 +1,22 @@
+Candidate G
+g.candidate@example.com | (555) 877-3056 | linkedin.com/in/cand-g
+
+SUMMARY
+Technical program manager, 9 years, delivering large platform migrations in financial services.
+
+EXPERIENCE
+Senior Technical Program Manager, Meridian Pay (payments processor) — 2020–present
+- Ran the 18-month program to move card processing from a data center to AWS (EKS, RDS, MSK); coordinated 9 engineering teams and 3 vendors.
+- Built the integrated delivery plan, dependency map and risk register; ran weekly steering with the CTO and product directors.
+- Program finished 3 weeks early with no Sev-1 incidents during cutover.
+- Worked with product managers to sequence their roadmap items around migration freeze windows.
+
+Technical Program Manager, Stonebridge Bank (retail banking) — 2016–2020
+- Managed delivery of the open banking API program for PSD2 compliance across 4 teams; reported status to the regulator liaison.
+- Ran PI planning for a SAFe release train of 70 people.
+
+Project Manager, Corvel Systems (IT consulting) — 2014–2016
+- Managed fixed-scope system integration projects for banking clients.
+
+SKILLS
+Program management, SAFe, Jira Align, risk management, AWS, Kafka, stakeholder management, PMP

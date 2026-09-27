@@ -1,0 +1,23 @@
+Candidate B
+b.candidate@example.com | (555) 318-4471 | linkedin.com/in/cand-b
+
+SUMMARY
+Technical product owner with 8 years in payments; former backend engineer.
+
+EXPERIENCE
+Senior Technical Product Owner, Paylane (payments platform) — 2021–present
+- Own the roadmap and backlog for the merchant payments API (REST and webhooks) used by 3,400 merchants; two squads, 11 engineers.
+- Wrote OpenAPI endpoint contracts for refunds, partial captures and idempotency keys; acceptance criteria cover retries, error codes and a 250ms p95 latency budget.
+- Agreed with the platform architect to spend 30% of two quarters moving webhook delivery onto Kafka; failed deliveries dropped from 1.8% to 0.2%.
+- Defined API health metrics (time to first successful charge, error rate by endpoint, integration drop-off); cut median merchant integration time from 9 days to 4.
+- Set the story and acceptance-criteria template now used by all five product owners in the payments group.
+
+Product Owner, Clearfin (card issuing) — 2018–2021
+- Product owner in Scrum for the card-controls service; ran sprint reviews and accepted work against PCI requirements.
+- Prioritized a PostgreSQL schema redesign over new card features after incident reviews; outage minutes fell 60% the next year.
+
+Software Engineer, Clearfin — 2016–2018
+- Python services for card authorization; on-call for the authorization gateway.
+
+SKILLS
+Product ownership, Scrum, OpenAPI, REST, webhooks, Kafka, PostgreSQL, SQL, Python, Jira, PCI DSS

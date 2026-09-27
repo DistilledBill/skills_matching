@@ -1,0 +1,76 @@
+# Job spec for the screener. Everything the model judges comes from here;
+# weights and thresholds are applied in code, so editing them re-ranks from
+# cached answers without new API calls.
+
+title: Technical Product Owner
+summary: >
+  Own the backlog and roadmap for the technical products behind our payments
+  platform: payments APIs, the developer platform, and internal platform
+  services built on Python, REST/gRPC, PostgreSQL, Kafka, and Kubernetes on
+  AWS. Technical product owners write requirements and acceptance criteria for
+  API and platform features, balance technical debt against new features, work
+  through trade-offs with engineers and architects, and define the metrics
+  that show whether a product is working.
+
+# Each must-have becomes one Noul: "does the resume show evidence of this?"
+must_haves:
+  - id: product_ownership_role
+    requirement: Has worked as a product owner or product manager in a paid role, owning a product backlog or roadmap (not only as a project or program manager)
+  - id: technical_product_experience
+    requirement: Has owned or managed a technical product, such as an API, developer platform, SDK, or internal infrastructure or platform service
+
+# Each competency becomes one Score. Levels run from least to most and must
+# each describe a concrete situation on their own.
+competencies:
+  - id: technical_depth
+    weight: 0.25
+    question: How well does the candidate understand APIs, system design, and software engineering, based on `resume`?
+    levels:
+      - No technical background or technical product work mentioned
+      - Worked alongside engineers on software products, with no detail about the technology
+      - Worked hands-on with APIs or system design, such as writing API specs, reviewing designs, or querying data with SQL
+      - Former software engineer, or made product decisions grounded in API design, data models, or system architecture
+      - Former senior engineer or architect who has shaped the architecture of APIs or platforms as a product owner
+
+  - id: backlog_and_requirements
+    weight: 0.25
+    question: How much experience does the candidate have owning a backlog and writing requirements and acceptance criteria for technical features, based on `resume`?
+    levels:
+      - No backlog or requirements work mentioned
+      - Wrote or groomed user stories for a team with no further detail
+      - Owned a team's backlog, writing requirements and acceptance criteria for features
+      - Owned the backlog for an API or platform product, writing technical requirements such as endpoint contracts, integration behavior, or non-functional requirements
+      - Owned backlogs across several teams or products, setting requirements standards that other product owners followed
+
+  - id: prioritization_and_roadmap
+    weight: 0.20
+    question: How much experience does the candidate have prioritizing work and owning a product roadmap, including trade-offs between technical debt and new features, based on `resume`?
+    levels:
+      - No prioritization or roadmap work mentioned
+      - Took part in sprint planning or prioritization owned by someone else
+      - Prioritized a team's backlog, weighing features against bugs or technical debt
+      - Owned a product roadmap, making explicit trade-offs between technical debt, platform investment, and features with engineers and architects
+      - Set roadmap strategy for a platform or product line across several teams, with evidence of business outcomes from those choices
+
+  - id: metrics_and_agile_delivery
+    weight: 0.20
+    question: How much experience does the candidate have defining product metrics and working as the product owner in an agile or Scrum team, based on `resume`?
+    levels:
+      - No metrics or agile delivery mentioned
+      - Worked on an agile or Scrum team in a non-product role
+      - Served as product owner in Scrum, running reviews and accepting delivered work
+      - Served as product owner and defined success metrics for the product, such as adoption, latency, error rates, or API usage
+      - Used product metrics to drive roadmap decisions and reported measured outcomes, such as improved adoption, reliability, or revenue
+
+  - id: domain_relevance
+    weight: 0.10
+    question: How relevant is the candidate's industry experience to `job.summary`?
+    levels:
+      - Unrelated industry with no transferable domain exposure
+      - Adjacent domain, such as general e-commerce, B2B SaaS, or developer tools
+      - Fintech, payments, or other regulated financial systems
+
+thresholds:
+  must_have_pass: 0.80    # at or above: requirement met
+  must_have_fail: 0.20    # below: requirement not shown; between: human review
+  min_confidence: 0.45    # a Score below this on a weight >= 0.2 competency goes to review

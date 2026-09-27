@@ -1,0 +1,19 @@
+Candidate H
+h.candidate@example.com | github.com/cand-h
+
+PROFILE
+Data scientist, 6 years, Python every day: forecasting, experimentation, and applied ML research.
+
+EXPERIENCE
+Senior Data Scientist, Harvestline (grocery retail) — 2021–present
+- Built demand-forecasting models (Python, pandas, LightGBM) for 1,100 stores; fresh-produce waste fell 12% in the first year.
+- Run the A/B testing program; wrote the team's internal Python library for sequential testing.
+- Deliver weekly forecasts as batch notebooks that the data engineering team schedules in Airflow.
+- Mentored three junior analysts on experiment design and review their analyses.
+
+Research Scientist, Orbis Lab (university NLP research) — 2018–2021
+- Published four papers on low-resource text classification.
+- Wrote PyTorch training code and evaluation scripts on a shared GPU cluster.
+
+SKILLS
+Python, pandas, NumPy, scikit-learn, PyTorch, LightGBM, SQL (Snowflake), Jupyter, Airflow

@@ -1,0 +1,20 @@
+Candidate C
+c.candidate@example.com | +1 555 404 7812
+
+SUMMARY
+Senior product designer, 8 years designing web and mobile applications for fintech and SaaS.
+
+EXPERIENCE
+Senior Product Designer, Fundwell (consumer banking app) — 2021–present
+- Lead designer for the savings and bill-pay journeys; the redesign lifted goal-setup completion from 41% to 63%.
+- Run discovery interviews and usability tests; turn findings into user flows, wireframes, and high-fidelity Figma prototypes.
+- Own the app's design system (120+ components) used by 4 squads; partner with engineers on handoff and QA of the UI.
+
+Product Designer, Loopdesk (B2B SaaS) — 2018–2021
+- Designed dashboards and onboarding flows; ran A/B tests with the growth team.
+
+UI Designer, Studio Kettle (agency) — 2016–2018
+- Visual and interaction design for retail and travel clients.
+
+SKILLS
+Figma, Sketch, user research, information architecture, prototyping, design systems, HTML/CSS basics

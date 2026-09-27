@@ -1,0 +1,23 @@
+Candidate B
+b.candidate@example.com | +1 555 404 8812 | linkedin.com/in/cand-b
+
+SUMMARY
+Senior product owner for people technology, 12 years in HR systems, the last six in payments.
+
+EXPERIENCE
+Senior Product Owner, People Platforms, Paydrift (payments) — 2020–present
+- Own the roadmap and backlogs for HRIS, recruiting, and onboarding products serving 3,800 employees in 9 countries; two agile teams, 11 engineers.
+- Led the replacement of a legacy HRIS with Workday HCM and Compensation; delivered on schedule and retired 14 spreadsheets and 3 homegrown tools.
+- Built the Greenhouse-to-Workday hire integration and automated Day 1 provisioning with IT; offer-accept to laptop-ready dropped from 9 days to 2.
+- Own vendor relationships with Workday, Greenhouse, and our background-check provider; defined role-based access to employee data and prepared the GDPR and SOC 2 evidence for people systems.
+- Set quarterly priorities with the CHRO, the CFO's office, and legal; coach two product owners and a business analyst.
+
+Product Owner, HR Systems, Kestrel Mutual Bank (banking) — 2016–2020
+- Owned the SuccessFactors Performance & Goals backlog for one scrum team; ran refinement and sprint planning.
+- Moved annual reviews to quarterly check-ins; completion rose from 61% to 93%.
+
+HRIS Analyst, Kestrel Mutual Bank (banking) — 2014–2016
+- Configured SuccessFactors Employee Central and supported payroll interface testing.
+
+SKILLS
+Workday HCM, Workday Compensation, SAP SuccessFactors, Greenhouse, Jira, Confluence, Okta, SQL, GDPR, SOC 2, backlog management, OKRs

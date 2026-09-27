@@ -1,0 +1,18 @@
+Candidate I
+i.candidate@example.com | (555) 642-0915 | linkedin.com/in/cand-i
+
+Software engineer in test, 6 years, most recently on a card payments platform.
+
+EXPERIENCE
+Senior SDET, Tollbridge Pay (payments processing) — 2021–present
+- Built the Python (pytest) contract and integration suite covering 30 payment APIs; it runs on every merge.
+- Wrote a Locust load-testing harness that caught a connection-pool leak two weeks before Black Friday.
+- Joined the card-authorization team's bug rotation for two quarters and fixed several defects in the authorization service's Python code.
+- Maintain the test-data service that seeds sandbox merchants and cards for other teams.
+
+QA Engineer, Mapleway Insurance (insurance) — 2018–2021
+- Selenium and pytest suites for the policy portal.
+- Reviewed test code for a QA team of five.
+
+SKILLS
+Python, pytest, Locust, Selenium, SQL, PostgreSQL, Docker, GitHub Actions

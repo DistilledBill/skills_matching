@@ -1,0 +1,16 @@
+Candidate J
+j.candidate@example.com | +1 555 317 6640
+
+Product owner, 2 years, on an applicant tracking product.
+
+EXPERIENCE
+Product Owner, Quillhire (HR tech startup) — 2024–present
+- Write and prioritize stories for the candidate pipeline and interview scheduling features; team of 4 engineers.
+- Shipped a calendar integration for interview scheduling; recruiters report fewer back-and-forth emails.
+- Join customer calls with recruiting leads to collect feedback.
+
+QA Analyst, Quillhire (HR tech startup) — 2021–2024
+- Manual and automated testing of the ATS web app; wrote regression suites in Cypress.
+
+SKILLS
+Jira, Trello, Cypress, Postman, Google Calendar API, Scrum

@@ -1,0 +1,20 @@
+Candidate H
+h.candidate@example.com
+
+Senior product manager in HR tech; former Workday compensation consultant.
+
+EXPERIENCE
+Senior Product Manager, Rungwise (HR tech SaaS, compensation) — 2021–present
+- Own the roadmap for merit cycles and pay-band management, used by 450 customer companies; 2 engineering teams.
+- Shipped the Workday and SuccessFactors connectors; integration-led deals grew from 20% to 45% of new ARR.
+- Defined data retention and field-level encryption requirements for salary data; worked with security on SOC 2 Type II and GDPR data processing agreements.
+- Run a monthly customer council with HR and total rewards leaders; mentor a product owner and a product analyst.
+
+Product Owner, Rungwise (HR tech SaaS, compensation) — 2019–2021
+- Owned the backlog for the manager review workflow; ran refinement and sprint planning for one squad.
+
+Workday Compensation Consultant, Alder & Pike Consulting (HR technology consulting) — 2015–2019
+- Configured Workday Compensation and Advanced Compensation for 9 clients; led 3 go-lives.
+
+SKILLS
+Roadmapping, Jira, Productboard, Workday Compensation, SAP SuccessFactors, REST APIs, SOC 2, GDPR, SQL, Looker

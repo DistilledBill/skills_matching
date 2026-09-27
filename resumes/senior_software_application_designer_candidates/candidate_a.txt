@@ -1,0 +1,18 @@
+Candidate A
+a.candidate@example.com | github.com/cand-a
+
+Software developer, 5 years, Python and TypeScript, currently on a merchant payouts product.
+
+EXPERIENCE
+Software Engineer II, Paycrest (merchant payments) — 2022–present
+- Build features in the payouts service (Python, FastAPI, PostgreSQL) from tickets written by the team's lead designer.
+- Designed the table and two endpoints for payout scheduling preferences, a small feature used by ~8k merchants; wrote a one-page design note that the lead reviewed.
+- Added retry handling to the bank-file export job after a missed settlement window.
+- Consume the ledger team's Kafka events; flagged two contract gaps that led to schema fixes.
+
+Software Engineer, Tillbox (point-of-sale SaaS) — 2020–2022
+- Built React screens and Django endpoints for inventory and receipts.
+- Wrote integration tests against the card terminal vendor's REST API.
+
+SKILLS
+Python, FastAPI, Django, TypeScript, React, PostgreSQL, Kafka, Docker, pytest

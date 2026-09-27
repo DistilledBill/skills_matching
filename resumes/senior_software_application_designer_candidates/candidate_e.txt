@@ -1,0 +1,22 @@
+Candidate E
+e.candidate@example.com | (555) 762-0915
+
+Senior software engineer and application designer, 10 years, mostly logistics and supply chain.
+
+EXPERIENCE
+Principal Engineer, Application Design, Freightline Systems (logistics) — 2019–present
+- Design owner for the shipment booking and carrier tendering applications (Python, PostgreSQL, Kubernetes on AWS); write the design specs, data models, and state-machine workflows before build starts.
+- Designed the Kafka event contracts between booking, tracking, and billing (schema versioning rules, dead-letter handling, replay) and the public REST API used by 300+ shippers.
+- Set availability and throughput targets (99.9%, 1,500 bookings/min at peak) and designed for them; led the load-test plan that validated the design.
+- Translate requirements from product owners and operations analysts into designs; run design reviews for 3 development teams and check merged code against the spec.
+- Still write production code on critical paths, about a third of my time.
+
+Senior Software Engineer, Parcelbase (logistics) — 2015–2019
+- Built Python services for route pricing; designed the rate-card data model and its REST API.
+- Moved nightly batch rating to a streaming pipeline, cutting quote staleness from 24h to under 5 minutes.
+
+Software Developer, Norrow Digital — 2013–2015
+- Java and Python web applications for public-sector clients.
+
+SKILLS
+Python, FastAPI, PostgreSQL, Kafka, REST, gRPC, OpenAPI, Kubernetes, AWS, sequence diagrams, C4

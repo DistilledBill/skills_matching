@@ -1,0 +1,18 @@
+Candidate A
+a.candidate@example.com | (555) 214-7730
+
+Business analyst with 7 years on HR systems, including a stretch as acting product owner.
+
+EXPERIENCE
+Senior Business Analyst, Corvane Insurance (insurance) — 2021–present
+- Lead analyst on the Workday HCM and Absence rollout for 4,200 employees; ran 30+ requirements workshops with HR operations and payroll.
+- Write user stories and acceptance criteria for a two-squad delivery team; maintain the team's Jira board.
+- Covered as acting product owner for about 8 months in 2023 while the PO role was vacant; agreed sprint scope with the delivery lead.
+- Mapped the data flows for the interface to the third-party payroll provider.
+
+Business Analyst, Halden Group (logistics) — 2018–2021
+- Gathered requirements for a new-hire onboarding portal and its e-signature integration; coordinated UAT with 12 HR testers.
+- Built Workday custom reports for HR business partners.
+
+SKILLS
+Workday HCM, Workday Absence, Jira, Confluence, Visio, SQL, requirements workshops, UAT
