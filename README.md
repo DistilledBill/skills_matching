@@ -19,6 +19,18 @@ You can also `export TYPESAFE_API_KEY=...`. An exported variable takes priority 
 
 The app starts without a key. Listing jobs and previewing requests still work, and screening returns 503 until a key is set.
 
+## Web app
+
+`./mvnw spring-boot:run` also builds and serves the web app at http://localhost:8080. From there you can pick a job, screen a resume folder or uploaded files, see the ranked results, download the CSV, and preview exactly what each resume sends to Jev. The preview never calls Jev, so it's free and works without an API key. The Screen page shows how many resumes already have a cached answer before you run a screening.
+
+The app lives in `frontend/` (React, TypeScript and Vite). The Maven build downloads its own Node into `frontend/.node`, so you don't need Node installed. To work on the UI with live reload, run the Spring app, then in another terminal:
+
+```sh
+cd frontend && npm install && npm run dev   # http://localhost:5173, proxies /api to :8080 (needs Node 20.11+)
+```
+
+Add `-Dskip.frontend` to any Maven command to skip building and testing the web app.
+
 ## API
 
 | Method | Path | Does |
@@ -26,7 +38,11 @@ The app starts without a key. Listing jobs and previewing requests still work, a
 | GET | `/api/jobs` | List the loaded job specs |
 | POST | `/api/screenings/{jobId}` | Screen uploaded resumes (multipart `files`: .txt, .md, .pdf) |
 | POST | `/api/screenings/{jobId}/folder?path=` | Screen a folder inside `resumes/`, normally the job's own folder such as `senior_backend_engineer_candidates` (a blank `path` means `resumes/` itself, which holds no resumes) |
-| POST | `/api/screenings/{jobId}/preview` | Show the TypeSafe request for the first resume (uploaded `files` or `?path=`) without calling the API |
+| POST | `/api/screenings/{jobId}/preview` | Show the TypeSafe request for one resume (uploaded `files` or `?path=`; `name` picks the resume, otherwise the first) without calling the API. The `X-Answer-Cached` header says whether screening it would be free |
+| POST | `/api/screenings/{jobId}/preview-text` | The same, for resume text that isn't saved yet (JSON `{name, text}`) |
+| POST | `/api/screenings/{jobId}/cache-status` | `{total, cached}` for uploaded `files` or `?path=`: how many resumes would be answered from the cache |
+| GET | `/api/resume-folders` | Folders under `resumes/` with their resume counts |
+| GET | `/api/resume-folders/{folder}` | The resume files in one folder |
 
 Add `?format=csv` to either screening endpoint to get a CSV instead of JSON.
 

@@ -70,6 +70,50 @@ public class ResumeLoader {
 		}
 	}
 
+	/** Folders directly under the resumes root, by name. Folder screening does not recurse, so deeper ones are not listed. */
+	public List<ResumeFolder> listFolders() {
+		Path realRoot = resolveInsideRoot("");
+		try (Stream<Path> entries = Files.list(realRoot)) {
+			List<ResumeFolder> folders = new ArrayList<>();
+			for (Path dir : entries.filter(Files::isDirectory)
+				.filter(p -> !p.getFileName().toString().startsWith("."))
+				.sorted()
+				.toList()) {
+				folders.add(new ResumeFolder(dir.getFileName().toString(), countResumes(dir)));
+			}
+			return folders;
+		}
+		catch (IOException ex) {
+			throw new InvalidResumeException("Could not list folders in " + root, ex);
+		}
+	}
+
+	/** The supported resume files directly inside one folder under the resumes root, by file name. */
+	public List<ResumeFile> listFolder(String relativePath) {
+		Path folder = resolveInsideRoot(relativePath == null ? "" : relativePath);
+		try (Stream<Path> entries = Files.list(folder)) {
+			List<ResumeFile> files = new ArrayList<>();
+			for (Path path : entries.filter(Files::isRegularFile)
+				.filter(p -> isSupported(p.getFileName().toString()))
+				.sorted()
+				.toList()) {
+				String fileName = path.getFileName().toString();
+				files.add(new ResumeFile(fileName, StringUtils.stripFilenameExtension(fileName), extension(fileName),
+						Files.size(path)));
+			}
+			return files;
+		}
+		catch (IOException ex) {
+			throw new InvalidResumeException("Could not read folder '" + relativePath + "'", ex);
+		}
+	}
+
+	private static int countResumes(Path dir) throws IOException {
+		try (Stream<Path> files = Files.list(dir)) {
+			return (int) files.filter(Files::isRegularFile).filter(p -> isSupported(p.getFileName().toString())).count();
+		}
+	}
+
 	ResumeDocument load(String filename, byte[] bytes) {
 		String name = StringUtils.stripFilenameExtension(filename);
 		if ("pdf".equals(extension(filename))) {

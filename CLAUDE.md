@@ -13,7 +13,10 @@ A Spring Boot 4 REST API (Java 21, Maven) that ranks resumes against a YAML job 
 ./mvnw test -Dtest=ScreeningPolicyTest        # one class
 ./mvnw test -Dtest='ScreeningPolicyTest#compositeIsWeightedAverageOfNormalizedScores'  # one method
 ./mvnw spring-boot:run                        # run on :8080; start from the project root
-./mvnw package                                # build the jar
+./mvnw package                                # build the jar (includes the web app)
+./mvnw test -Dskip.frontend                   # backend only: skips npm ci/build/test
+cd frontend && npm run dev                    # UI with live reload on :5173, proxies /api to :8080
+cd frontend && npm test                       # Vitest; npx tsc --noEmit to type-check
 ```
 
 No linter is configured. Java sources are indented with tabs.
@@ -33,6 +36,15 @@ Key design points that span several files:
 - **Cache semantics.** `AnswerCache` stores the raw response in `.cache/<sha256>.json`, keyed on the canonical (key-sorted) JSON of the full request: model, state and questions. Weights and thresholds are not in the request, so changing them re-ranks for free. Changing `title` or `summary` re-asks every question for that job, because both are in the state of every request.
 - **Resume folders.** Resumes live in `resumes/<job id>_candidates/`. `/folder?path=` is resolved inside `resumes/`, rejects paths outside it (`..`, absolute paths, symlinks), and is **not recursive**. A blank `path` points at `resumes/` itself, which has no files, so it returns 400.
 
+## Web app (`frontend/`)
+
+- React 19 + TypeScript + Vite 6, React Router, TanStack Query, plain CSS (light and dark themes via `prefers-color-scheme`). The tooling is pinned to versions that run on Node 20.11. Vite 7 and later need Node 20.12 or newer.
+- `frontend-maven-plugin` (in `pom.xml`) downloads Node into `frontend/.node`, then runs `npm ci` and `npm run build` in `generate-resources`, and `npm test` in `test`. Vite writes straight into `target/classes/static`. The plugin's npm cache is `frontend/.npm-cache`, because this machine's `~/.npm` has root-owned files.
+- `web/SpaConfig` serves `static/` and returns `index.html` for page URLs such as `/jobs/x/results`, so reloads work. It never rewrites `/api/**` or paths that look like files, so those still 404.
+- `src/api.ts` holds hand-written types that mirror the Java records (JSON is camelCase) and one function per endpoint. Keep them in step when a record changes.
+- Screening results are kept in memory per browser tab (`src/results.tsx`), because uploaded `File`s can't survive a reload. Re-running is free thanks to the answer cache.
+- The plan for the remaining phases (what-if tuning, resume viewer, resume management, spec editor) is in `.plans/web-frontend-plan.md`.
+
 ## Tests depend on real repo files
 
 Tests read the checked-in sample data rather than fixtures, so editing the samples breaks tests:
@@ -40,6 +52,7 @@ Tests read the checked-in sample data rather than fixtures, so editing the sampl
 - `TestAnswers.sampleJob()` loads `jobs/senior_backend_engineer.yaml`. `ScreeningPolicyTest` hard-codes its weights (for example python_depth 0.30, domain_relevance 0.10). Experiment on a copy of the spec, not the original.
 - `ResumeLoaderTest` expects exactly `candidate_a`…`candidate_j` in `resumes/senior_backend_engineer_candidates/`.
 - `ScreeningApiTest.screensFolderAndRanks` expects 10 candidates. It picks mock answers by matching resume text ("Senior Java engineer" → candidate_c, "Full-stack developer" → candidate_b), so no other resume in that folder may contain those phrases.
+- `WebAppApiTest` points `typesafe.cache-dir` at a temp directory, so cache-status tests never read the real `.cache/`. `src/test/resources/static/index.html` exists only so the page-URL fallback can be tested.
 - `RedactorTest` expects line 2 of backend candidates A–D to be the contact line. All sample resumes follow this format: line 1 `Candidate X`, line 2 fake contact details (`@example.com`, 555 phone numbers).
 
 ## Docs

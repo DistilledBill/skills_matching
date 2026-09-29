@@ -11,6 +11,7 @@ import java.util.concurrent.Future;
 
 import com.example.resumescreening.config.TypeSafeProperties;
 import com.example.resumescreening.job.JobSpec;
+import com.example.resumescreening.typesafe.AnswerCache;
 import com.example.resumescreening.typesafe.Question;
 import com.example.resumescreening.typesafe.SystemOneRequest;
 import com.example.resumescreening.typesafe.TypeSafeClient;
@@ -27,10 +28,13 @@ public class ScreeningService {
 
 	private final TypeSafeClient client;
 
+	private final AnswerCache cache;
+
 	private final String model;
 
-	public ScreeningService(TypeSafeClient client, TypeSafeProperties props) {
+	public ScreeningService(TypeSafeClient client, AnswerCache cache, TypeSafeProperties props) {
 		this.client = client;
+		this.cache = cache;
 		this.model = props.model();
 	}
 
@@ -58,6 +62,11 @@ public class ScreeningService {
 	/** The exact request that would be sent for this resume. */
 	public SystemOneRequest request(JobSpec job, ResumeDocument resume) {
 		return request(job, resume, QuestionBuilder.build(job));
+	}
+
+	/** Whether this exact request already has a cached answer, so screening it makes no API call. */
+	public boolean isCached(SystemOneRequest request) {
+		return cache.get(cache.key(request)).isPresent();
 	}
 
 	private SystemOneRequest request(JobSpec job, ResumeDocument resume, Map<String, Question> questions) {

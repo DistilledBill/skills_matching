@@ -6,6 +6,7 @@ import java.util.List;
 import com.example.resumescreening.job.JobSpec;
 import com.example.resumescreening.job.JobSpecRepository;
 import com.example.resumescreening.screening.CsvWriter;
+import com.example.resumescreening.screening.InvalidResumeException;
 import com.example.resumescreening.screening.ResumeDocument;
 import com.example.resumescreening.screening.ResumeLoader;
 import com.example.resumescreening.screening.ScreeningReport;
@@ -19,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +29,8 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api")
 public class ScreeningController {
+
+	static final String CACHED_HEADER = "X-Answer-Cached";
 
 	private static final MediaType TEXT_CSV = new MediaType("text", "csv", StandardCharsets.UTF_8);
 
@@ -63,15 +67,64 @@ public class ScreeningController {
 		return respond(job, screening.screen(job, loader.fromFolder(path)), format);
 	}
 
-	/** The TypeSafe request for the first resume, without calling the API. */
+	/**
+	 * The TypeSafe request for one resume, without calling the API: the one named {@code name}, or the first.
+	 * The {@value #CACHED_HEADER} header says whether screening it would be answered from the cache.
+	 */
 	@PostMapping("/screenings/{jobId}/preview")
-	public SystemOneRequest preview(@PathVariable String jobId,
+	public ResponseEntity<SystemOneRequest> preview(@PathVariable String jobId,
+			@RequestParam(name = "files", required = false) List<MultipartFile> files,
+			@RequestParam(required = false) String path, @RequestParam(required = false) String name) {
+		JobSpec job = jobs.get(jobId);
+		return previewOf(job, pick(resumes(files, path), name));
+	}
+
+	/** Like {@link #preview}, for resume text that has not been saved to a file yet. */
+	@PostMapping("/screenings/{jobId}/preview-text")
+	public ResponseEntity<SystemOneRequest> previewText(@PathVariable String jobId, @RequestBody ResumeText body) {
+		JobSpec job = jobs.get(jobId);
+		if (body.text() == null || body.text().isBlank()) {
+			throw new InvalidResumeException("Resume text is empty");
+		}
+		String name = body.name() == null || body.name().isBlank() ? "resume" : body.name();
+		return previewOf(job, new ResumeDocument(name, body.text()));
+	}
+
+	/** How many of the given resumes already have a cached answer, so the UI can say how many API calls a run makes. */
+	@PostMapping("/screenings/{jobId}/cache-status")
+	public CacheStatus cacheStatus(@PathVariable String jobId,
 			@RequestParam(name = "files", required = false) List<MultipartFile> files,
 			@RequestParam(required = false) String path) {
 		JobSpec job = jobs.get(jobId);
-		List<ResumeDocument> resumes = (files != null && !files.isEmpty()) ? loader.fromUploads(files)
-				: loader.fromFolder(path);
-		return screening.request(job, resumes.getFirst());
+		List<ResumeDocument> resumes = resumes(files, path);
+		int cached = (int) resumes.stream().filter(r -> screening.isCached(screening.request(job, r))).count();
+		return new CacheStatus(resumes.size(), cached);
+	}
+
+	/** Resume text sent for preview before it is saved. */
+	public record ResumeText(String name, String text) {
+	}
+
+	public record CacheStatus(int total, int cached) {
+	}
+
+	private List<ResumeDocument> resumes(List<MultipartFile> files, String path) {
+		return (files != null && !files.isEmpty()) ? loader.fromUploads(files) : loader.fromFolder(path);
+	}
+
+	private static ResumeDocument pick(List<ResumeDocument> resumes, String name) {
+		if (name == null || name.isBlank()) {
+			return resumes.getFirst();
+		}
+		return resumes.stream()
+			.filter(r -> r.name().equals(name))
+			.findFirst()
+			.orElseThrow(() -> new InvalidResumeException("No resume named '" + name + "'"));
+	}
+
+	private ResponseEntity<SystemOneRequest> previewOf(JobSpec job, ResumeDocument resume) {
+		SystemOneRequest request = screening.request(job, resume);
+		return ResponseEntity.ok().header(CACHED_HEADER, String.valueOf(screening.isCached(request))).body(request);
 	}
 
 	private static ResponseEntity<?> respond(JobSpec job, ScreeningReport report, String format) {
