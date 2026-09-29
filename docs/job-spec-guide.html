@@ -175,8 +175,8 @@
     <div class="table-wrap"><table>
       <thead><tr><th>Part of the spec</th><th>Who uses it</th><th>What it does</th></tr></thead>
       <tbody>
-        <tr><td><code>title</code>, <code>summary</code>, <code>must_haves</code>, <code>competencies</code> (the requirement text, questions and levels)</td><td><strong>Jev</strong>, the model</td><td>Decides <strong>what the resume shows</strong>. This is the judgment.</td></tr>
-        <tr><td><code>weight</code> on each competency, and <code>thresholds</code></td><td><strong>The code</strong>, in <a href="../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java"><code>ScreeningPolicy</code></a></td><td>Decides <strong>what that means for this job</strong>: status, composite and rank. This is the policy.</td></tr>
+        <tr><td><code>title</code>, <code>summary</code>, <code>must_haves</code>, <code>skills</code> (the requirement text, questions and levels)</td><td><strong>Jev</strong>, the model</td><td>Decides <strong>what the resume shows</strong>. This is the judgment.</td></tr>
+        <tr><td><code>weight</code> on each skill, and <code>thresholds</code></td><td><strong>The code</strong>, in <a href="../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java"><code>ScreeningPolicy</code></a></td><td>Decides <strong>what that means for this job</strong>: status, composite and rank. This is the policy.</td></tr>
       </tbody>
     </table></div>
     <p>Jev never sees the weights or thresholds. That keeps the policy readable, testable, and cheap to change.</p>
@@ -209,9 +209,9 @@ must_haves:
     requirement: Has built or maintained server-side services
       or APIs that ran in production
 
-<span class="c"># Each competency becomes a graded question (Score)</span>
-competencies:
-  <span class="c"># Question id: comp_python_depth</span>
+<span class="c"># Each skill becomes a graded question (Score)</span>
+skills:
+  <span class="c"># Question id: skill_python_depth</span>
   - id: python_depth
     <span class="c"># Used by the code only, never sent to Jev</span>
     weight: 0.30
@@ -245,7 +245,7 @@ thresholds:
   must_have_pass: 0.80
   <span class="c"># Below: requirement not shown; between: human review</span>
   must_have_fail: 0.20
-  <span class="c"># A Score below this on a competency weighted 0.2 or</span>
+  <span class="c"># A Score below this on a skill weighted 0.2 or</span>
   <span class="c"># more goes to review</span>
   min_confidence: 0.45</code></pre>
     <p class="caption">A shortened excerpt, reformatted to fit the page. Long values are wrapped over several lines, which YAML reads as the same text. The real file is <a href="../jobs/senior_backend_engineer.yaml"><code>jobs/senior_backend_engineer.yaml</code></a>.</p>
@@ -265,7 +265,7 @@ thresholds:
       <li><strong>The summary never affects the must-haves</strong>, so it can't change whether a candidate is <span class="pill meets">meets</span>, <span class="pill review">review</span> or <span class="pill missing">missing</span>.</li>
       <li><strong>Editing the summary re-asks every question.</strong> Answers are cached by the full request, and the summary is part of every request. See <a href="#cost">section 6</a>.</li>
     </ul>
-    <p>Write the summary as a short description of the role and its setting (industry, product, stack, what "senior" means here). It is context, not a list of requirements. Put requirements in <code>must_haves</code> and <code>competencies</code>, where each one gets its own answer.</p>
+    <p>Write the summary as a short description of the role and its setting (industry, product, stack, what "senior" means here). It is context, not a list of requirements. Put requirements in <code>must_haves</code> and <code>skills</code>, where each one gets its own answer.</p>
 
     <h3 id="must-haves">3.2 <code>must_haves</code>: the gate</h3>
     <p>Each must-have becomes one <strong>Noul</strong>, a yes/no question. The question and answer definitions are the same for every must-have and are fixed in <a href="../src/main/java/com/example/resumescreening/screening/QuestionBuilder.java"><code>QuestionBuilder</code></a>. Only your <code>requirement</code> text changes:</p>
@@ -291,26 +291,26 @@ false:       The resume does not mention it, or what it
       <li><strong>Keep the list short.</strong> A candidate who fails any single must-have ranks last, however strong they are elsewhere. The included specs use two each. An empty list (<code>must_haves: []</code>) is allowed and means there is no gate.</li>
     </ul>
 
-    <h3 id="competencies">3.3 <code>competencies</code>: the ranking</h3>
-    <p>Each competency becomes one <strong>Score</strong>: Jev reads your levels and returns a probability for each level. <code>score</code> is the probability-weighted level, so it can land between levels (for example 3.63 on a 0–4 scale).</p>
+    <h3 id="skills">3.3 <code>skills</code>: the ranking</h3>
+    <p>Each skill becomes one <strong>Score</strong>: Jev reads your levels and returns a probability for each level. <code>score</code> is the probability-weighted level, so it can land between levels (for example 3.63 on a 0–4 scale).</p>
     <div class="table-wrap"><table>
       <thead><tr><th>Field</th><th>Rules</th></tr></thead>
       <tbody>
-        <tr><td><code>id</code></td><td>snake_case, unique in the file. Becomes the question id <code>comp_&lt;id&gt;</code>.</td></tr>
+        <tr><td><code>id</code></td><td>snake_case, unique in the file. Becomes the question id <code>skill_&lt;id&gt;</code>.</td></tr>
         <tr><td><code>weight</code></td><td>A positive number. It is used only by the code.</td></tr>
         <tr><td><code>question</code></td><td>Required. It names what it looks at in backticks: <code>`resume`</code>, or <code>`job.summary`</code> for the domain question.</td></tr>
         <tr><td><code>levels</code></td><td>2 to 10 entries, from least to most.</td></tr>
       </tbody>
     </table></div>
-    <p><strong><code>weight</code></strong> is relative. The composite divides each weight by the total, so weights don't have to add up to 1, although the included specs do add up to 1.00 so each weight reads as a share. A weight of <strong>0.20 or more</strong> also makes a competency "heavy", which matters for <code>min_confidence</code> (see 3.4).</p>
-    <p><strong><code>question</code></strong> must make sense on its own. The id is never sent to Jev, so <code>comp_python_depth</code> tells the model nothing. The question has to say what to judge.</p>
+    <p><strong><code>weight</code></strong> is relative. The composite divides each weight by the total, so weights don't have to add up to 1, although the included specs do add up to 1.00 so each weight reads as a share. A weight of <strong>0.20 or more</strong> also makes a skill "heavy", which matters for <code>min_confidence</code> (see 3.4).</p>
+    <p><strong><code>question</code></strong> must make sense on its own. The id is never sent to Jev, so <code>skill_python_depth</code> tells the model nothing. The question has to say what to judge.</p>
     <p><strong><code>levels</code></strong> are the answer scale. Each level should describe <strong>one concrete situation that makes sense on its own</strong>, such as "Owned the design of a multi-service system handling significant traffic or data volume". Avoid a word like "good", and avoid "more than the previous level". Vague or overlapping levels show up as low confidence.</p>
     <p>How scores become one number, computed in code:</p>
     <div class="formula">normalized = score / (number of levels − 1)     → 0 to 1
 composite  = Σ (weight / total weight × normalized)</div>
     <p>Real example, candidate_a:</p>
     <div class="table-wrap"><table>
-      <thead><tr><th>Competency</th><th class="num">Weight</th><th class="num">Normalized</th><th class="num">Contribution</th></tr></thead>
+      <thead><tr><th>Skill</th><th class="num">Weight</th><th class="num">Normalized</th><th class="num">Contribution</th></tr></thead>
       <tbody>
         <tr><td>python_depth</td><td class="num">0.30</td><td class="num">0.9075 (3.63 / 4)</td><td class="num">0.272</td></tr>
         <tr><td>distributed_systems</td><td class="num">0.25</td><td class="num">0.935</td><td class="num">0.234</td></tr>
@@ -367,13 +367,13 @@ composite  = Σ (weight / total weight × normalized)</div>
     </table></div>
     <p>Real examples: candidate_c's <code>python_professional</code> came back <strong>0.03</strong>, so it's <code>missing</code> (Java and Kotlin only). candidate_b's came back <strong>0.93</strong>, so it's met, even though its only Python was "scripts for nightly catalog imports".</p>
 
-    <p><strong><code>min_confidence</code></strong> applies to competencies. Each Score comes with a <code>confidence</code> from 0 to 1 that measures how concentrated Jev's probabilities are across the levels: 1.0 means all on one level, and lower means spread out. If a <strong>heavy</strong> competency (weight 0.20 or more) comes back with confidence <strong>below</strong> <code>min_confidence</code>, the candidate goes to <span class="pill review">review</span> with the reason <code>uncertain: &lt;id&gt; (conf 0.xx)</code>. Lighter competencies are exempt, because an uncertain score there barely moves the composite. The 0.20 cutoff is fixed in code (<code>HEAVY_WEIGHT</code> in <a href="../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java"><code>ScreeningPolicy</code></a>), not set in the YAML.</p>
+    <p><strong><code>min_confidence</code></strong> applies to skills. Each Score comes with a <code>confidence</code> from 0 to 1 that measures how concentrated Jev's probabilities are across the levels: 1.0 means all on one level, and lower means spread out. If a <strong>heavy</strong> skill (weight 0.20 or more) comes back with confidence <strong>below</strong> <code>min_confidence</code>, the candidate goes to <span class="pill review">review</span> with the reason <code>uncertain: &lt;id&gt; (conf 0.xx)</code>. Lighter skills are exempt, because an uncertain score there barely moves the composite. The 0.20 cutoff is fixed in code (<code>HEAVY_WEIGHT</code> in <a href="../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java"><code>ScreeningPolicy</code></a>), not set in the YAML.</p>
     <p>Real example: candidate_d's <code>python_depth</code> spread its probability across levels 2, 3 and 4, with confidence <strong>0.57</strong>. That is above 0.45, so it did not trigger review.</p>
 
     <p><strong>How the rules combine.</strong> The worst result wins:</p>
     <ol>
       <li>Any must-have below <code>must_have_fail</code> → <span class="pill missing">missing</span></li>
-      <li>Otherwise, any must-have in the unclear band, or any heavy competency below <code>min_confidence</code> → <span class="pill review">review</span></li>
+      <li>Otherwise, any must-have in the unclear band, or any heavy skill below <code>min_confidence</code> → <span class="pill review">review</span></li>
       <li>Otherwise → <span class="pill meets">meets</span></li>
     </ol>
     <p>Candidates are then <strong>ranked by status first</strong> (<code>meets</code>, then <code>review</code>, then <code>missing</code>) and by composite within each status. A <code>missing</code> candidate ranks last even with a high composite. candidate_c had a composite of 0.649, which would have placed third on skills alone, but ranked fourth.</p>
@@ -398,7 +398,7 @@ composite  = Σ (weight / total weight × normalized)</div>
       <tbody>
         <tr><td><code>title</code>, <code>summary</code> + the resume (contact details removed)</td><td><code>state</code></td><td class="num">1</td></tr>
         <tr><td>each <code>must_haves</code> entry</td><td>Noul <code>must_&lt;id&gt;</code></td><td class="num">2</td></tr>
-        <tr><td>each <code>competencies</code> entry</td><td>Score <code>comp_&lt;id&gt;</code></td><td class="num">5</td></tr>
+        <tr><td>each <code>skills</code> entry</td><td>Score <code>skill_&lt;id&gt;</code></td><td class="num">5</td></tr>
       </tbody>
     </table></div>
     <p>Jev answers all the questions in parallel. No answer is visible to another question, so each question has to stand on its own.</p>
@@ -416,14 +416,14 @@ curl -X POST \
         <tr><td><code>title</code> has text</td><td><code>title is required</code></td></tr>
         <tr><td><code>summary</code> has text</td><td><code>summary is required</code></td></tr>
         <tr><td><code>must_haves</code> is present (an empty list is fine)</td><td><code>must_haves is required (may be empty)</code></td></tr>
-        <tr><td>at least one competency</td><td><code>at least one competency is required</code></td></tr>
+        <tr><td>at least one skill</td><td><code>at least one skill is required</code></td></tr>
         <tr><td><code>thresholds</code> is present</td><td><code>thresholds is required</code></td></tr>
         <tr><td>must-have ids are unique</td><td><code>duplicate must_have id &lt;id&gt;</code></td></tr>
         <tr><td>every must-have has a <code>requirement</code></td><td><code>must_have &lt;id&gt; needs a requirement</code></td></tr>
-        <tr><td>competency ids are unique</td><td><code>duplicate competency id &lt;id&gt;</code></td></tr>
-        <tr><td>every <code>weight</code> is above 0</td><td><code>competency &lt;id&gt; needs a positive weight</code></td></tr>
-        <tr><td>every competency has a <code>question</code></td><td><code>competency &lt;id&gt; needs a question</code></td></tr>
-        <tr><td>2 to 10 <code>levels</code></td><td><code>competency &lt;id&gt; needs 2 to 10 levels</code></td></tr>
+        <tr><td>skill ids are unique</td><td><code>duplicate skill id &lt;id&gt;</code></td></tr>
+        <tr><td>every <code>weight</code> is above 0</td><td><code>skill &lt;id&gt; needs a positive weight</code></td></tr>
+        <tr><td>every skill has a <code>question</code></td><td><code>skill &lt;id&gt; needs a question</code></td></tr>
+        <tr><td>2 to 10 <code>levels</code></td><td><code>skill &lt;id&gt; needs 2 to 10 levels</code></td></tr>
         <tr><td><code>0 ≤ must_have_fail ≤ must_have_pass ≤ 1</code></td><td><code>thresholds need 0 &lt;= must_have_fail &lt;= must_have_pass &lt;= 1</code></td></tr>
       </tbody>
     </table></div>
@@ -436,7 +436,7 @@ curl -X POST \
       <thead><tr><th>Change</th><th>In the request?</th><th>API calls after restart</th></tr></thead>
       <tbody>
         <tr><td><code>weight</code>, any <code>thresholds</code> value</td><td>No</td><td><strong>None.</strong> Re-ranked from cache</td></tr>
-        <tr><td>A competency's <code>question</code> or <code>levels</code>, or a must-have's <code>requirement</code></td><td>Yes</td><td>Re-asks the affected requests</td></tr>
+        <tr><td>A skill's <code>question</code> or <code>levels</code>, or a must-have's <code>requirement</code></td><td>Yes</td><td>Re-asks the affected requests</td></tr>
         <tr><td><code>title</code> or <code>summary</code></td><td>Yes, in the state of <strong>every</strong> request</td><td>Re-asks <strong>everything</strong> for that job</td></tr>
         <tr><td>New spec</td><td>n/a</td><td>One request per resume screened</td></tr>
         <tr><td>Model version (<code>typesafe.model</code>)</td><td>Yes</td><td>Re-asks everything</td></tr>
@@ -449,7 +449,7 @@ curl -X POST \
     <ul>
       <li><strong>Start from an existing spec.</strong> Copy the closest one in <a href="../jobs/"><code>jobs/</code></a> to <code>jobs/&lt;id&gt;.yaml</code>, put resumes in <code>resumes/&lt;id&gt;_candidates/</code>, and restart.</li>
       <li><strong>One idea per question.</strong> If a question or requirement needs "and", consider splitting it.</li>
-      <li><strong>Use must-haves for true gates only.</strong> Anything that is a matter of degree belongs in a competency.</li>
+      <li><strong>Use must-haves for true gates only.</strong> Anything that is a matter of degree belongs in a skill.</li>
       <li><strong>Write levels as concrete situations</strong>, least to most, each readable on its own.</li>
       <li><strong>Keep every criterion job-related.</strong> Contact details are removed before Jev sees a resume, but names, schools and dates are not. Check outcomes for bias before relying on them.</li>
       <li><strong>Calibrate on your own data.</strong> Run 20–50 resumes your recruiters have already judged, and adjust <code>must_have_pass</code>, <code>must_have_fail</code> and <code>min_confidence</code> until the statuses match what the recruiters would decide.</li>
@@ -466,7 +466,7 @@ curl -X POST \
         <tr><td><a href="../jobs/senior_software_application_designer.yaml"><code>senior_software_application_designer</code></a></td><td>Senior Software Application Designer</td><td><a href="../resumes/senior_software_application_designer_candidates/"><code>resumes/senior_software_application_designer_candidates/</code></a></td></tr>
       </tbody>
     </table></div>
-    <p>All four have two must-haves, five competencies with weights that add up to 1.00, a <code>domain_relevance</code> competency at 0.10 that scores against <code>`job.summary`</code>, and the same thresholds.</p>
+    <p>All four have two must-haves, five skills with weights that add up to 1.00, a <code>domain_relevance</code> skill at 0.10 that scores against <code>`job.summary`</code>, and the same thresholds.</p>
   </main>
 </div>
 </body>

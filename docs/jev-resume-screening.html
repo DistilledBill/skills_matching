@@ -170,7 +170,7 @@
     <p class="tagline">Co-designed and implemented with Claude and Bill Stamatakis</p>
 
     <div class="note">
-      <strong>Where the numbers come from.</strong> Every example below is real output from <code>jev-1.13.0</code> (reached through the <code>jev-latest</code> alias) on the four original sample resumes (<code>candidate_a</code> to <code>candidate_d</code>) in <a href="../resumes/senior_backend_engineer_candidates/"><code>resumes/senior_backend_engineer_candidates/</code></a>, screened against <a href="../jobs/senior_backend_engineer.yaml"><code>jobs/senior_backend_engineer.yaml</code></a> on 2026-09-24. If you rerun it you may see small differences, especially after the alias moves to a newer model.
+      <strong>Where the numbers come from.</strong> Every example below is real output from <code>jev-1.13.0</code> (reached through the <code>jev-latest</code> alias) on the four original sample resumes (<code>candidate_a</code> to <code>candidate_d</code>) in <a href="../resumes/senior_backend_engineer_candidates/"><code>resumes/senior_backend_engineer_candidates/</code></a>, screened against <a href="../jobs/senior_backend_engineer.yaml"><code>jobs/senior_backend_engineer.yaml</code></a> on 2026-09-24. If you rerun it you may see small differences, especially after the alias moves to a newer model. The skill questions in that run had ids <code>comp_*</code>; they have since been renamed <code>skill_*</code>. Ids are not sent to the model, so the answers should not depend on them, but the cache treats the renamed requests as new.
     </div>
 
     <!-- 1 -->
@@ -217,7 +217,7 @@
       <li><strong>State</strong> is the content to judge, as a string or structured JSON. Here it is <code>{ "job": {title, summary}, "resume": "&lt;redacted text&gt;" }</code>. Questions can point at parts of the state with backticked paths such as <code>`resume`</code> or <code>`job.summary`</code>.</li>
       <li><strong>Question</strong> is one judgment about the state:
         <ul>
-          <li>The <strong>id</strong> (such as <code>comp_python_depth</code>) is only for your code. It is <strong>not sent to the model</strong>, so the instructions must be complete on their own.</li>
+          <li>The <strong>id</strong> (such as <code>skill_python_depth</code>) is only for your code. It is <strong>not sent to the model</strong>, so the instructions must be complete on their own.</li>
           <li><strong><code>instructions</code></strong> is the question itself. It can be a string, or an object that holds the question plus data it refers to.</li>
           <li><strong><code>criteria</code></strong> defines the possible answers.</li>
         </ul>
@@ -228,7 +228,7 @@
       <thead><tr><th>Type</th><th>Asks</th><th>Returns</th><th>Used here for</th></tr></thead>
       <tbody>
         <tr><td><strong>Noul</strong></td><td>Is this true?</td><td><code>noul</code>: probability of yes, 0 to 1</td><td>Must-have requirements</td></tr>
-        <tr><td><strong>Score</strong></td><td>Where on this scale?</td><td><code>score</code>, <code>probabilities</code>, <code>legend</code>, <code>confidence</code></td><td>Graded competencies</td></tr>
+        <tr><td><strong>Score</strong></td><td>Where on this scale?</td><td><code>score</code>, <code>probabilities</code>, <code>legend</code>, <code>confidence</code></td><td>Graded skills</td></tr>
         <tr><td><strong>Choice</strong></td><td>Which one of these options?</td><td><code>choice</code>, <code>probabilities</code>, <code>confidence</code></td><td>Not used in this project</td></tr>
       </tbody>
     </table></div>
@@ -348,14 +348,14 @@
 
     <h3 id="derived">3.4 Numbers this project computes (not Jev)</h3>
     <p>Everything below is plain Java in <a href="../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java"><code>ScreeningPolicy.java</code></a>. Jev never sees the weights, thresholds or statuses.</p>
-    <p><strong>Normalized score</strong> (the <code>scores</code> field in the output). This puts every competency on a 0 to 1 scale, whatever its number of levels:</p>
+    <p><strong>Normalized score</strong> (the <code>scores</code> field in the output). This puts every skill on a 0 to 1 scale, whatever its number of levels:</p>
     <div class="formula">normalized = score / (number of levels − 1)</div>
     <p>candidate_a's python_depth is 3.63 / 4 = <strong>0.9075</strong>. data_stores has 4 levels, so a 3.0 there becomes 3.0 / 3 = <strong>1.0</strong>.</p>
     <p><strong>Composite</strong> (the <code>composite</code> field). A weighted average of the normalized scores, using the weights from the job YAML:</p>
     <div class="formula">composite = Σ (weight / total weight × normalized)</div>
     <p>candidate_a:</p>
     <div class="table-wrap"><table>
-      <thead><tr><th>Competency</th><th class="num">Weight</th><th class="num">Normalized</th><th class="num">Contribution</th></tr></thead>
+      <thead><tr><th>Skill</th><th class="num">Weight</th><th class="num">Normalized</th><th class="num">Contribution</th></tr></thead>
       <tbody>
         <tr><td>python_depth</td><td class="num">0.30</td><td class="num">0.9075</td><td class="num">0.272</td></tr>
         <tr><td>distributed_systems</td><td class="num">0.25</td><td class="num">0.935</td><td class="num">0.234</td></tr>
@@ -370,7 +370,7 @@
       <thead><tr><th>Status</th><th>Rule</th></tr></thead>
       <tbody>
         <tr><td><span class="pill missing">missing</span></td><td>Any must-have <code>noul</code> is <strong>below <code>must_have_fail</code> (0.20)</strong></td></tr>
-        <tr><td><span class="pill review">review</span></td><td>Otherwise, if any must-have <code>noul</code> is <strong>between 0.20 and <code>must_have_pass</code> (0.80)</strong>, or any competency weighted <strong>0.2 or more</strong> has <code>confidence</code> <strong>below <code>min_confidence</code> (0.45)</strong></td></tr>
+        <tr><td><span class="pill review">review</span></td><td>Otherwise, if any must-have <code>noul</code> is <strong>between 0.20 and <code>must_have_pass</code> (0.80)</strong>, or any skill weighted <strong>0.2 or more</strong> has <code>confidence</code> <strong>below <code>min_confidence</code> (0.45)</strong></td></tr>
         <tr><td><span class="pill meets">meets</span></td><td>Otherwise</td></tr>
       </tbody>
     </table></div>
@@ -446,17 +446,17 @@
     </ol>
 
     <h3>4.2 The seven questions</h3>
-    <p>All of them come from <a href="../jobs/senior_backend_engineer.yaml"><code>jobs/senior_backend_engineer.yaml</code></a>. Adding a role means writing a new YAML file, not Java. The project also includes specs for a Senior HR Product Owner, a Technical Product Owner and a Senior Software Application Designer. They have the same shape (two must-haves and five competencies, so seven questions), and this document uses the backend spec as its worked example. The <a href="job-spec-guide.html">job spec guide</a> explains every field of a spec.</p>
+    <p>All of them come from <a href="../jobs/senior_backend_engineer.yaml"><code>jobs/senior_backend_engineer.yaml</code></a>. Adding a role means writing a new YAML file, not Java. The project also includes specs for a Senior HR Product Owner, a Technical Product Owner and a Senior Software Application Designer. They have the same shape (two must-haves and five skills, so seven questions), and this document uses the backend spec as its worked example. The <a href="job-spec-guide.html">job spec guide</a> explains every field of a spec.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>Id</th><th>Type</th><th class="num">Weight</th><th>Why this type</th></tr></thead>
       <tbody>
         <tr><td><code>must_python_professional</code></td><td>Noul</td><td class="num">gate</td><td>A requirement is met or not, with a clear boundary ("paid role, not coursework")</td></tr>
         <tr><td><code>must_backend_services</code></td><td>Noul</td><td class="num">gate</td><td>Same</td></tr>
-        <tr><td><code>comp_python_depth</code></td><td>Score, 5 levels</td><td class="num">0.30</td><td>Depth is a matter of degree, so each level describes a concrete situation</td></tr>
-        <tr><td><code>comp_distributed_systems</code></td><td>Score, 5 levels</td><td class="num">0.25</td><td>Same</td></tr>
-        <tr><td><code>comp_data_stores</code></td><td>Score, 4 levels</td><td class="num">0.15</td><td>Same</td></tr>
-        <tr><td><code>comp_technical_leadership</code></td><td>Score, 5 levels</td><td class="num">0.20</td><td>Same</td></tr>
-        <tr><td><code>comp_domain_relevance</code></td><td>Score, 3 levels</td><td class="num">0.10</td><td>Same</td></tr>
+        <tr><td><code>skill_python_depth</code></td><td>Score, 5 levels</td><td class="num">0.30</td><td>Depth is a matter of degree, so each level describes a concrete situation</td></tr>
+        <tr><td><code>skill_distributed_systems</code></td><td>Score, 5 levels</td><td class="num">0.25</td><td>Same</td></tr>
+        <tr><td><code>skill_data_stores</code></td><td>Score, 4 levels</td><td class="num">0.15</td><td>Same</td></tr>
+        <tr><td><code>skill_technical_leadership</code></td><td>Score, 5 levels</td><td class="num">0.20</td><td>Same</td></tr>
+        <tr><td><code>skill_domain_relevance</code></td><td>Score, 3 levels</td><td class="num">0.10</td><td>Same</td></tr>
       </tbody>
     </table></div>
     <p>Each must-have Noul uses structured instructions. The requirement text goes in its own field and the fixed question refers to it by name:</p>
@@ -526,10 +526,10 @@
 }</code></pre>
     <p>What the four results show:</p>
     <ul>
-      <li><strong>candidate_a vs candidate_d.</strong> Both meet every requirement. candidate_a scores higher on every weighted competency. candidate_d's lower <code>domain_relevance</code> (0.42, health tech) costs little, because that competency is weighted only 0.10.</li>
+      <li><strong>candidate_a vs candidate_d.</strong> Both meet every requirement. candidate_a scores higher on every weighted skill. candidate_d's lower <code>domain_relevance</code> (0.42, health tech) costs little, because that skill is weighted only 0.10.</li>
       <li><strong>candidate_c.</strong> A very strong engineer with no Python. The composite alone would put them above candidate_b, but the must-have gate puts them last and says why. A recruiter might still decide to talk to them. The output makes that trade-off visible instead of hiding it inside one number.</li>
       <li><strong>candidate_b.</strong> Must-haves at 0.93 and 0.86 are above the 0.80 pass line, so the status is <code>meets</code>, but the composite is low. Python "scripts for nightly catalog imports" counted as paid Python work. If your team wouldn't count that, tighten the requirement text (for example, "…as a primary language for production services") or raise <code>must_have_pass</code>. That kind of decision belongs in the spec, not the model.</li>
-      <li><strong>No <code>review</code> cases in this run.</strong> The least confident heavy competency was candidate_d's python_depth at 0.57, which is above the 0.45 floor. With real applicant volume you should expect some.</li>
+      <li><strong>No <code>review</code> cases in this run.</strong> The least confident heavy skill was candidate_d's python_depth at 0.57, which is above the 0.45 floor. With real applicant volume you should expect some.</li>
     </ul>
 
     <!-- 6 -->

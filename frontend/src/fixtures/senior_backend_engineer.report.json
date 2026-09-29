@@ -1,0 +1,346 @@
+{
+  "_comment": "Captured from the Java service (cached answers, no API call) for policy.test.ts parity checks. Scores only; no resume text.",
+  "job": {
+    "id": "senior_backend_engineer",
+    "title": "Senior Backend Engineer",
+    "summary": "Build and operate the Python services behind our payments platform: REST/gRPC APIs on PostgreSQL, event pipelines on Kafka, deployed to Kubernetes on AWS. Senior engineers own services end to end, lead designs across teams, and mentor other engineers.\n",
+    "mustHaves": [
+      {
+        "id": "python_professional",
+        "requirement": "Has used Python in a paid engineering role (not only coursework or hobby projects)"
+      },
+      {
+        "id": "backend_services",
+        "requirement": "Has built or maintained server-side services or APIs that ran in production"
+      }
+    ],
+    "skills": [
+      {
+        "id": "python_depth",
+        "weight": 0.3,
+        "question": "How deep is the candidate's professional Python experience, based on `resume`?",
+        "levels": [
+          "No Python experience mentioned",
+          "Python mentioned, but no detail about what was built",
+          "Used Python on some projects, with a few specifics",
+          "Python was the primary language across multiple roles or projects",
+          "Deep Python expertise, such as performance tuning, library internals, or authoring widely used packages"
+        ]
+      },
+      {
+        "id": "distributed_systems",
+        "weight": 0.25,
+        "question": "How much experience does the candidate have designing and running distributed or high-scale backend systems, based on `resume`?",
+        "levels": [
+          "No backend systems work mentioned",
+          "Worked on a single service or monolith without scale or reliability concerns",
+          "Built services that talk to queues, caches, or other services, with some attention to reliability",
+          "Owned the design of a multi-service system handling significant traffic or data volume",
+          "Designed high-scale systems across several domains, with evidence of reliability, consistency, and performance trade-offs"
+        ]
+      },
+      {
+        "id": "data_stores",
+        "weight": 0.15,
+        "question": "How much hands-on experience does the candidate have with relational databases such as PostgreSQL in production, based on `resume`?",
+        "levels": [
+          "No database experience mentioned",
+          "Used a database through an ORM with no further detail",
+          "Designed schemas or wrote non-trivial SQL for production systems",
+          "Owned database performance, migrations, or scaling for a production system"
+        ]
+      },
+      {
+        "id": "technical_leadership",
+        "weight": 0.2,
+        "question": "How much technical leadership has the candidate shown, such as leading designs, projects, or mentoring engineers, based on `resume`?",
+        "levels": [
+          "No leadership or mentoring mentioned",
+          "Mentored individuals or reviewed others' code",
+          "Led a project or feature involving several engineers",
+          "Tech lead for a team, owning its technical direction",
+          "Set technical direction across multiple teams or an organization"
+        ]
+      },
+      {
+        "id": "domain_relevance",
+        "weight": 0.1,
+        "question": "How relevant is the candidate's industry experience to `job.summary`?",
+        "levels": [
+          "Unrelated industry with no transferable domain exposure",
+          "Adjacent domain, such as general e-commerce or B2B SaaS",
+          "Fintech, payments, or other regulated financial systems"
+        ]
+      }
+    ],
+    "thresholds": {
+      "mustHavePass": 0.8,
+      "mustHaveFail": 0.2,
+      "minConfidence": 0.45
+    }
+  },
+  "report": {
+    "jobId": "senior_backend_engineer",
+    "title": "Senior Backend Engineer",
+    "candidates": [
+      {
+        "rank": 1,
+        "name": "candidate_f",
+        "status": "meets",
+        "composite": 0.9455,
+        "reasons": [],
+        "mustHaves": {
+          "python_professional": 0.99,
+          "backend_services": 0.99
+        },
+        "scores": {
+          "python_depth": 1.0,
+          "distributed_systems": 1.0,
+          "data_stores": 0.9966666666666667,
+          "technical_leadership": 0.9975,
+          "domain_relevance": 0.465
+        },
+        "confidences": {
+          "python_depth": 1.0,
+          "distributed_systems": 1.0,
+          "data_stores": 0.99,
+          "technical_leadership": 0.99,
+          "domain_relevance": 0.87
+        }
+      },
+      {
+        "rank": 2,
+        "name": "candidate_j",
+        "status": "meets",
+        "composite": 0.93125,
+        "reasons": [],
+        "mustHaves": {
+          "python_professional": 0.99,
+          "backend_services": 0.99
+        },
+        "scores": {
+          "python_depth": 0.86,
+          "distributed_systems": 0.935,
+          "data_stores": 1.0,
+          "technical_leadership": 0.9475,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "python_depth": 0.63,
+          "distributed_systems": 0.78,
+          "data_stores": 1.0,
+          "technical_leadership": 0.82,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 3,
+        "name": "candidate_a",
+        "status": "meets",
+        "composite": 0.906,
+        "reasons": [],
+        "mustHaves": {
+          "python_professional": 0.99,
+          "backend_services": 0.99
+        },
+        "scores": {
+          "python_depth": 0.9075,
+          "distributed_systems": 0.935,
+          "data_stores": 1.0,
+          "technical_leadership": 0.75,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "python_depth": 0.69,
+          "distributed_systems": 0.78,
+          "data_stores": 1.0,
+          "technical_leadership": 1.0,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 4,
+        "name": "candidate_d",
+        "status": "meets",
+        "composite": 0.7060000000000001,
+        "reasons": [],
+        "mustHaves": {
+          "python_professional": 0.99,
+          "backend_services": 0.98
+        },
+        "scores": {
+          "python_depth": 0.7425,
+          "distributed_systems": 0.745,
+          "data_stores": 1.0,
+          "technical_leadership": 0.525,
+          "domain_relevance": 0.42
+        },
+        "confidences": {
+          "python_depth": 0.57,
+          "distributed_systems": 0.98,
+          "data_stores": 1.0,
+          "technical_leadership": 0.91,
+          "domain_relevance": 0.75
+        }
+      },
+      {
+        "rank": 5,
+        "name": "candidate_e",
+        "status": "meets",
+        "composite": 0.6587500000000001,
+        "reasons": [],
+        "mustHaves": {
+          "python_professional": 0.97,
+          "backend_services": 0.95
+        },
+        "scores": {
+          "python_depth": 0.5,
+          "distributed_systems": 0.765,
+          "data_stores": 0.9766666666666667,
+          "technical_leadership": 0.6075,
+          "domain_relevance": 0.495
+        },
+        "confidences": {
+          "python_depth": 0.99,
+          "distributed_systems": 0.74,
+          "data_stores": 0.93,
+          "technical_leadership": 0.57,
+          "domain_relevance": 0.99
+        }
+      },
+      {
+        "rank": 6,
+        "name": "candidate_b",
+        "status": "meets",
+        "composite": 0.36787499999999995,
+        "reasons": [],
+        "mustHaves": {
+          "python_professional": 0.93,
+          "backend_services": 0.86
+        },
+        "scores": {
+          "python_depth": 0.4975,
+          "distributed_systems": 0.2525,
+          "data_stores": 0.37000000000000005,
+          "technical_leadership": 0.25,
+          "domain_relevance": 0.5
+        },
+        "confidences": {
+          "python_depth": 0.99,
+          "distributed_systems": 0.96,
+          "data_stores": 0.79,
+          "technical_leadership": 1.0,
+          "domain_relevance": 0.99
+        }
+      },
+      {
+        "rank": 7,
+        "name": "candidate_i",
+        "status": "review",
+        "composite": 0.43925000000000003,
+        "reasons": [
+          "unclear: backend_services (0.38)"
+        ],
+        "mustHaves": {
+          "python_professional": 0.98,
+          "backend_services": 0.38
+        },
+        "scores": {
+          "python_depth": 0.595,
+          "distributed_systems": 0.265,
+          "data_stores": 0.2966666666666667,
+          "technical_leadership": 0.25,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "python_depth": 0.68,
+          "distributed_systems": 0.57,
+          "data_stores": 0.5,
+          "technical_leadership": 0.99,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 8,
+        "name": "candidate_g",
+        "status": "missing",
+        "composite": 0.65225,
+        "reasons": [
+          "not shown: python_professional (0.16)"
+        ],
+        "mustHaves": {
+          "python_professional": 0.16,
+          "backend_services": 0.98
+        },
+        "scores": {
+          "python_depth": 0.4375,
+          "distributed_systems": 0.68,
+          "data_stores": 1.0,
+          "technical_leadership": 0.505,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "python_depth": 0.79,
+          "distributed_systems": 0.74,
+          "data_stores": 1.0,
+          "technical_leadership": 0.99,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 9,
+        "name": "candidate_c",
+        "status": "missing",
+        "composite": 0.6491250000000001,
+        "reasons": [
+          "not shown: python_professional (0.03)"
+        ],
+        "mustHaves": {
+          "python_professional": 0.03,
+          "backend_services": 0.96
+        },
+        "scores": {
+          "python_depth": 0.0025,
+          "distributed_systems": 0.9575,
+          "data_stores": 0.7266666666666667,
+          "technical_leadership": 1.0,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "python_depth": 1.0,
+          "distributed_systems": 0.86,
+          "data_stores": 0.82,
+          "technical_leadership": 1.0,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 10,
+        "name": "candidate_h",
+        "status": "missing",
+        "composite": 0.359375,
+        "reasons": [
+          "not shown: backend_services (0.07)"
+        ],
+        "mustHaves": {
+          "python_professional": 0.89,
+          "backend_services": 0.07
+        },
+        "scores": {
+          "python_depth": 0.75,
+          "distributed_systems": 0.0175,
+          "data_stores": 0.24333333333333332,
+          "technical_leadership": 0.2675,
+          "domain_relevance": 0.4
+        },
+        "confidences": {
+          "python_depth": 0.99,
+          "distributed_systems": 0.94,
+          "data_stores": 0.27,
+          "technical_leadership": 0.94,
+          "domain_relevance": 0.7
+        }
+      }
+    ]
+  }
+}

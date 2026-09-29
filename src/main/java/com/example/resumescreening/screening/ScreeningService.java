@@ -45,7 +45,7 @@ public class ScreeningService {
 		try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
 			List<Future<CandidateResult>> futures = resumes.stream()
 				.map(resume -> executor.submit(() -> ScreeningPolicy.decide(resume.name(), job,
-						client.evaluate(request(job, resume, questions)))))
+						client.evaluate(job.id(), request(job, resume, questions)))))
 				.toList();
 			for (Future<CandidateResult> future : futures) {
 				results.add(join(future));
@@ -64,9 +64,19 @@ public class ScreeningService {
 		return request(job, resume, QuestionBuilder.build(job));
 	}
 
-	/** Whether this exact request already has a cached answer, so screening it makes no API call. */
-	public boolean isCached(SystemOneRequest request) {
-		return cache.get(cache.key(request)).isPresent();
+	/** Whether this exact request already has a cached answer for the job, so screening it makes no API call. */
+	public boolean isCached(JobSpec job, SystemOneRequest request) {
+		return cache.get(job.id(), cache.key(request)).isPresent();
+	}
+
+	/** How many answers are cached for this job, from any folder, upload, or earlier spec version. */
+	public int cachedAnswers(JobSpec job) {
+		return cache.count(job.id());
+	}
+
+	/** Deletes every cached answer for this job; the next screening asks Jev again. Returns how many were removed. */
+	public int clearCache(JobSpec job) {
+		return cache.clear(job.id());
 	}
 
 	private SystemOneRequest request(JobSpec job, ResumeDocument resume, Map<String, Question> questions) {

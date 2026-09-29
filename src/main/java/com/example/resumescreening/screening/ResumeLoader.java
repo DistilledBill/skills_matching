@@ -32,14 +32,19 @@ public class ResumeLoader {
 	}
 
 	public List<ResumeDocument> fromUploads(List<MultipartFile> files) {
-		List<ResumeDocument> resumes = new ArrayList<>();
+		return uploadContents(files).stream().map(c -> new ResumeDocument(c.name(), c.text())).toList();
+	}
+
+	/** Uploaded resumes with their text, keeping each upload's file name and format. */
+	public List<ResumeContent> uploadContents(List<MultipartFile> files) {
+		List<ResumeContent> resumes = new ArrayList<>();
 		for (MultipartFile file : files == null ? List.<MultipartFile>of() : files) {
 			String filename = StringUtils.getFilename(StringUtils.cleanPath(String.valueOf(file.getOriginalFilename())));
 			if (!isSupported(filename)) {
 				throw new InvalidResumeException("Unsupported file '" + filename + "'; expected " + SUPPORTED);
 			}
 			try {
-				resumes.add(load(filename, file.getBytes()));
+				resumes.add(content(filename, file.getBytes()));
 			}
 			catch (IOException ex) {
 				throw new InvalidResumeException("Could not read upload '" + filename + "'", ex);
@@ -108,10 +113,56 @@ public class ResumeLoader {
 		}
 	}
 
+	/** One resume in a folder under the resumes root, with its text extracted. */
+	public ResumeContent readOne(String relativeFolder, String fileName) {
+		Path file = rawFile(relativeFolder, fileName);
+		try {
+			return content(fileName, Files.readAllBytes(file));
+		}
+		catch (IOException ex) {
+			throw new InvalidResumeException("Could not read '" + fileName + "'", ex);
+		}
+	}
+
+	/**
+	 * The stored file for one resume. {@code fileName} must be a bare file name with a supported extension;
+	 * anything that resolves outside the folder (separators, or a symlink pointing out) is rejected.
+	 */
+	public Path rawFile(String relativeFolder, String fileName) {
+		Path folder = resolveInsideRoot(relativeFolder == null ? "" : relativeFolder);
+		if (!StringUtils.hasText(fileName) || fileName.contains("/") || fileName.contains("\\")) {
+			throw new InvalidResumeException("'" + fileName + "' is not a file name");
+		}
+		if (!isSupported(fileName)) {
+			throw new InvalidResumeException("Unsupported file '" + fileName + "'; expected " + SUPPORTED);
+		}
+		Path file = folder.resolve(fileName).normalize();
+		if (!folder.equals(file.getParent())) {
+			throw new InvalidResumeException("'" + fileName + "' is not a file name");
+		}
+		if (!Files.isRegularFile(file)) {
+			throw new ResumeNotFoundException("No resume '" + fileName + "' in '" + relativeFolder + "'");
+		}
+		try {
+			if (!file.toRealPath().startsWith(folder.toRealPath())) {
+				throw new InvalidResumeException("'" + fileName + "' is not a file inside '" + relativeFolder + "'");
+			}
+		}
+		catch (IOException ex) {
+			throw new ResumeNotFoundException("No resume '" + fileName + "' in '" + relativeFolder + "'");
+		}
+		return file;
+	}
+
 	private static int countResumes(Path dir) throws IOException {
 		try (Stream<Path> files = Files.list(dir)) {
 			return (int) files.filter(Files::isRegularFile).filter(p -> isSupported(p.getFileName().toString())).count();
 		}
+	}
+
+	private ResumeContent content(String filename, byte[] bytes) {
+		ResumeDocument doc = load(filename, bytes);
+		return new ResumeContent(filename, doc.name(), extension(filename), doc.text());
 	}
 
 	ResumeDocument load(String filename, byte[] bytes) {
@@ -151,7 +202,7 @@ public class ResumeLoader {
 		return ext == null ? "" : ext.toLowerCase(Locale.ROOT);
 	}
 
-	private static List<ResumeDocument> requireAny(List<ResumeDocument> resumes, String message) {
+	private static <T> List<T> requireAny(List<T> resumes, String message) {
 		if (resumes.isEmpty()) {
 			throw new InvalidResumeException(message);
 		}

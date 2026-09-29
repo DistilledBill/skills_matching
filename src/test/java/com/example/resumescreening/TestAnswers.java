@@ -33,11 +33,11 @@ public final class TestAnswers {
 		return new JobSpecRepository(new ScreeningProperties(Path.of("jobs"), Path.of("resumes"))).get(JOB_ID);
 	}
 
-	/** Every must-have at 0.95; every competency at its top level with confidence 0.9. */
+	/** Every must-have at 0.95; every skill at its top level with confidence 0.9. */
 	public static TestAnswers strong(JobSpec job) {
 		TestAnswers answers = new TestAnswers(job);
 		job.mustHaves().forEach(m -> answers.mustHave(m.id(), 0.95));
-		job.competencies().forEach(c -> answers.score(c.id(), c.maxLevel(), 0.9));
+		job.skills().forEach(c -> answers.score(c.id(), c.maxLevel(), 0.9));
 		return answers;
 	}
 
@@ -54,7 +54,7 @@ public final class TestAnswers {
 	public SystemOneResponse response() {
 		Map<String, Answer> answers = new LinkedHashMap<>();
 		job.mustHaves().forEach(m -> answers.put("must_" + m.id(), new Answer.Noul(nouls.get(m.id()))));
-		for (JobSpec.Competency c : job.competencies()) {
+		for (JobSpec.Skill c : job.skills()) {
 			double[] s = scores.get(c.id());
 			Map<String, String> legend = new LinkedHashMap<>();
 			Map<String, Double> probabilities = new LinkedHashMap<>();
@@ -62,7 +62,7 @@ public final class TestAnswers {
 				legend.put(String.valueOf(i), c.levels().get(i));
 				probabilities.put(String.valueOf(i), i == Math.round(s[0]) ? 1.0 : 0.0);
 			}
-			answers.put("comp_" + c.id(), new Answer.Score(s[0], s[1], legend, probabilities));
+			answers.put("skill_" + c.id(), new Answer.Score(s[0], s[1], legend, probabilities));
 		}
 		return new SystemOneResponse("jev-test", answers, new SystemOneResponse.Usage(1, 1));
 	}

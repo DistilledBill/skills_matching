@@ -15,20 +15,20 @@ public final class CsvWriter {
 
 	public static String write(JobSpec job, List<CandidateResult> results) {
 		List<String> mustIds = job.mustHaves().stream().map(JobSpec.MustHave::id).toList();
-		List<String> compIds = job.competencies().stream().map(JobSpec.Competency::id).toList();
+		List<String> skillIds = job.skills().stream().map(JobSpec.Skill::id).toList();
 
 		List<String> header = new ArrayList<>(List.of("rank", "candidate", "status", "composite", "reasons"));
 		mustIds.forEach(id -> header.add("must_" + id));
-		header.addAll(compIds);
-		compIds.forEach(id -> header.add(id + "_confidence"));
+		header.addAll(skillIds);
+		skillIds.forEach(id -> header.add(id + "_confidence"));
 
 		StringBuilder csv = new StringBuilder(row(header));
 		for (CandidateResult r : results) {
 			List<String> cells = new ArrayList<>(List.of(String.valueOf(r.rank()), r.name(), r.status().json(),
 					num(r.composite()), String.join("; ", r.reasons())));
 			mustIds.forEach(id -> cells.add(num(r.mustHaves().get(id))));
-			compIds.forEach(id -> cells.add(num(r.scores().get(id))));
-			compIds.forEach(id -> cells.add(num(r.confidences().get(id))));
+			skillIds.forEach(id -> cells.add(num(r.scores().get(id))));
+			skillIds.forEach(id -> cells.add(num(r.confidences().get(id))));
 			csv.append(row(cells));
 		}
 		return csv.toString();

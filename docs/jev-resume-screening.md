@@ -4,7 +4,7 @@ How TypeSafe's Jev model works, what its numbers mean, and how this project turn
 
 *Co-designed and implemented with Claude and Bill Stamatakis*
 
-> **Where the numbers come from.** Every example below is real output from `jev-1.13.0` (reached through the `jev-latest` alias) on the four original sample resumes (`candidate_a` to `candidate_d`) in [`resumes/senior_backend_engineer_candidates/`](../resumes/senior_backend_engineer_candidates/), screened against [`jobs/senior_backend_engineer.yaml`](../jobs/senior_backend_engineer.yaml) on 2026-09-24. If you rerun it you may see small differences, especially after the alias moves to a newer model.
+> **Where the numbers come from.** Every example below is real output from `jev-1.13.0` (reached through the `jev-latest` alias) on the four original sample resumes (`candidate_a` to `candidate_d`) in [`resumes/senior_backend_engineer_candidates/`](../resumes/senior_backend_engineer_candidates/), screened against [`jobs/senior_backend_engineer.yaml`](../jobs/senior_backend_engineer.yaml) on 2026-09-24. If you rerun it you may see small differences, especially after the alias moves to a newer model. The skill questions in that run had ids `comp_*`; they have since been renamed `skill_*`. Ids are not sent to the model, so the answers should not depend on them, but the cache treats the renamed requests as new.
 
 **Contents**
 
@@ -63,7 +63,7 @@ Every call is `POST https://api.typesafe.ai/v1/systemone` with three fields:
 
 - **State** is the content to judge, as a string or structured JSON. Here it is `{ "job": {title, summary}, "resume": "<redacted text>" }`. Questions can point at parts of the state with backticked paths such as `` `resume` `` or `` `job.summary` ``.
 - **Question** is one judgment about the state:
-  - The **id** (such as `comp_python_depth`) is only for your code. It is **not sent to the model**, so the instructions must be complete on their own.
+  - The **id** (such as `skill_python_depth`) is only for your code. It is **not sent to the model**, so the instructions must be complete on their own.
   - **`instructions`** is the question itself. It can be a string, or an object that holds the question plus data it refers to.
   - **`criteria`** defines the possible answers.
 - **Primitives** are the three question types:
@@ -71,7 +71,7 @@ Every call is `POST https://api.typesafe.ai/v1/systemone` with three fields:
 | Type | Asks | Returns | Used here for |
 | --- | --- | --- | --- |
 | **Noul** | Is this true? | `noul`: probability of yes, 0 to 1 | Must-have requirements |
-| **Score** | Where on this scale? | `score`, `probabilities`, `legend`, `confidence` | Graded competencies |
+| **Score** | Where on this scale? | `score`, `probabilities`, `legend`, `confidence` | Graded skills |
 | **Choice** | Which one of these options? | `choice`, `probabilities`, `confidence` | Not used in this project |
 
 - **Parallel and independent.** Every question in a request sees the same state and is answered in parallel. No answer is visible to another question. Adding questions barely changes latency, so this project asks all seven in **one request per resume**.
@@ -152,7 +152,7 @@ Source: [Confidence](https://docs.typesafe.ai/confidence), [Score](https://docs.
 
 Everything below is plain Java in [`ScreeningPolicy.java`](../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java). Jev never sees the weights, thresholds or statuses.
 
-**Normalized score** (the `scores` field in the output). This puts every competency on a 0 to 1 scale, whatever its number of levels:
+**Normalized score** (the `scores` field in the output). This puts every skill on a 0 to 1 scale, whatever its number of levels:
 
 ```
 normalized = score / (number of levels − 1)
@@ -168,7 +168,7 @@ composite = Σ (weight / total weight × normalized)
 
 candidate_a:
 
-| Competency | Weight | Normalized | Contribution |
+| Skill | Weight | Normalized | Contribution |
 | --- | --- | --- | --- |
 | python_depth | 0.30 | 0.9075 | 0.272 |
 | distributed_systems | 0.25 | 0.935 | 0.234 |
@@ -182,7 +182,7 @@ candidate_a:
 | Status | Rule |
 | --- | --- |
 | `missing` | Any must-have `noul` is **below `must_have_fail` (0.20)** |
-| `review` | Otherwise, if any must-have `noul` is **between 0.20 and `must_have_pass` (0.80)**, or any competency weighted **0.2 or more** has `confidence` **below `min_confidence` (0.45)** |
+| `review` | Otherwise, if any must-have `noul` is **between 0.20 and `must_have_pass` (0.80)**, or any skill weighted **0.2 or more** has `confidence` **below `min_confidence` (0.45)** |
 | `meets` | Otherwise |
 
 **Rank.** Candidates are sorted by status first (`meets`, then `review`, then `missing`) and by composite within each status. A `missing` candidate therefore ranks last even with a high composite.
@@ -215,17 +215,17 @@ upload or folder ─► ResumeLoader ─► Redactor ─► state {job, resume}
 
 ### 4.2 The seven questions
 
-All of them come from [`jobs/senior_backend_engineer.yaml`](../jobs/senior_backend_engineer.yaml). Adding a role means writing a new YAML file, not Java. The project also includes specs for a Senior HR Product Owner, a Technical Product Owner and a Senior Software Application Designer. They have the same shape (two must-haves and five competencies, so seven questions), and this document uses the backend spec as its worked example. The [job spec guide](job-spec-guide.md) explains every field of a spec.
+All of them come from [`jobs/senior_backend_engineer.yaml`](../jobs/senior_backend_engineer.yaml). Adding a role means writing a new YAML file, not Java. The project also includes specs for a Senior HR Product Owner, a Technical Product Owner and a Senior Software Application Designer. They have the same shape (two must-haves and five skills, so seven questions), and this document uses the backend spec as its worked example. The [job spec guide](job-spec-guide.md) explains every field of a spec.
 
 | Id | Type | Weight | Why this type |
 | --- | --- | --- | --- |
 | `must_python_professional` | Noul | gate | A requirement is met or not, with a clear boundary ("paid role, not coursework") |
 | `must_backend_services` | Noul | gate | Same |
-| `comp_python_depth` | Score, 5 levels | 0.30 | Depth is a matter of degree, so each level describes a concrete situation |
-| `comp_distributed_systems` | Score, 5 levels | 0.25 | Same |
-| `comp_data_stores` | Score, 4 levels | 0.15 | Same |
-| `comp_technical_leadership` | Score, 5 levels | 0.20 | Same |
-| `comp_domain_relevance` | Score, 3 levels | 0.10 | Same |
+| `skill_python_depth` | Score, 5 levels | 0.30 | Depth is a matter of degree, so each level describes a concrete situation |
+| `skill_distributed_systems` | Score, 5 levels | 0.25 | Same |
+| `skill_data_stores` | Score, 4 levels | 0.15 | Same |
+| `skill_technical_leadership` | Score, 5 levels | 0.20 | Same |
+| `skill_domain_relevance` | Score, 3 levels | 0.10 | Same |
 
 Each must-have Noul uses structured instructions. The requirement text goes in its own field and the fixed question refers to it by name:
 
@@ -303,10 +303,10 @@ Here is candidate_c from the JSON output, annotated (long decimals shortened):
 
 What the four results show:
 
-- **candidate_a vs candidate_d.** Both meet every requirement. candidate_a scores higher on every weighted competency. candidate_d's lower `domain_relevance` (0.42, health tech) costs little, because that competency is weighted only 0.10.
+- **candidate_a vs candidate_d.** Both meet every requirement. candidate_a scores higher on every weighted skill. candidate_d's lower `domain_relevance` (0.42, health tech) costs little, because that skill is weighted only 0.10.
 - **candidate_c.** A very strong engineer with no Python. The composite alone would put them above candidate_b, but the must-have gate puts them last and says why. A recruiter might still decide to talk to them. The output makes that trade-off visible instead of hiding it inside one number.
 - **candidate_b.** Must-haves at 0.93 and 0.86 are above the 0.80 pass line, so the status is `meets`, but the composite is low. Python "scripts for nightly catalog imports" counted as paid Python work. If your team wouldn't count that, tighten the requirement text (for example, "…as a primary language for production services") or raise `must_have_pass`. That kind of decision belongs in the spec, not the model.
-- **No `review` cases in this run.** The least confident heavy competency was candidate_d's python_depth at 0.57, which is above the 0.45 floor. With real applicant volume you should expect some.
+- **No `review` cases in this run.** The least confident heavy skill was candidate_d's python_depth at 0.57, which is above the 0.45 floor. With real applicant volume you should expect some.
 
 ---
 

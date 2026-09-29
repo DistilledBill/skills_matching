@@ -1,0 +1,357 @@
+{
+  "_comment": "Captured from the Java service (cached answers, no API call) for policy.test.ts parity checks. Scores only; no resume text.",
+  "job": {
+    "id": "technical_product_owner",
+    "title": "Technical Product Owner",
+    "summary": "Own the backlog and roadmap for the technical products behind our payments platform: payments APIs, the developer platform, and internal platform services built on Python, REST/gRPC, PostgreSQL, Kafka, and Kubernetes on AWS. Technical product owners write requirements and acceptance criteria for API and platform features, balance technical debt against new features, work through trade-offs with engineers and architects, and define the metrics that show whether a product is working.\n",
+    "mustHaves": [
+      {
+        "id": "product_ownership_role",
+        "requirement": "Has worked as a product owner or product manager in a paid role, owning a product backlog or roadmap (not only as a project or program manager)"
+      },
+      {
+        "id": "technical_product_experience",
+        "requirement": "Has owned or managed a technical product, such as an API, developer platform, SDK, or internal infrastructure or platform service"
+      }
+    ],
+    "skills": [
+      {
+        "id": "technical_depth",
+        "weight": 0.25,
+        "question": "How well does the candidate understand APIs, system design, and software engineering, based on `resume`?",
+        "levels": [
+          "No technical background or technical product work mentioned",
+          "Worked alongside engineers on software products, with no detail about the technology",
+          "Worked hands-on with APIs or system design, such as writing API specs, reviewing designs, or querying data with SQL",
+          "Former software engineer, or made product decisions grounded in API design, data models, or system architecture",
+          "Former senior engineer or architect who has shaped the architecture of APIs or platforms as a product owner"
+        ]
+      },
+      {
+        "id": "backlog_and_requirements",
+        "weight": 0.25,
+        "question": "How much experience does the candidate have owning a backlog and writing requirements and acceptance criteria for technical features, based on `resume`?",
+        "levels": [
+          "No backlog or requirements work mentioned",
+          "Wrote or groomed user stories for a team with no further detail",
+          "Owned a team's backlog, writing requirements and acceptance criteria for features",
+          "Owned the backlog for an API or platform product, writing technical requirements such as endpoint contracts, integration behavior, or non-functional requirements",
+          "Owned backlogs across several teams or products, setting requirements standards that other product owners followed"
+        ]
+      },
+      {
+        "id": "prioritization_and_roadmap",
+        "weight": 0.2,
+        "question": "How much experience does the candidate have prioritizing work and owning a product roadmap, including trade-offs between technical debt and new features, based on `resume`?",
+        "levels": [
+          "No prioritization or roadmap work mentioned",
+          "Took part in sprint planning or prioritization owned by someone else",
+          "Prioritized a team's backlog, weighing features against bugs or technical debt",
+          "Owned a product roadmap, making explicit trade-offs between technical debt, platform investment, and features with engineers and architects",
+          "Set roadmap strategy for a platform or product line across several teams, with evidence of business outcomes from those choices"
+        ]
+      },
+      {
+        "id": "metrics_and_agile_delivery",
+        "weight": 0.2,
+        "question": "How much experience does the candidate have defining product metrics and working as the product owner in an agile or Scrum team, based on `resume`?",
+        "levels": [
+          "No metrics or agile delivery mentioned",
+          "Worked on an agile or Scrum team in a non-product role",
+          "Served as product owner in Scrum, running reviews and accepting delivered work",
+          "Served as product owner and defined success metrics for the product, such as adoption, latency, error rates, or API usage",
+          "Used product metrics to drive roadmap decisions and reported measured outcomes, such as improved adoption, reliability, or revenue"
+        ]
+      },
+      {
+        "id": "domain_relevance",
+        "weight": 0.1,
+        "question": "How relevant is the candidate's industry experience to `job.summary`?",
+        "levels": [
+          "Unrelated industry with no transferable domain exposure",
+          "Adjacent domain, such as general e-commerce, B2B SaaS, or developer tools",
+          "Fintech, payments, or other regulated financial systems"
+        ]
+      }
+    ],
+    "thresholds": {
+      "mustHavePass": 0.8,
+      "mustHaveFail": 0.2,
+      "minConfidence": 0.45
+    }
+  },
+  "report": {
+    "jobId": "technical_product_owner",
+    "title": "Technical Product Owner",
+    "candidates": [
+      {
+        "rank": 1,
+        "name": "candidate_e",
+        "status": "meets",
+        "composite": 0.9448750000000001,
+        "reasons": [],
+        "mustHaves": {
+          "product_ownership_role": 0.98,
+          "technical_product_experience": 0.98
+        },
+        "scores": {
+          "technical_depth": 1.0,
+          "backlog_and_requirements": 0.9875,
+          "prioritization_and_roadmap": 1.0,
+          "metrics_and_agile_delivery": 0.99,
+          "domain_relevance": 0.5
+        },
+        "confidences": {
+          "technical_depth": 1.0,
+          "backlog_and_requirements": 0.96,
+          "prioritization_and_roadmap": 1.0,
+          "metrics_and_agile_delivery": 0.97,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 2,
+        "name": "candidate_b",
+        "status": "meets",
+        "composite": 0.9211250000000001,
+        "reasons": [],
+        "mustHaves": {
+          "product_ownership_role": 0.98,
+          "technical_product_experience": 0.98
+        },
+        "scores": {
+          "technical_depth": 0.8425,
+          "backlog_and_requirements": 0.98,
+          "prioritization_and_roadmap": 0.8325,
+          "metrics_and_agile_delivery": 0.995,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "technical_depth": 0.69,
+          "backlog_and_requirements": 0.93,
+          "prioritization_and_roadmap": 0.72,
+          "metrics_and_agile_delivery": 0.99,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 3,
+        "name": "candidate_i",
+        "status": "meets",
+        "composite": 0.833,
+        "reasons": [],
+        "mustHaves": {
+          "product_ownership_role": 0.98,
+          "technical_product_experience": 0.98
+        },
+        "scores": {
+          "technical_depth": 0.7425,
+          "backlog_and_requirements": 0.7975,
+          "prioritization_and_roadmap": 0.99,
+          "metrics_and_agile_delivery": 1.0,
+          "domain_relevance": 0.5
+        },
+        "confidences": {
+          "technical_depth": 0.93,
+          "backlog_and_requirements": 0.84,
+          "prioritization_and_roadmap": 0.97,
+          "metrics_and_agile_delivery": 1.0,
+          "domain_relevance": 0.99
+        }
+      },
+      {
+        "rank": 4,
+        "name": "candidate_f",
+        "status": "review",
+        "composite": 0.7,
+        "reasons": [
+          "unclear: product_ownership_role (0.77)"
+        ],
+        "mustHaves": {
+          "product_ownership_role": 0.77,
+          "technical_product_experience": 0.9
+        },
+        "scores": {
+          "technical_depth": 0.9225,
+          "backlog_and_requirements": 0.7475,
+          "prioritization_and_roadmap": 0.505,
+          "metrics_and_agile_delivery": 0.4075,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "technical_depth": 0.74,
+          "backlog_and_requirements": 0.99,
+          "prioritization_and_roadmap": 0.98,
+          "metrics_and_agile_delivery": 0.69,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 5,
+        "name": "candidate_j",
+        "status": "review",
+        "composite": 0.447875,
+        "reasons": [
+          "unclear: technical_product_experience (0.56)",
+          "uncertain: backlog_and_requirements (conf 0.32)"
+        ],
+        "mustHaves": {
+          "product_ownership_role": 0.96,
+          "technical_product_experience": 0.56
+        },
+        "scores": {
+          "technical_depth": 0.2925,
+          "backlog_and_requirements": 0.455,
+          "prioritization_and_roadmap": 0.3575,
+          "metrics_and_agile_delivery": 0.4475,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "technical_depth": 0.86,
+          "backlog_and_requirements": 0.32,
+          "prioritization_and_roadmap": 0.64,
+          "metrics_and_agile_delivery": 0.82,
+          "domain_relevance": 0.99
+        }
+      },
+      {
+        "rank": 6,
+        "name": "candidate_a",
+        "status": "review",
+        "composite": 0.411625,
+        "reasons": [
+          "unclear: technical_product_experience (0.24)"
+        ],
+        "mustHaves": {
+          "product_ownership_role": 0.97,
+          "technical_product_experience": 0.24
+        },
+        "scores": {
+          "technical_depth": 0.2525,
+          "backlog_and_requirements": 0.4,
+          "prioritization_and_roadmap": 0.49,
+          "metrics_and_agile_delivery": 0.5,
+          "domain_relevance": 0.505
+        },
+        "confidences": {
+          "technical_depth": 0.99,
+          "backlog_and_requirements": 0.65,
+          "prioritization_and_roadmap": 0.96,
+          "metrics_and_agile_delivery": 1.0,
+          "domain_relevance": 0.97
+        }
+      },
+      {
+        "rank": 7,
+        "name": "candidate_d",
+        "status": "missing",
+        "composite": 0.5473750000000001,
+        "reasons": [
+          "not shown: technical_product_experience (0.04)"
+        ],
+        "mustHaves": {
+          "product_ownership_role": 0.98,
+          "technical_product_experience": 0.04
+        },
+        "scores": {
+          "technical_depth": 0.2275,
+          "backlog_and_requirements": 0.5,
+          "prioritization_and_roadmap": 0.6075,
+          "metrics_and_agile_delivery": 0.9775,
+          "domain_relevance": 0.485
+        },
+        "confidences": {
+          "technical_depth": 0.92,
+          "backlog_and_requirements": 0.98,
+          "prioritization_and_roadmap": 0.64,
+          "metrics_and_agile_delivery": 0.93,
+          "domain_relevance": 0.95
+        }
+      },
+      {
+        "rank": 8,
+        "name": "candidate_c",
+        "status": "missing",
+        "composite": 0.445125,
+        "reasons": [
+          "not shown: product_ownership_role (0.03)",
+          "unclear: technical_product_experience (0.46)"
+        ],
+        "mustHaves": {
+          "product_ownership_role": 0.03,
+          "technical_product_experience": 0.46
+        },
+        "scores": {
+          "technical_depth": 0.875,
+          "backlog_and_requirements": 0.1075,
+          "prioritization_and_roadmap": 0.2475,
+          "metrics_and_agile_delivery": 0.25,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "technical_depth": 0.59,
+          "backlog_and_requirements": 0.65,
+          "prioritization_and_roadmap": 0.99,
+          "metrics_and_agile_delivery": 0.99,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 9,
+        "name": "candidate_g",
+        "status": "missing",
+        "composite": 0.272875,
+        "reasons": [
+          "not shown: product_ownership_role (0.07)",
+          "unclear: technical_product_experience (0.28)"
+        ],
+        "mustHaves": {
+          "product_ownership_role": 0.07,
+          "technical_product_experience": 0.28
+        },
+        "scores": {
+          "technical_depth": 0.2975,
+          "backlog_and_requirements": 0.0,
+          "prioritization_and_roadmap": 0.2475,
+          "metrics_and_agile_delivery": 0.245,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "technical_depth": 0.84,
+          "backlog_and_requirements": 1.0,
+          "prioritization_and_roadmap": 0.91,
+          "metrics_and_agile_delivery": 0.98,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 10,
+        "name": "candidate_h",
+        "status": "missing",
+        "composite": 0.260625,
+        "reasons": [
+          "not shown: product_ownership_role (0.05)",
+          "not shown: technical_product_experience (0.04)"
+        ],
+        "mustHaves": {
+          "product_ownership_role": 0.05,
+          "technical_product_experience": 0.04
+        },
+        "scores": {
+          "technical_depth": 0.2175,
+          "backlog_and_requirements": 0.185,
+          "prioritization_and_roadmap": 0.2,
+          "metrics_and_agile_delivery": 0.255,
+          "domain_relevance": 0.69
+        },
+        "confidences": {
+          "technical_depth": 0.89,
+          "backlog_and_requirements": 0.72,
+          "prioritization_and_roadmap": 0.83,
+          "metrics_and_agile_delivery": 0.99,
+          "domain_relevance": 0.07
+        }
+      }
+    ]
+  }
+}

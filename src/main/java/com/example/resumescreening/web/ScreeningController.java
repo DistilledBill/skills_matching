@@ -17,6 +17,7 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -97,8 +98,20 @@ public class ScreeningController {
 			@RequestParam(required = false) String path) {
 		JobSpec job = jobs.get(jobId);
 		List<ResumeDocument> resumes = resumes(files, path);
-		int cached = (int) resumes.stream().filter(r -> screening.isCached(screening.request(job, r))).count();
+		int cached = (int) resumes.stream().filter(r -> screening.isCached(job, screening.request(job, r))).count();
 		return new CacheStatus(resumes.size(), cached);
+	}
+
+	/** How many answers are cached for the job, from any folder, upload, or earlier version of its spec. */
+	@GetMapping("/screenings/{jobId}/cache")
+	public JobCache jobCache(@PathVariable String jobId) {
+		return new JobCache(screening.cachedAnswers(jobs.get(jobId)));
+	}
+
+	/** Deletes every cached answer for the job. The next screening calls Jev again for each resume. */
+	@DeleteMapping("/screenings/{jobId}/cache")
+	public ClearedCache clearCache(@PathVariable String jobId) {
+		return new ClearedCache(screening.clearCache(jobs.get(jobId)));
 	}
 
 	/** Resume text sent for preview before it is saved. */
@@ -106,6 +119,12 @@ public class ScreeningController {
 	}
 
 	public record CacheStatus(int total, int cached) {
+	}
+
+	public record JobCache(int count) {
+	}
+
+	public record ClearedCache(int removed) {
 	}
 
 	private List<ResumeDocument> resumes(List<MultipartFile> files, String path) {
@@ -124,7 +143,7 @@ public class ScreeningController {
 
 	private ResponseEntity<SystemOneRequest> previewOf(JobSpec job, ResumeDocument resume) {
 		SystemOneRequest request = screening.request(job, resume);
-		return ResponseEntity.ok().header(CACHED_HEADER, String.valueOf(screening.isCached(request))).body(request);
+		return ResponseEntity.ok().header(CACHED_HEADER, String.valueOf(screening.isCached(job, request))).body(request);
 	}
 
 	private static ResponseEntity<?> respond(JobSpec job, ScreeningReport report, String format) {

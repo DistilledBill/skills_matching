@@ -14,7 +14,7 @@ import com.example.resumescreening.typesafe.SystemOneResponse;
 /** Turns raw judgments into a decision. All policy lives here, none in the model. */
 public final class ScreeningPolicy {
 
-	/** Competencies weighted at least this much send low-confidence answers to review. */
+	/** Skills weighted at least this much send low-confidence answers to review. */
 	static final double HEAVY_WEIGHT = 0.2;
 
 	private ScreeningPolicy() {
@@ -43,15 +43,15 @@ public final class ScreeningPolicy {
 
 		double totalWeight = job.totalWeight();
 		double composite = 0;
-		for (JobSpec.Competency comp : job.competencies()) {
-			Answer.Score answer = response.score(QuestionBuilder.competencyId(comp));
-			double normalized = answer.score() / comp.maxLevel();
-			scores.put(comp.id(), normalized);
-			confidences.put(comp.id(), answer.confidence());
-			composite += comp.weight() / totalWeight * normalized;
-			if (comp.weight() >= HEAVY_WEIGHT && answer.confidence() < t.minConfidence()) {
+		for (JobSpec.Skill skill : job.skills()) {
+			Answer.Score answer = response.score(QuestionBuilder.skillId(skill));
+			double normalized = answer.score() / skill.maxLevel();
+			scores.put(skill.id(), normalized);
+			confidences.put(skill.id(), answer.confidence());
+			composite += skill.weight() / totalWeight * normalized;
+			if (skill.weight() >= HEAVY_WEIGHT && answer.confidence() < t.minConfidence()) {
 				status = worse(status, Status.REVIEW);
-				reasons.add(fmt("uncertain: %s (conf %.2f)", comp.id(), answer.confidence()));
+				reasons.add(fmt("uncertain: %s (conf %.2f)", skill.id(), answer.confidence()));
 			}
 		}
 

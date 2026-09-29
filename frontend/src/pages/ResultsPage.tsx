@@ -1,15 +1,18 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { api, type CandidateResult, type JobSpec, type Status } from '../api'
+import { api, type CandidateResult, type JobSpec, type Status, type Thresholds } from '../api'
 import { Bar } from '../components/Bar'
 import { ErrorBox } from '../components/ErrorBox'
 import { PreviewPanel } from '../components/PreviewPanel'
+import { ResumeView } from '../components/ResumeView'
 import { StatusPill } from '../components/StatusPill'
+import { WhatIfPanel } from '../components/WhatIfPanel'
 import { describeSource, fixed, humanize, mustHaveBand } from '../format'
+import { rank, samePolicy, specPolicy, type Policy } from '../policy'
 import { useResults, type ScreeningRun } from '../results'
 
-type SortKey = 'rank' | 'name' | 'composite' | `comp:${string}`
+type SortKey = 'rank' | 'name' | 'composite' | `skill:${string}`
 
 export function ResultsPage() {
   const { jobId = '' } = useParams()
@@ -30,14 +33,29 @@ export function ResultsPage() {
     )
   }
   if (!job) return jobs.isError ? <ErrorBox error={jobs.error} /> : <p className="muted">Loading…</p>
-  return <Results job={job} run={run} />
+  // Keyed by run so what-if values, filters and the selection reset when a new screening comes in.
+  return <Results key={run.ranAt.getTime()} job={job} run={run} />
 }
 
-function Results({ job, run }: { job: JobSpec; run: ScreeningRun }) {
+export function Results({ job, run }: { job: JobSpec; run: ScreeningRun }) {
   const [filter, setFilter] = useState<Status | 'all'>('all')
   const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({ key: 'rank', desc: false })
   const [selected, setSelected] = useState<string | null>(null)
-  const candidates = run.report.candidates
+  // null means the spec's own values, so the table shows the server's ranking unchanged.
+  const [whatIf, setWhatIf] = useState<Policy | null>(null)
+  const policy = whatIf ?? specPolicy(job)
+  const t = policy.thresholds
+  const weightOf = (id: string) => policy.weights[id] ?? 0
+
+  const candidates = useMemo(
+    () => (whatIf ? rank(job, run.report.candidates, whatIf) : run.report.candidates),
+    [job, run.report.candidates, whatIf],
+  )
+  const specRank = useMemo(
+    () => new Map(run.report.candidates.map((c) => [c.name, c.rank])),
+    [run.report.candidates],
+  )
+  const changePolicy = (next: Policy) => setWhatIf(samePolicy(next, specPolicy(job)) ? null : next)
 
   const counts = useMemo(() => {
     const c = { meets: 0, review: 0, missing: 0 }
@@ -54,7 +72,7 @@ function Results({ job, run }: { job: JobSpec; run: ScreeningRun }) {
           ? c.name
           : sort.key === 'composite'
             ? c.composite
-            : (c.scores[sort.key.slice(5)] ?? 0)
+            : (c.scores[sort.key.slice(6)] ?? 0)
     return [...visible].sort((a, b) => {
       const [x, y] = [value(a), value(b)]
       const cmp = typeof x === 'string' ? x.localeCompare(String(y)) : x - (y as number)
@@ -110,6 +128,20 @@ function Results({ job, run }: { job: JobSpec; run: ScreeningRun }) {
       </p>
       <ErrorBox error={csv.error} />
 
+      <WhatIfPanel
+        job={job}
+        policy={policy}
+        modified={whatIf !== null}
+        onChange={changePolicy}
+        onReset={() => setWhatIf(null)}
+      />
+      {whatIf && (
+        <p className="what-if-banner" role="status">
+          <strong>What-if values:</strong> this ranking isn't saved, and arrows show the change from the spec's
+          ranking. Download CSV uses the spec's values.
+        </p>
+      )}
+
       <div className="filters" role="radiogroup" aria-label="Filter by status">
         {(['all', 'meets', 'review', 'missing'] as const).map((f) => (
           <button key={f} role="radio" aria-checked={filter === f} onClick={() => setFilter(f)}>
@@ -126,12 +158,13 @@ function Results({ job, run }: { job: JobSpec; run: ScreeningRun }) {
               {header('name', 'Candidate')}
               <th>Status</th>
               {header('composite', 'Composite')}
-              {job.competencies.map((c) => (
-                <th key={c.id} className="comp-col">
-                  <button className="th-button" onClick={() => sortBy(`comp:${c.id}`)} title={c.question}>
+              {job.skills.map((c) => (
+                <th key={c.id} className="skill-col">
+                  <button className="th-button" onClick={() => sortBy(`skill:${c.id}`)} title={c.question}>
                     {humanize(c.id)}
-                    <span className="muted"> {fixed(c.weight)}</span>
-                    {sort.key === `comp:${c.id}` ? (sort.desc ? ' ↓' : ' ↑') : ''}
+                    <span className="muted"> {fixed(weightOf(c.id))}</span>
+                    {sort.key === `skill:${c.id}` ? (sort.desc ? ' ↓' : ' ↑') : ''}
+                    <span className="th-sub">score · conf.</span>
                   </button>
                 </th>
               ))}
@@ -148,7 +181,10 @@ function Results({ job, run }: { job: JobSpec; run: ScreeningRun }) {
                 tabIndex={0}
                 onKeyDown={(e) => e.key === 'Enter' && setSelected(c.name)}
               >
-                <td className="num">{c.rank}</td>
+                <td className="num">
+                  {c.rank}
+                  {whatIf && <RankChange from={specRank.get(c.name) ?? c.rank} to={c.rank} />}
+                </td>
                 <td>
                   <strong>{c.name}</strong>
                 </td>
@@ -158,21 +194,20 @@ function Results({ job, run }: { job: JobSpec; run: ScreeningRun }) {
                 <td>
                   <Bar value={c.composite} />
                 </td>
-                {job.competencies.map((comp) => {
-                  const conf = c.confidences[comp.id] ?? 1
-                  const low = conf < job.thresholds.minConfidence
+                {job.skills.map((skill) => {
+                  const conf = c.confidences[skill.id] ?? 1
                   return (
-                    <td key={comp.id}>
+                    <td key={skill.id}>
                       <Bar
-                        value={c.scores[comp.id] ?? 0}
-                        faded={low}
-                        title={`confidence ${fixed(conf)}${low ? ' (low)' : ''}`}
+                        value={c.scores[skill.id] ?? 0}
+                        confidence={conf}
+                        lowConfidence={conf < t.minConfidence}
                       />
                     </td>
                   )
                 })}
                 <td>
-                  <MustHaveChips job={job} candidate={c} />
+                  <MustHaveChips job={job} candidate={c} thresholds={t} />
                 </td>
                 <td className="reasons">{c.reasons.join('; ') || <span className="muted">none</span>}</td>
               </tr>
@@ -181,22 +216,46 @@ function Results({ job, run }: { job: JobSpec; run: ScreeningRun }) {
         </table>
       </div>
       <p className="muted small">
-        Faded bars have confidence below {fixed(job.thresholds.minConfidence)}. Select a row for details and the
-        exact request sent to Jev.
+        Score (0–1) is inside each bar; the number beside it is Jev's confidence. Confidence below{' '}
+        {fixed(t.minConfidence)} is shown in amber. Select a row for details and the exact request
+        sent to Jev.
       </p>
 
-      {current && <CandidatePanel job={job} run={run} candidate={current} onClose={() => setSelected(null)} />}
+      {current && (
+        <CandidatePanel job={job} run={run} policy={policy} candidate={current} onClose={() => setSelected(null)} />
+      )}
     </>
   )
 }
 
-function MustHaveChips({ job, candidate }: { job: JobSpec; candidate: CandidateResult }) {
+/** How far a candidate moved from the spec's ranking under the what-if values. */
+function RankChange({ from, to }: { from: number; to: number }) {
+  if (from === to) return null
+  const up = to < from
+  return (
+    <span className={`rank-change ${up ? 'rank-up' : 'rank-down'}`}>
+      {up ? '▲' : '▼'}
+      {Math.abs(from - to)}
+      <span className="visually-hidden">{up ? ' places up' : ' places down'}</span>
+    </span>
+  )
+}
+
+function MustHaveChips({
+  job,
+  candidate,
+  thresholds,
+}: {
+  job: JobSpec
+  candidate: CandidateResult
+  thresholds: Thresholds
+}) {
   return (
     <span className="chips">
       {job.mustHaves.map((m) => {
         const p = candidate.mustHaves[m.id] ?? 0
         return (
-          <span key={m.id} className={`chip chip-${mustHaveBand(p, job.thresholds)}`} title={m.requirement}>
+          <span key={m.id} className={`chip chip-${mustHaveBand(p, thresholds)}`} title={m.requirement}>
             {fixed(p)}
           </span>
         )
@@ -208,15 +267,18 @@ function MustHaveChips({ job, candidate }: { job: JobSpec; candidate: CandidateR
 function CandidatePanel({
   job,
   run,
+  policy,
   candidate,
   onClose,
 }: {
   job: JobSpec
   run: ScreeningRun
+  policy: Policy
   candidate: CandidateResult
   onClose: () => void
 }) {
-  const [tab, setTab] = useState<'scores' | 'request'>('scores')
+  const [tab, setTab] = useState<'scores' | 'resume' | 'request'>('scores')
+  const t = policy.thresholds
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
@@ -235,6 +297,9 @@ function CandidatePanel({
       <div className="tabs" role="tablist">
         <button role="tab" aria-selected={tab === 'scores'} onClick={() => setTab('scores')}>
           Scores
+        </button>
+        <button role="tab" aria-selected={tab === 'resume'} onClick={() => setTab('resume')}>
+          Resume
         </button>
         <button role="tab" aria-selected={tab === 'request'} onClick={() => setTab('request')}>
           What was sent to Jev
@@ -258,20 +323,33 @@ function CandidatePanel({
               const p = candidate.mustHaves[m.id] ?? 0
               return (
                 <li key={m.id}>
-                  <span className={`chip chip-${mustHaveBand(p, job.thresholds)}`}>{fixed(p)}</span> {m.requirement}
+                  <span className={`chip chip-${mustHaveBand(p, t)}`}>{fixed(p)}</span> {m.requirement}
                 </li>
               )
             })}
           </ul>
-          <h3>Competencies</h3>
+          <h3>
+            Skills <span className="small">(score in the bar, confidence beside it)</span>
+          </h3>
           <ul className="plain">
-            {job.competencies.map((c) => (
-              <li key={c.id}>
-                <strong>{humanize(c.id)}</strong> (weight {fixed(c.weight)}):{' '}
-                <Bar value={candidate.scores[c.id] ?? 0} /> confidence {fixed(candidate.confidences[c.id] ?? 0)}
-              </li>
-            ))}
+            {job.skills.map((c) => {
+              const conf = candidate.confidences[c.id] ?? 1
+              return (
+                <li key={c.id}>
+                  <strong>{humanize(c.id)}</strong> (weight {fixed(policy.weights[c.id] ?? 0)}):{' '}
+                  <Bar
+                    value={candidate.scores[c.id] ?? 0}
+                    confidence={conf}
+                    lowConfidence={conf < t.minConfidence}
+                  />
+                </li>
+              )
+            })}
           </ul>
+        </div>
+      ) : tab === 'resume' ? (
+        <div className="drawer-body">
+          <ResumeView source={run.source} name={candidate.name} />
         </div>
       ) : (
         <div className="drawer-body">

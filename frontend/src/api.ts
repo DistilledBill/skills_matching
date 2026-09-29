@@ -8,7 +8,7 @@ export interface MustHave {
   requirement: string
 }
 
-export interface Competency {
+export interface Skill {
   id: string
   weight: number
   question: string
@@ -26,7 +26,7 @@ export interface JobSpec {
   title: string
   summary: string
   mustHaves: MustHave[]
-  competencies: Competency[]
+  skills: Skill[]
   thresholds: Thresholds
 }
 
@@ -57,6 +57,14 @@ export interface ResumeFile {
   name: string
   format: 'pdf' | 'txt' | 'md'
   size: number
+}
+
+/** A resume's text; with `redacted` it is the text Jev receives, otherwise the original with contact details. */
+export interface ResumeContent {
+  fileName: string
+  name: string
+  format: 'pdf' | 'txt' | 'md'
+  text: string
 }
 
 export type Question =
@@ -176,11 +184,34 @@ export const api = {
     return toPreview(response)
   },
 
+  resume: (folder: string, fileName: string, redacted: boolean) =>
+    json<ResumeContent>(
+      `/api/resume-folders/${enc(folder)}/resumes/${enc(fileName)}?redacted=${String(redacted)}`,
+    ),
+
+  resumeTexts(files: File[], redacted: boolean): Promise<ResumeContent[]> {
+    const form = new FormData()
+    files.forEach((file) => form.append('files', file))
+    return json<ResumeContent[]>(`/api/resumes/text?redacted=${String(redacted)}`, { method: 'POST', body: form })
+  },
+
+  /** How many answers are cached for the job, from any folder, upload or earlier spec version. */
+  jobCache: (jobId: string) => json<{ count: number }>(`/api/screenings/${enc(jobId)}/cache`),
+
+  /** Deletes every cached answer for the job; the next screening calls Jev again. */
+  clearJobCache: (jobId: string) =>
+    json<{ removed: number }>(`/api/screenings/${enc(jobId)}/cache`, { method: 'DELETE' }),
+
   cacheStatus: (jobId: string, source: Source) =>
     json<CacheStatus>(`/api/screenings/${enc(jobId)}/cache-status`, {
       method: 'POST',
       body: sourceBody(source),
     }),
+}
+
+/** The stored file, served inline (a PDF opens in the browser). */
+export function resumeFileUrl(folder: string, fileName: string): string {
+  return `/api/resume-folders/${enc(folder)}/files/${enc(fileName)}`
 }
 
 function screenUrl(jobId: string, source: Source): string {

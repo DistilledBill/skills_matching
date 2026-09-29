@@ -31,9 +31,11 @@ Request flow, one TypeSafe request per resume:
 
 Key design points that span several files:
 
-- **The job spec is the only input to the model.** `jobs/<id>.yaml` (the file name is the job id) is loaded and validated at startup by `JobSpecRepository`. **An invalid spec stops the app from starting.** Each `must_haves` entry becomes a Noul with id `must_<id>`, using a fixed question and criteria in `QuestionBuilder`. Each `competencies` entry becomes a Score with id `comp_<id>`. Question ids are never sent to the model, so question text must stand on its own.
-- **Policy is in `ScreeningPolicy` only.** Status: any must-have below `must_have_fail` → MISSING. Otherwise, any must-have below `must_have_pass`, or any competency with weight ≥ `HEAVY_WEIGHT` (0.2, hard-coded) and confidence < `min_confidence` → REVIEW. Otherwise → MEETS. Composite = Σ(weight/totalWeight × score/(levels−1)). Ranking is by status first, then composite.
-- **Cache semantics.** `AnswerCache` stores the raw response in `.cache/<sha256>.json`, keyed on the canonical (key-sorted) JSON of the full request: model, state and questions. Weights and thresholds are not in the request, so changing them re-ranks for free. Changing `title` or `summary` re-asks every question for that job, because both are in the state of every request.
+- **The job spec is the only input to the model.** `jobs/<id>.yaml` (the file name is the job id) is loaded and validated at startup by `JobSpecRepository`. **An invalid spec stops the app from starting.** Each `must_haves` entry becomes a Noul with id `must_<id>`, using a fixed question and criteria in `QuestionBuilder`. Each `skills` entry becomes a Score with id `skill_<id>`. Question ids are never sent to the model, so question text must stand on its own.
+- **Policy is in `ScreeningPolicy` only.** Status: any must-have below `must_have_fail` → MISSING. Otherwise, any must-have below `must_have_pass`, or any skill with weight ≥ `HEAVY_WEIGHT` (0.2, hard-coded) and confidence < `min_confidence` → REVIEW. Otherwise → MEETS. Composite = Σ(weight/totalWeight × score/(levels−1)). Ranking is by status first, then composite.
+- **Cache semantics.** `AnswerCache` stores the raw response in `.cache/<jobId>/<sha256>.json`, keyed on the canonical (key-sorted) JSON of the full request: model, state and questions. Weights and thresholds are not in the request, so changing them re-ranks for free. Changing `title` or `summary` re-asks every question for that job, because both are in the state of every request.
+- **Per-job cache folders.** `TypeSafeClient.evaluate(jobId, request)` and `ScreeningService.isCached(job, request)` take the job so its answers land in its own folder; `DELETE /api/screenings/{jobId}/cache` clears one job. Job ids (spec file names) are limited to letters, digits, `_` and `-` for this reason. On startup `CacheMigration` moves any answers still in the old flat layout (`.cache/<sha256>.json`) into their job's folder, matching them against each job's `<jobId>_candidates` resumes, and **deletes** the ones that match nothing.
+- **Tests never touch `.cache/`:** `src/test/resources/application.properties` points `typesafe.cache-dir` at `target/test-cache`, so the startup migration can't run on the real cache during `./mvnw test`.
 - **Resume folders.** Resumes live in `resumes/<job id>_candidates/`. `/folder?path=` is resolved inside `resumes/`, rejects paths outside it (`..`, absolute paths, symlinks), and is **not recursive**. A blank `path` points at `resumes/` itself, which has no files, so it returns 400.
 
 ## Web app (`frontend/`)
@@ -43,7 +45,10 @@ Key design points that span several files:
 - `web/SpaConfig` serves `static/` and returns `index.html` for page URLs such as `/jobs/x/results`, so reloads work. It never rewrites `/api/**` or paths that look like files, so those still 404.
 - `src/api.ts` holds hand-written types that mirror the Java records (JSON is camelCase) and one function per endpoint. Keep them in step when a record changes.
 - Screening results are kept in memory per browser tab (`src/results.tsx`), because uploaded `File`s can't survive a reload. Re-running is free thanks to the answer cache.
-- The plan for the remaining phases (what-if tuning, resume viewer, resume management, spec editor) is in `.plans/web-frontend-plan.md`.
+- `src/policy.ts` is a TypeScript copy of `ScreeningPolicy.decide` and `CandidateResult.RANKING`, used for what-if tuning. **Change both together.** `policy.test.ts` checks the copy against real reports saved in `src/fixtures/*.report.json` (each holds the job spec it was run with, so later spec edits don't break it). Reason numbers use `format2`, which rounds like Java's `%.2f`, not like `toFixed`.
+- Resume text endpoints default to `redacted=true`. The viewer asks for `redacted=false` to show contact details; Jev only ever receives redacted text.
+- Screen-reader-only text (`.visually-hidden`) is absolutely positioned, so a scrolling container that holds it needs `position: relative`, or the page scrolls sideways on phones (see `.table-wrap`).
+- The plan for the remaining phases (resume management, spec editor) is in `.plans/web-frontend-plan.md`.
 
 ## Tests depend on real repo files
 
@@ -53,6 +58,7 @@ Tests read the checked-in sample data rather than fixtures, so editing the sampl
 - `ResumeLoaderTest` expects exactly `candidate_a`…`candidate_j` in `resumes/senior_backend_engineer_candidates/`.
 - `ScreeningApiTest.screensFolderAndRanks` expects 10 candidates. It picks mock answers by matching resume text ("Senior Java engineer" → candidate_c, "Full-stack developer" → candidate_b), so no other resume in that folder may contain those phrases.
 - `WebAppApiTest` points `typesafe.cache-dir` at a temp directory, so cache-status tests never read the real `.cache/`. `src/test/resources/static/index.html` exists only so the page-URL fallback can be tested.
+- `ResumeApiTest` reads `candidate_a.txt` from the backend folder and expects its contact line (`a.candidate@example.com`, `(555) 201-3344`).
 - `RedactorTest` expects line 2 of backend candidates A–D to be the contact line. All sample resumes follow this format: line 1 `Candidate X`, line 2 fake contact details (`@example.com`, 555 phone numbers).
 
 ## Docs

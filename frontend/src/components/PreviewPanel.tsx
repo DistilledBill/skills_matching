@@ -77,7 +77,7 @@ export function PreviewView({ preview }: { preview: Preview }) {
             <QuestionCard key={id} id={id} question={q} />
           ))}
 
-          <h4>Competencies ({scores.length}): scored on levels</h4>
+          <h4>Skills ({scores.length}): scored on levels</h4>
           <p className="muted">Weights and thresholds are applied in code afterwards. Jev never sees them.</p>
           {scores.map(([id, q]) => (
             <QuestionCard key={id} id={id} question={q} />

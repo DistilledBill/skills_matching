@@ -67,10 +67,13 @@ public class JobSpecRepository {
 	}
 
 	private static void validate(Path file, JobSpec job) {
+		// The id names this job's answer-cache folder, so keep it to safe file-name characters.
+		require(file, job.id().matches("[A-Za-z0-9_-]+"),
+				"the file name (the job id) may only use letters, digits, '_' and '-'");
 		require(file, StringUtils.hasText(job.title()), "title is required");
 		require(file, StringUtils.hasText(job.summary()), "summary is required");
 		require(file, job.mustHaves() != null, "must_haves is required (may be empty)");
-		require(file, job.competencies() != null && !job.competencies().isEmpty(), "at least one competency is required");
+		require(file, job.skills() != null && !job.skills().isEmpty(), "at least one skill is required");
 		require(file, job.thresholds() != null, "thresholds is required");
 
 		Set<String> ids = new HashSet<>();
@@ -78,12 +81,12 @@ public class JobSpecRepository {
 			require(file, ids.add("must_" + m.id()), "duplicate must_have id " + m.id());
 			require(file, StringUtils.hasText(m.requirement()), "must_have " + m.id() + " needs a requirement");
 		}
-		for (JobSpec.Competency c : job.competencies()) {
-			require(file, ids.add("comp_" + c.id()), "duplicate competency id " + c.id());
-			require(file, c.weight() > 0, "competency " + c.id() + " needs a positive weight");
-			require(file, StringUtils.hasText(c.question()), "competency " + c.id() + " needs a question");
+		for (JobSpec.Skill c : job.skills()) {
+			require(file, ids.add("skill_" + c.id()), "duplicate skill id " + c.id());
+			require(file, c.weight() > 0, "skill " + c.id() + " needs a positive weight");
+			require(file, StringUtils.hasText(c.question()), "skill " + c.id() + " needs a question");
 			require(file, c.levels() != null && c.levels().size() >= 2 && c.levels().size() <= 10,
-					"competency " + c.id() + " needs 2 to 10 levels");
+					"skill " + c.id() + " needs 2 to 10 levels");
 		}
 
 		JobSpec.Thresholds t = job.thresholds();

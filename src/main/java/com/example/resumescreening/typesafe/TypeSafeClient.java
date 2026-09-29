@@ -49,11 +49,12 @@ public class TypeSafeClient {
 		this.inFlight = new Semaphore(props.maxConcurrent());
 	}
 
-	public SystemOneResponse evaluate(SystemOneRequest request) {
+	/** @param jobId the job this request screens for; its answers are cached in that job's folder */
+	public SystemOneResponse evaluate(String jobId, SystemOneRequest request) {
 		String key = cache.key(request);
-		String body = cache.get(key).orElseGet(() -> {
+		String body = cache.get(jobId, key).orElseGet(() -> {
 			String fresh = post(request);
-			cache.put(key, fresh);
+			cache.put(jobId, key, fresh);
 			return fresh;
 		});
 		return mapper.readValue(body, SystemOneResponse.class);

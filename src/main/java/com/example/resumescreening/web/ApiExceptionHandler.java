@@ -2,6 +2,7 @@ package com.example.resumescreening.web;
 
 import com.example.resumescreening.job.JobNotFoundException;
 import com.example.resumescreening.screening.InvalidResumeException;
+import com.example.resumescreening.screening.ResumeNotFoundException;
 import com.example.resumescreening.typesafe.MissingApiKeyException;
 import com.example.resumescreening.typesafe.TypeSafeException;
 import org.slf4j.Logger;
@@ -19,6 +20,11 @@ class ApiExceptionHandler {
 
 	@ExceptionHandler
 	ProblemDetail jobNotFound(JobNotFoundException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+	}
+
+	@ExceptionHandler
+	ProblemDetail resumeNotFound(ResumeNotFoundException ex) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
 	}
 

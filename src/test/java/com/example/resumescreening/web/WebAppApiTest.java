@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -127,14 +128,35 @@ class WebAppApiTest {
 			.andExpect(jsonPath("$.total").value(10))
 			.andExpect(jsonPath("$.cached").value(0));
 
-		cache.put(cache.key(screening.request(job, new ResumeDocument("x", "Only resume in the cache"))), "{}");
-		cache.put(cache.key(screening.request(job, candidate("candidate_b"))), "{}");
+		cache.put(TestAnswers.JOB_ID,
+				cache.key(screening.request(job, new ResumeDocument("x", "Only resume in the cache"))), "{}");
+		cache.put(TestAnswers.JOB_ID, cache.key(screening.request(job, candidate("candidate_b"))), "{}");
 
 		mvc.perform(post(BASE + "/preview").param("path", TestAnswers.RESUMES_FOLDER).param("name", "candidate_b"))
 			.andExpect(header().string(ScreeningController.CACHED_HEADER, "true"));
 		mvc.perform(post(BASE + "/cache-status").param("path", TestAnswers.RESUMES_FOLDER))
 			.andExpect(jsonPath("$.total").value(10))
 			.andExpect(jsonPath("$.cached").value(1));
+		verifyNoInteractions(client);
+	}
+
+	@Test
+	void countsAndClearsEverythingCachedForOneJob() throws Exception {
+		String otherJob = "technical_product_owner";
+		int before = cache.count(TestAnswers.JOB_ID);
+		int otherBefore = cache.count(otherJob);
+		cache.put(TestAnswers.JOB_ID, "a1", "{}");
+		cache.put(TestAnswers.JOB_ID, "a2", "{}");
+		cache.put(otherJob, "b1", "{}");
+
+		mvc.perform(get(BASE + "/cache")).andExpect(jsonPath("$.count").value(before + 2));
+		mvc.perform(delete(BASE + "/cache"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.removed").value(before + 2));
+		mvc.perform(get(BASE + "/cache")).andExpect(jsonPath("$.count").value(0));
+		assertThat(cache.count(otherJob)).isEqualTo(otherBefore + 1);
+
+		mvc.perform(delete("/api/screenings/no_such_job/cache")).andExpect(status().isNotFound());
 		verifyNoInteractions(client);
 	}
 

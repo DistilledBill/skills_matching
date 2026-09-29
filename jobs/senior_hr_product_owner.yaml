@@ -19,11 +19,11 @@ must_haves:
   - id: hr_systems_experience
     requirement: Has worked on HR technology such as an HRIS, ATS, onboarding, performance, compensation, or payroll system, as owner, implementer, or analyst
 
-# Each competency becomes one Score. Levels run from least to most and must
+# Each skill becomes one Score. Levels run from least to most and must
 # each describe a concrete situation on their own.
-competencies:
+skills:
   - id: product_ownership
-    weight: 0.30
+    weight: 0.35
     question: How much experience does the candidate have owning a product backlog and roadmap in agile delivery, based on `resume`?
     levels:
       - No product ownership or backlog work mentioned
@@ -33,7 +33,7 @@ competencies:
       - Owned roadmaps across several products or teams, with evidence of measurable business results
 
   - id: hr_tech_depth
-    weight: 0.25
+    weight: 0.20
     question: How deep is the candidate's experience with HR technology products such as HRIS, ATS, onboarding, performance, or compensation systems, based on `resume`?
     levels:
       - No HR technology experience mentioned
@@ -72,4 +72,4 @@ competencies:
 thresholds:
   must_have_pass: 0.80    # at or above: requirement met
   must_have_fail: 0.20    # below: requirement not shown; between: human review
-  min_confidence: 0.45    # a Score below this on a weight >= 0.2 competency goes to review
+  min_confidence: 0.45    # a Score below this on a weight >= 0.2 skill goes to review

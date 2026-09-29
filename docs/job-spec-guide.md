@@ -26,8 +26,8 @@ The spec splits the work in two:
 
 | Part of the spec | Who uses it | What it does |
 | --- | --- | --- |
-| `title`, `summary`, `must_haves`, `competencies` (the requirement text, questions and levels) | **Jev**, the model | Decides **what the resume shows**. This is the judgment. |
-| `weight` on each competency, and `thresholds` | **The code**, in [`ScreeningPolicy`](../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java) | Decides **what that means for this job**: status, composite and rank. This is the policy. |
+| `title`, `summary`, `must_haves`, `skills` (the requirement text, questions and levels) | **Jev**, the model | Decides **what the resume shows**. This is the judgment. |
+| `weight` on each skill, and `thresholds` | **The code**, in [`ScreeningPolicy`](../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java) | Decides **what that means for this job**: status, composite and rank. This is the policy. |
 
 Jev never sees the weights or thresholds. That keeps the policy readable, testable, and cheap to change.
 
@@ -63,9 +63,9 @@ must_haves:
     requirement: Has built or maintained server-side services
       or APIs that ran in production
 
-# Each competency becomes a graded question (Score)
-competencies:
-  # Question id: comp_python_depth
+# Each skill becomes a graded question (Score)
+skills:
+  # Question id: skill_python_depth
   - id: python_depth
     # Used by the code only, never sent to Jev
     weight: 0.30
@@ -99,7 +99,7 @@ thresholds:
   must_have_pass: 0.80
   # Below: requirement not shown; between: human review
   must_have_fail: 0.20
-  # A Score below this on a competency weighted 0.2 or
+  # A Score below this on a skill weighted 0.2 or
   # more goes to review
   min_confidence: 0.45
 ```
@@ -127,7 +127,7 @@ Every question sees the whole state, but a question only **points at** the parts
 - **The summary never affects the must-haves**, so it can't change whether a candidate is `meets`, `review` or `missing`.
 - **Editing the summary re-asks every question.** Answers are cached by the full request, and the summary is part of every request. See [section 6](#6-what-each-change-costs).
 
-Write the summary as a short description of the role and its setting (industry, product, stack, what "senior" means here). It is context, not a list of requirements. Put requirements in `must_haves` and `competencies`, where each one gets its own answer.
+Write the summary as a short description of the role and its setting (industry, product, stack, what "senior" means here). It is context, not a list of requirements. Put requirements in `must_haves` and `skills`, where each one gets its own answer.
 
 ### 3.2 `must_haves`: the gate
 
@@ -156,20 +156,20 @@ Writing requirements:
 - **Keep it to things a resume can show.** "Is a fast learner" isn't checkable; "Has owned a product backlog in a paid role" is.
 - **Keep the list short.** A candidate who fails any single must-have ranks last, however strong they are elsewhere. The included specs use two each. An empty list (`must_haves: []`) is allowed and means there is no gate.
 
-### 3.3 `competencies`: the ranking
+### 3.3 `skills`: the ranking
 
-Each competency becomes one **Score**: Jev reads your levels and returns a probability for each level. `score` is the probability-weighted level, so it can land between levels (for example 3.63 on a 0–4 scale).
+Each skill becomes one **Score**: Jev reads your levels and returns a probability for each level. `score` is the probability-weighted level, so it can land between levels (for example 3.63 on a 0–4 scale).
 
 | Field | Rules |
 | --- | --- |
-| `id` | snake_case, unique in the file. Becomes the question id `comp_<id>`. |
+| `id` | snake_case, unique in the file. Becomes the question id `skill_<id>`. |
 | `weight` | A positive number. It is used only by the code. |
 | `question` | Required. It names what it looks at in backticks: `` `resume` ``, or `` `job.summary` `` for the domain question. |
 | `levels` | 2 to 10 entries, from least to most. |
 
-**`weight`** is relative. The composite divides each weight by the total, so weights don't have to add up to 1, although the included specs do add up to 1.00 so each weight reads as a share. A weight of **0.20 or more** also makes a competency "heavy", which matters for `min_confidence` (see 3.4).
+**`weight`** is relative. The composite divides each weight by the total, so weights don't have to add up to 1, although the included specs do add up to 1.00 so each weight reads as a share. A weight of **0.20 or more** also makes a skill "heavy", which matters for `min_confidence` (see 3.4).
 
-**`question`** must make sense on its own. The id is never sent to Jev, so `comp_python_depth` tells the model nothing. The question has to say what to judge.
+**`question`** must make sense on its own. The id is never sent to Jev, so `skill_python_depth` tells the model nothing. The question has to say what to judge.
 
 **`levels`** are the answer scale. Each level should describe **one concrete situation that makes sense on its own**, such as "Owned the design of a multi-service system handling significant traffic or data volume". Avoid a word like "good", and avoid "more than the previous level". Vague or overlapping levels show up as low confidence.
 
@@ -182,7 +182,7 @@ composite  = Σ (weight / total weight × normalized)
 
 Real example, candidate_a:
 
-| Competency | Weight | Normalized | Contribution |
+| Skill | Weight | Normalized | Contribution |
 | --- | --- | --- | --- |
 | python_depth | 0.30 | 0.9075 (3.63 / 4) | 0.272 |
 | distributed_systems | 0.25 | 0.935 | 0.234 |
@@ -211,14 +211,14 @@ The thresholds decide each candidate's status: `meets`, `review` or `missing`. J
 
 Real examples: candidate_c's `python_professional` came back **0.03**, so it's `missing` (Java and Kotlin only). candidate_b's came back **0.93**, so it's met, even though its only Python was "scripts for nightly catalog imports".
 
-**`min_confidence`** applies to competencies. Each Score comes with a `confidence` from 0 to 1 that measures how concentrated Jev's probabilities are across the levels: 1.0 means all on one level, and lower means spread out. If a **heavy** competency (weight 0.20 or more) comes back with confidence **below** `min_confidence`, the candidate goes to `review` with the reason `uncertain: <id> (conf 0.xx)`. Lighter competencies are exempt, because an uncertain score there barely moves the composite. The 0.20 cutoff is fixed in code (`HEAVY_WEIGHT` in [`ScreeningPolicy`](../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java)), not set in the YAML.
+**`min_confidence`** applies to skills. Each Score comes with a `confidence` from 0 to 1 that measures how concentrated Jev's probabilities are across the levels: 1.0 means all on one level, and lower means spread out. If a **heavy** skill (weight 0.20 or more) comes back with confidence **below** `min_confidence`, the candidate goes to `review` with the reason `uncertain: <id> (conf 0.xx)`. Lighter skills are exempt, because an uncertain score there barely moves the composite. The 0.20 cutoff is fixed in code (`HEAVY_WEIGHT` in [`ScreeningPolicy`](../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java)), not set in the YAML.
 
 Real example: candidate_d's `python_depth` spread its probability across levels 2, 3 and 4, with confidence **0.57**. That is above 0.45, so it did not trigger review.
 
 **How the rules combine.** The worst result wins:
 
 1. Any must-have below `must_have_fail` → **missing**
-2. Otherwise, any must-have in the unclear band, or any heavy competency below `min_confidence` → **review**
+2. Otherwise, any must-have in the unclear band, or any heavy skill below `min_confidence` → **review**
 3. Otherwise → **meets**
 
 Candidates are then **ranked by status first** (`meets`, then `review`, then `missing`) and by composite within each status. A `missing` candidate ranks last even with a high composite. candidate_c had a composite of 0.649, which would have placed third on skills alone, but ranked fourth.
@@ -244,7 +244,7 @@ For each resume, the screener sends **one request** containing the state and eve
 | --- | --- | --- |
 | `title`, `summary` + the resume (contact details removed) | `state` | 1 |
 | each `must_haves` entry | Noul `must_<id>` | 2 |
-| each `competencies` entry | Score `comp_<id>` | 5 |
+| each `skills` entry | Score `skill_<id>` | 5 |
 
 Jev answers all the questions in parallel. No answer is visible to another question, so each question has to stand on its own.
 
@@ -267,14 +267,14 @@ Checked at startup by [`JobSpecRepository`](../src/main/java/com/example/resumes
 | `title` has text | `title is required` |
 | `summary` has text | `summary is required` |
 | `must_haves` is present (an empty list is fine) | `must_haves is required (may be empty)` |
-| at least one competency | `at least one competency is required` |
+| at least one skill | `at least one skill is required` |
 | `thresholds` is present | `thresholds is required` |
 | must-have ids are unique | `duplicate must_have id <id>` |
 | every must-have has a `requirement` | `must_have <id> needs a requirement` |
-| competency ids are unique | `duplicate competency id <id>` |
-| every `weight` is above 0 | `competency <id> needs a positive weight` |
-| every competency has a `question` | `competency <id> needs a question` |
-| 2 to 10 `levels` | `competency <id> needs 2 to 10 levels` |
+| skill ids are unique | `duplicate skill id <id>` |
+| every `weight` is above 0 | `skill <id> needs a positive weight` |
+| every skill has a `question` | `skill <id> needs a question` |
+| 2 to 10 `levels` | `skill <id> needs 2 to 10 levels` |
 | `0 ≤ must_have_fail ≤ must_have_pass ≤ 1` | `thresholds need 0 <= must_have_fail <= must_have_pass <= 1` |
 
 YAML keys are snake_case (`must_haves`, `must_have_pass`). The file must end in `.yaml` or `.yml`.
@@ -288,7 +288,7 @@ Jev's raw answers are cached in `.cache/`, keyed by the full request: model, sta
 | Change | In the request? | API calls after restart |
 | --- | --- | --- |
 | `weight`, any `thresholds` value | No | **None.** Re-ranked from cache |
-| A competency's `question` or `levels`, or a must-have's `requirement` | Yes | Re-asks the affected requests |
+| A skill's `question` or `levels`, or a must-have's `requirement` | Yes | Re-asks the affected requests |
 | `title` or `summary` | Yes, in the state of **every** request | Re-asks **everything** for that job |
 | New spec | n/a | One request per resume screened |
 | Model version (`typesafe.model`) | Yes | Re-asks everything |
@@ -301,7 +301,7 @@ Because every question for a resume travels in one request, changing any questio
 
 - **Start from an existing spec.** Copy the closest one in [`jobs/`](../jobs/) to `jobs/<id>.yaml`, put resumes in `resumes/<id>_candidates/`, and restart.
 - **One idea per question.** If a question or requirement needs "and", consider splitting it.
-- **Use must-haves for true gates only.** Anything that is a matter of degree belongs in a competency.
+- **Use must-haves for true gates only.** Anything that is a matter of degree belongs in a skill.
 - **Write levels as concrete situations**, least to most, each readable on its own.
 - **Keep every criterion job-related.** Contact details are removed before Jev sees a resume, but names, schools and dates are not. Check outcomes for bias before relying on them.
 - **Calibrate on your own data.** Run 20–50 resumes your recruiters have already judged, and adjust `must_have_pass`, `must_have_fail` and `min_confidence` until the statuses match what the recruiters would decide.
@@ -316,4 +316,4 @@ Because every question for a resume travels in one request, changing any questio
 | [`technical_product_owner`](../jobs/technical_product_owner.yaml) | Technical Product Owner | [`resumes/technical_product_owner_candidates/`](../resumes/technical_product_owner_candidates/) |
 | [`senior_software_application_designer`](../jobs/senior_software_application_designer.yaml) | Senior Software Application Designer | [`resumes/senior_software_application_designer_candidates/`](../resumes/senior_software_application_designer_candidates/) |
 
-All four have two must-haves, five competencies with weights that add up to 1.00, a `domain_relevance` competency at 0.10 that scores against `` `job.summary` ``, and the same thresholds.
+All four have two must-haves, five skills with weights that add up to 1.00, a `domain_relevance` skill at 0.10 that scores against `` `job.summary` ``, and the same thresholds.

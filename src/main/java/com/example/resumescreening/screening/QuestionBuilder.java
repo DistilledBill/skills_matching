@@ -8,7 +8,7 @@ import com.example.resumescreening.typesafe.Question;
 
 /**
  * Turns a job spec into the questions asked of every resume: one Noul per
- * must-have and one Score per competency, all in a single request.
+ * must-have and one Score per skill, all in a single request.
  */
 public final class QuestionBuilder {
 
@@ -25,8 +25,8 @@ public final class QuestionBuilder {
 		return "must_" + mustHave.id();
 	}
 
-	public static String competencyId(JobSpec.Competency competency) {
-		return "comp_" + competency.id();
+	public static String skillId(JobSpec.Skill skill) {
+		return "skill_" + skill.id();
 	}
 
 	public static Map<String, Question> build(JobSpec job) {
@@ -37,8 +37,8 @@ public final class QuestionBuilder {
 			instructions.put("question", MUST_HAVE_QUESTION);
 			questions.put(mustHaveId(req), new Question.Noul(instructions, MUST_HAVE_CRITERIA));
 		}
-		for (JobSpec.Competency comp : job.competencies()) {
-			questions.put(competencyId(comp), new Question.Score(comp.question(), comp.levels()));
+		for (JobSpec.Skill skill : job.skills()) {
+			questions.put(skillId(skill), new Question.Score(skill.question(), skill.levels()));
 		}
 		return questions;
 	}

@@ -39,7 +39,7 @@ class TypeSafeClientTest {
 			  "model": "jev-1.13.0",
 			  "answers": {
 			    "must_python": {"type": "noul", "noul": 0.93},
-			    "comp_depth": {
+			    "skill_depth": {
 			      "type": "score", "score": 2.52, "confidence": 0.52,
 			      "legend": {"0": "none", "1": "some", "2": "regular", "3": "deep"},
 			      "probabilities": {"0": 0.0, "1": 0.0, "2": 0.48, "3": 0.52}
@@ -51,6 +51,8 @@ class TypeSafeClientTest {
 
 	@TempDir
 	Path cacheDir;
+
+	private static final String JOB = "test_job";
 
 	private final JsonMapper mapper = JsonMapper.builder().build();
 
@@ -77,7 +79,7 @@ class TypeSafeClientTest {
 				Map.of("requirement", "Has used Python professionally", "question",
 						"Does `resume` show evidence that the candidate meets `requirement`?"),
 				new Question.NoulCriteria("yes means", "no means")));
-		questions.put("comp_depth", new Question.Score("How deep?", List.of("none", "some", "regular", "deep")));
+		questions.put("skill_depth", new Question.Score("How deep?", List.of("none", "some", "regular", "deep")));
 		return new SystemOneRequest(Map.of("resume", resume), "jev-latest", questions);
 	}
 
@@ -99,7 +101,7 @@ class TypeSafeClientTest {
 					      },
 					      "criteria": {"true": "yes means", "false": "no means"}
 					    },
-					    "comp_depth": {
+					    "skill_depth": {
 					      "type": "score",
 					      "instructions": "How deep?",
 					      "criteria": ["none", "some", "regular", "deep"]
@@ -109,11 +111,11 @@ class TypeSafeClientTest {
 					""", JsonCompareMode.STRICT))
 			.andRespond(withSuccess(RESPONSE, MediaType.APPLICATION_JSON));
 
-		SystemOneResponse response = client.evaluate(request("Python dev"));
+		SystemOneResponse response = client.evaluate(JOB, request("Python dev"));
 
 		server.verify();
 		assertThat(response.noul("must_python").noul()).isEqualTo(0.93);
-		Answer.Score score = response.score("comp_depth");
+		Answer.Score score = response.score("skill_depth");
 		assertThat(score.score()).isEqualTo(2.52);
 		assertThat(score.confidence()).isEqualTo(0.52);
 		assertThat(score.probabilities()).containsEntry("3", 0.52);
@@ -132,7 +134,7 @@ class TypeSafeClientTest {
 					 "usage": {"input_tokens": 1, "output_tokens": 1}}
 					""", MediaType.APPLICATION_JSON));
 
-		client.evaluate(new SystemOneRequest("s", "jev-latest", Map.of("q", new Question.Noul("Is it?", null))));
+		client.evaluate(JOB, new SystemOneRequest("s", "jev-latest", Map.of("q", new Question.Noul("Is it?", null))));
 
 		server.verify();
 	}
@@ -143,7 +145,7 @@ class TypeSafeClientTest {
 		server.expect(requestTo(URL)).andRespond(withStatus(HttpStatusCode.valueOf(529)));
 		server.expect(requestTo(URL)).andRespond(withSuccess(RESPONSE, MediaType.APPLICATION_JSON));
 
-		SystemOneResponse response = client.evaluate(request("retry me"));
+		SystemOneResponse response = client.evaluate(JOB, request("retry me"));
 
 		server.verify();
 		assertThat(response.noul("must_python").noul()).isEqualTo(0.93);
@@ -155,7 +157,7 @@ class TypeSafeClientTest {
 			server.expect(requestTo(URL)).andRespond(withStatus(HttpStatus.TOO_MANY_REQUESTS));
 		}
 
-		assertThatThrownBy(() -> client.evaluate(request("always limited")))
+		assertThatThrownBy(() -> client.evaluate(JOB, request("always limited")))
 			.isInstanceOfSatisfying(TypeSafeException.class, ex -> assertThat(ex.status()).isEqualTo(429));
 		server.verify();
 	}
@@ -165,7 +167,7 @@ class TypeSafeClientTest {
 		server.expect(requestTo(URL))
 			.andRespond(withStatus(HttpStatus.UNPROCESSABLE_CONTENT).body("{\"detail\":\"bad question\"}"));
 
-		assertThatThrownBy(() -> client.evaluate(request("bad")))
+		assertThatThrownBy(() -> client.evaluate(JOB, request("bad")))
 			.isInstanceOf(TypeSafeException.class)
 			.hasMessageContaining("422")
 			.hasMessageContaining("bad question");
@@ -176,8 +178,8 @@ class TypeSafeClientTest {
 	void secondIdenticalRequestIsServedFromCache() {
 		server.expect(requestTo(URL)).andRespond(withSuccess(RESPONSE, MediaType.APPLICATION_JSON));
 
-		SystemOneResponse first = client.evaluate(request("cached"));
-		SystemOneResponse second = client(" ").evaluate(request("cached")); // no key, no server expectations
+		SystemOneResponse first = client.evaluate(JOB, request("cached"));
+		SystemOneResponse second = client(" ").evaluate(JOB, request("cached")); // no key, no server expectations
 
 		assertThat(second).isEqualTo(first);
 	}
@@ -185,9 +187,9 @@ class TypeSafeClientTest {
 	@Test
 	void changedStateMissesCache() {
 		server.expect(requestTo(URL)).andRespond(withSuccess(RESPONSE, MediaType.APPLICATION_JSON));
-		client.evaluate(request("one"));
+		client.evaluate(JOB, request("one"));
 
-		assertThatThrownBy(() -> client(" ").evaluate(request("two"))).isInstanceOf(MissingApiKeyException.class);
+		assertThatThrownBy(() -> client(" ").evaluate(JOB, request("two"))).isInstanceOf(MissingApiKeyException.class);
 	}
 
 	@Test

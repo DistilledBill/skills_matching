@@ -8,20 +8,20 @@ Today the service is used through curl: 4 REST endpoints (`GET /api/jobs`, `POST
 
 ## Screens
 
-1. **Jobs** (`/`): a card per spec showing title, summary, must-haves, competencies with weights, and thresholds. Actions: Screen, Edit, New job.
+1. **Jobs** (`/`): a card per spec showing title, summary, must-haves, skills with weights, and thresholds. Actions: Screen, Edit, New job.
 2. **Screen** (`/jobs/:id/screen`): pick the source.
    - **Folder:** a dropdown from the new folder endpoint, defaulting to `<id>_candidates`.
    - **Upload:** drag and drop `.txt`, `.md` or `.pdf` files.
    - Buttons: **Preview what Jev sees**, which opens the preview panel below for any resume in the selection and costs nothing, and **Run screening**. A summary line shows how many of the selected resumes already have a cached answer, so you know how many calls to Jev a run will make.
    - Errors in the API's standard JSON format (RFC 9457 `ProblemDetail`) show inline. A 503 means there's no API key and a 502 means TypeSafe failed; each gets a clear message.
 3. **Results** (`/jobs/:id/results`): the main view.
-   - **Ranked table:** rank, candidate, status pill (meets / review / missing), composite as a bar, one mini bar per competency (faded when confidence is low), must-have probabilities, and reasons.
+   - **Ranked table:** rank, candidate, status pill (meets / review / missing), composite as a bar, one mini bar per skill (faded when confidence is low), must-have probabilities, and reasons.
    - **Controls:** filter by status, sort by any column, and a **Download CSV** button (`format=csv`, fetched as a file).
-   - **Row click:** opens the **resume viewer** side panel, with the redacted text next to that candidate's scores. A **What was sent to Jev** tab shows the preview panel for that candidate.
-   - **What-if panel:** sliders for each competency weight plus `must_have_pass`, `must_have_fail` and `min_confidence`. The ranking recomputes instantly in the browser and arrows show rank changes. **Reset** restores the spec's values; **Save to spec** opens the editor pre-filled. After a save, the next screening re-ranks from the cache for free, because weights and thresholds aren't part of the request.
-4. **Spec editor** (`/jobs/:id/edit`, `/jobs/new`): a form for title, summary, must-haves (add, remove, reorder), and competencies (weight, question, levels list), plus thresholds.
+   - **Row click:** opens the **resume viewer** side panel. Its **Resume** tab shows the resume **with contact details** (the original text, `redacted=false`) alongside that candidate's scores. A **What was sent to Jev** tab shows the preview panel for that candidate, which is redacted because that is what Jev receives.
+   - **What-if panel:** sliders for each skill weight plus `must_have_pass`, `must_have_fail` and `min_confidence`. The ranking recomputes instantly in the browser and arrows show rank changes. **Reset** restores the spec's values; **Save to spec** opens the editor pre-filled. After a save, the next screening re-ranks from the cache for free, because weights and thresholds aren't part of the request.
+4. **Spec editor** (`/jobs/:id/edit`, `/jobs/new`): a form for title, summary, must-haves (add, remove, reorder), and skills (weight, question, levels list), plus thresholds.
    - It checks the same rules as `JobSpecRepository.validate` on the client, and the server re-checks on save.
-   - It shows the running weight total and whether each competency counts as heavy (0.2 or more).
+   - It shows the running weight total and whether each skill counts as heavy (0.2 or more).
    - A read-only YAML preview updates as you type.
    - Creating a job also creates `resumes/<id>_candidates/`.
 5. **Resumes** (`/resumes`, `/resumes/:folder`): manage the resume library.
@@ -54,7 +54,7 @@ A shared component, used on the Screen page, in the Results side panel and on ea
   - **Model:** for example `jev-latest`.
   - **State:** the job title and summary, and the resume as Jev receives it. Each redaction (`[email]`, `[phone]`, `[link]`) is highlighted so you can see what was removed.
   - **Must-haves:** one card per must-have (`must_<id>`), showing the requirement text, the fixed question and the true/false criteria.
-  - **Competencies:** one card per competency (`comp_<id>`), showing the question and its numbered levels. Where it helps, each card notes that the weight and thresholds are never sent to Jev.
+  - **Skills:** one card per skill (`skill_<id>`), showing the question and its numbered levels. Where it helps, each card notes that the weight and thresholds are never sent to Jev.
   - **Size:** the request size in characters and an estimate of input tokens, labelled as an estimate.
 - **Raw JSON:** the exact request body, pretty-printed, with a **Copy** button.
 - **Cache status badge:**
@@ -70,9 +70,9 @@ A shared component, used on the Screen page, in the Results side panel and on ea
 
 - **Resume folders:** `GET /api/resume-folders` returns `[{path, fileCount}]` for the subfolders of `resumes/`.
 - **List a folder:** `GET /api/resume-folders/{folder}` returns `[{fileName, name, format, size}]`, where `format` is `pdf`, `txt` or `md`.
-- **Read a resume:** `GET /api/resume-folders/{folder}/resumes/{fileName}?redacted=true|false` returns `{fileName, format, text}`. For a PDF, `text` is the extracted text. `redacted=true` serves the resume viewer, and `redacted=false` gives the original text for editing.
+- **Read a resume:** `GET /api/resume-folders/{folder}/resumes/{fileName}?redacted=true|false` returns `{fileName, format, text}`. For a PDF, `text` is the extracted text. Both values are supported. `redacted=false` gives the original text with contact details, and serves the resume viewer and the resume editor. `redacted=true` gives the text as Jev sees it. When the parameter is left out it defaults to `true`, so contact details are only returned when asked for.
 - **Get the original file:** `GET /api/resume-folders/{folder}/files/{fileName}` returns the file as stored, with its content type (`application/pdf`, `text/plain` or `text/markdown`). The PDF viewer uses this.
-- **Extract text from uploads:** `POST /api/resumes/text?redacted=true|false` (multipart) returns `[{fileName, suggestedName, format, text}]` for the upload review cards and for the viewer on upload screenings.
+- **Extract text from uploads:** `POST /api/resumes/text?redacted=true|false` (multipart) returns `[{fileName, suggestedName, format, text}]` for the upload review cards and for the viewer on upload screenings (which calls it with `redacted=false`). Same `redacted` rules and default as the read endpoint.
 - **Create a folder:** `POST /api/resume-folders` with `{name}`. The name must match `^[a-z0-9_]+$`, and it returns 409 if the folder already exists.
 - **Save a resume:** `PUT /api/resume-folders/{folder}/resumes/{fileName}`, where `fileName` is `<name>.pdf`, `<name>.txt` or `<name>.md`.
   - **Body:** for `.txt` and `.md`, UTF-8 text (`text/plain` or `text/markdown`). For `.pdf`, the original bytes (`application/pdf`). A PDF is checked by opening it with PDFBox, and one that fails to open is rejected.
@@ -108,10 +108,244 @@ A shared component, used on the Screen page, in the Results side panel and on ea
 
 ## Phases
 
-1. **Scaffold and core flow:** Maven and Vite wiring, the SPA forwarding, the folder endpoint, the preview panel with its endpoints and cache status, and the Jobs, Screen, Results and CSV screens.
-2. **Analysis:** what-if tuning (`policy.ts`), the resume viewer and its read endpoints.
+1. **Scaffold and core flow:** Maven and Vite wiring, the SPA forwarding, the folder endpoint, the preview panel with its endpoints and cache status, and the Jobs, Screen, Results and CSV screens. **Done** (commit `143499e`).
+1.1. **Clearer scores and weights:** see [Phase 1.1](#phase-11-clearer-scores-and-weights) below. Front end only. **Done** (not yet committed).
+2. **Analysis:** what-if tuning (`policy.ts`), the resume viewer and its read endpoints. See [Phase 2](#phase-2-analysis-what-if-tuning-and-resume-viewer) below. **Done** (not yet committed).
+2.1. **Weight total indicator, per-job cache and Clear cache:** see [Phase 2.1](#phase-21-weight-total-indicator-per-job-cache-and-clear-cache) below. **Done** (not yet committed).
+2.2. **Rename competencies to skills:** see [Phase 2.2](#phase-22-rename-competencies-to-skills) below. **Done** (not yet committed).
 3. **Resume management:** the Resumes screen (upload, review, edit and save), plus the create-folder and save-resume endpoints.
 4. **Authoring:** the spec editor, the save endpoints and the repository changes.
+
+## Phase 1.1: clearer scores and weights
+
+### Why
+
+Feedback on the phase 1 app:
+
+- **Results table:** each bar has the score as a number to its right, so the bar and the number say the same thing. Confidence appears only in a hover tooltip, and the note under the table ("Faded bars have confidence below 0.45") doesn't match what you see.
+- **Jobs cards:** each skill gets its own horizontal bar. That doesn't show how the weights share the total.
+
+This phase touches the front end only. No API, Java or policy changes.
+
+### Results page: score inside the bar, confidence beside it
+
+- **`Bar` component** (`frontend/src/components/Bar.tsx`):
+  - New props: `value` (the score), plus an optional `confidence` and `lowConfidence`. The `title` and `faded` props are removed.
+  - The score (2 decimals) is centred inside the bar. The track grows from 56×6px to about 72×18px so the number is readable.
+  - The fill uses a new soft colour token (`--score-fill`, light and dark) so `--fg` text stays readable over both the filled and the empty part. It is not the solid accent.
+  - When `confidence` is given, it replaces the number to the right of the bar.
+  - Low confidence (below `min_confidence`) shows the confidence number in amber, using the existing `--warn` / `--warn-soft` chip style. The bar is no longer faded, because a faded bar with text inside it is hard to read.
+- **Results table** (`frontend/src/pages/ResultsPage.tsx`):
+  - **Skill columns:** `<Bar value={score} confidence={conf} lowConfidence={conf < minConfidence} />`. The hover tooltip is removed.
+  - Each skill header gets a small muted second line, "score · conf.", so it's clear what the two numbers are.
+  - **Composite column:** the score is centred in the bar, with nothing beside it, because the composite has no confidence.
+  - **Note under the table:** rewritten to match what's on screen: "Score (0–1) is inside each bar; the number beside it is Jev's confidence. Confidence below 0.45 is shown in amber. Select a row for details and the exact request sent to Jev."
+- **Candidate side panel, Skills list:** uses the same `Bar` with confidence, replacing the separate "confidence 0.xx" text, so both views read the same way.
+- **Other tooltips stay:** only the tooltip on the score bars is removed. The skill header still shows its question on hover, and must-have chips still show their requirement. Say if those should go too.
+
+### Jobs cards: one stacked weight bar
+
+- **New `WeightStack` component** (`frontend/src/components/WeightStack.tsx`): a single vertical bar, about 20px wide, stretched to the height of the skill list.
+  - One coloured segment per skill, stacked top to bottom in list order.
+  - Segment height is `weight / total weight`, so the segments always fill exactly 100%. The spec doesn't require the weights to add up to 1, and this is the same share the composite uses.
+  - `role="img"` with an `aria-label` such as "Weights: python depth 30%, …", and no hover tooltip.
+- **Skill list** (`frontend/src/pages/JobsPage.tsx`): stays where it is, in the same order with the same names and weights. Each row's horizontal bar is replaced by a small colour swatch matching its segment, and the stacked bar sits beside the list. Layout: a two-column grid, with the list on the left and the bar on the right.
+- **Colours:** 8 categorical tokens `--seg-1` … `--seg-8` in `styles.css`, with dark-mode variants. They are chosen to be distinguishable from each other and from the status colours. Every spec has 5 skills today; past 8, the colours repeat.
+- **Clean-up:** the now-unused `.weight-track` and `.weight-fill` CSS is removed.
+
+### Tests and verification
+
+- **Vitest:**
+  - `Bar` shows the score inside the bar, shows the confidence beside it, marks low confidence and has no `title`.
+  - `WeightStack` segment heights add up to 100% for weights that don't sum to 1 (for example 2 and 1 give 66.7% and 33.3%), and it has the aria label.
+- **`./mvnw test`:** all 46 Java tests and the front-end tests pass.
+- **In the browser:** jar on a spare port, screening only fully cached folders, so no API calls. Check:
+  - The results table shows scores in the bars and confidences beside them.
+  - Any cell with confidence below 0.45 is amber. The cached answers will show whether there are any. If there are none, a Vitest case covers the styling.
+  - There are no hover tooltips on the bars.
+  - The job cards show a stacked bar whose segment heights match the weights.
+  - It works at 390px and in dark mode.
+- **Docs:** update the `CLAUDE.md` "Web app" section only if something there changes. The README doesn't describe the bars, so it needs no change.
+- **On approval:** copy this plan to `.plans/web-frontend-plan.md`, so both copies match.
+
+## Phase 2: analysis (what-if tuning and resume viewer)
+
+### Why
+
+- **What-if tuning:** you can see how the ranking would change under different weights and thresholds before editing a spec. It needs no API calls, because weights and thresholds are never sent to Jev.
+- **Resume viewer:** from the results you can read a candidate's resume, with contact details, next to their scores.
+
+### Backend: read endpoints (`web/ResumeController`, `screening/ResumeLoader`)
+
+- **`GET /api/resume-folders/{folder}/resumes/{fileName}?redacted=true|false`:** returns `{fileName, name, format, text}`.
+  - For a PDF, `text` is the text PDFBox extracts, the same text screening uses.
+  - Both values are supported. `false` returns the original text, contact details included. `true` returns the text run through `Redactor.redact`. Left out, it defaults to `true`.
+- **`GET /api/resume-folders/{folder}/files/{fileName}`:** returns the stored file, byte for byte.
+  - Content type is `application/pdf`, `text/plain` or `text/markdown`, sent as `Content-Disposition: inline` so a PDF opens in the browser.
+  - The viewer links to it as "Open original file".
+- **`POST /api/resumes/text?redacted=true|false`** (multipart `files`): returns `[{fileName, name, format, text}]`, using `ResumeLoader.fromUploads`, which already extracts PDF text. Same `redacted` rules and default.
+- **`ResumeLoader.readOne(folder, fileName)` and `rawFile(folder, fileName)`:**
+  - The folder goes through the existing `resolveInsideRoot`.
+  - `fileName` must be a bare file name (no `/`, `\` or `..`) with a supported extension, a regular file, and have a real path inside the folder, which rejects symlinks pointing out.
+  - Text extraction reuses `load`.
+- **New `ResumeNotFoundException` → 404** in `ApiExceptionHandler`. A bad name or path stays a 400, via `InvalidResumeException`.
+- **New record `ResumeContent(fileName, name, format, text)`.** Phase 3 adds `suggestedName` to it for the upload review cards.
+
+### Front end: resume viewer
+
+- The Results side panel gets three tabs: **Scores**, **Resume** (new) and **What was sent to Jev**.
+- **Resume tab:** the original text, with contact details, in the existing `.resume-text` style.
+  - **Folder runs:** it finds the file name from the folder listing (`api.folder`, already cached by TanStack Query), then calls the read endpoint with `redacted=false`. A PDF also gets an "Open original file" link.
+  - **Upload runs:** it posts just that candidate's `File`, still held in memory from the run, to `/api/resumes/text?redacted=false`.
+  - A one-line note says: "Shown with contact details. Jev receives this without them; see What was sent to Jev."
+- **`api.ts`:** `resume(folder, fileName, redacted)`, `resumeFileUrl(folder, fileName)` and `resumeTexts(files, redacted)`, plus the `ResumeContent` type.
+
+### Front end: what-if tuning
+
+- **`src/policy.ts`:** a TypeScript copy of `ScreeningPolicy.decide` and `CandidateResult.RANKING`, with a comment pointing to the Java source. It works from the per-candidate data the report already carries (must-have probabilities, normalized scores, confidences), given a set of weights and thresholds.
+  - **Status:** a must-have below `mustHaveFail` → missing. Otherwise, a must-have below `mustHavePass`, or a skill with weight ≥ 0.2 and confidence below `minConfidence` → review.
+  - **The 0.2 test uses the what-if weight**, because Java compares the raw weight.
+  - **Composite:** Σ weight/total × score.
+  - **Reasons:** the same text formats as Java.
+  - **Ranking:** status, then composite descending, then name to break ties. Java keeps file order on ties, and folder files are sorted by name, so this matches for folder runs.
+- **What-if panel** on the Results page: a collapsible section above the table, closed by default.
+  - One slider per skill weight (0–1, step 0.01), showing the running total and a "heavy" marker at 0.2 or more.
+  - Sliders for `must_have_pass`, `must_have_fail` and `min_confidence` (0–1, step 0.01). `must_have_fail` can't go above `must_have_pass`.
+  - **Reset** restores the spec's values.
+  - **Save to spec** is left out until phase 4, when the spec editor exists.
+- **While the values differ from the spec:**
+  - The table, status filter counts, sorting, weight headers, low-confidence amber and must-have chip colours all use the what-if values.
+  - Each row shows its rank change against the spec ranking, for example ▲2 or ▼1.
+  - A banner says "What-if values: this ranking isn't saved. Download CSV uses the spec's values."
+- **State:** held in the Results page, and cleared on reset or when a new screening runs. Nothing is saved.
+
+### Tests
+
+- **Java** (`WebAppApiTest` or a new `ResumeApiTest`; reads only, no temp writes needed):
+  - Reading a resume with `redacted=false` contains its `@example.com` email and 555 phone number. With `redacted=true` it contains `[email]` and `[phone]` instead. With the parameter left out, the result is the same as `true`.
+  - A PDF read returns extracted text. It uses a PDF built in a temp resumes folder, the same way `ResumeLoaderTest` builds one.
+  - The file endpoint returns the exact bytes and content type.
+  - Uploads in both modes.
+  - Rejected: `..`, a `/` in the name, an unsupported extension, and a folder outside `resumes/` → 400. A missing file → 404.
+- **Vitest:**
+  - `policy.test.ts` covers the same cases as `ScreeningPolicyTest`: strong meets with composite 1, weighted composite, fail → missing, between → review, missing not downgraded, heavy low-confidence → review, light ignored, and ranking order.
+  - **Parity check:** a saved real `ScreeningReport` JSON for the 10 backend candidates (scores only, no contact details) run through `policy.ts` with the spec's own values reproduces every status, composite (to 1e-9), reason and rank the server produced.
+  - A component test: moving a weight slider re-orders the table and shows rank arrows.
+
+### Verification (no paid API calls)
+
+- `./mvnw test`: all Java and front-end tests pass.
+- **Browser check without spending money:** run the jar with `--typesafe.cache-dir=<the scratchpad cache backup>` and `--typesafe.api-key=` (blank). It reads the answers saved before the cache was cleared. Your cleared `.cache/` isn't touched, and any cache miss fails with 503 rather than calling Jev. Then check:
+  - Screening the backend folder gives the known ranking.
+  - Capture that report as the Vitest parity fixture.
+  - The what-if sliders re-rank the table, with arrows, and Reset restores the ranking.
+  - The Resume tab shows the contact details. A PDF, if present, gets the "Open original file" link.
+  - The Resume tab works for an upload run.
+  - The page works at 390px wide, in dark mode, with no console errors.
+- **Docs:** README API table (3 new endpoints) and the `CLAUDE.md` Web app section.
+
+## Phase 2.1: weight total indicator, per-job cache, and Clear cache
+
+### Why
+
+- **Weight total:** in what-if tuning it's easy to leave the weights not adding up to 1. The ranking still works, because the composite uses each weight's share, but you asked for a clear prompt to rebalance.
+- **Clear cache:** you want to clear every cached answer for one job from the Screen page. Today's flat cache (`.cache/<hash>.json`) can't tell which job an answer belongs to, so the cache moves to one folder per job.
+
+### What-if weight total (`WhatIfPanel`)
+
+- The Total line compares the total, rounded to 2 decimals, with 1.00.
+  - **Exactly 1.00:** plain, as now.
+  - **Below 1:** red, with **▲** and the shortfall, for example `Total 0.80 ▲ 0.20`, with screen-reader text "0.20 below 1".
+  - **Above 1:** red, with **▼** and the excess, for example `Total 1.90 ▼ 0.90`.
+- The red and the arrow go away as soon as the total is back to 1.00.
+- The ranking maths doesn't change.
+
+### Per-job cache (`AnswerCache`, `TypeSafeClient`, `ScreeningService`)
+
+- **Layout:** answers are stored as `.cache/<jobId>/<sha256>.json`. The key is the same hash of the full request as today. The job id must match `^[a-z0-9_]+$` and resolve inside the cache folder.
+- **API changes:**
+  - `AnswerCache`: `get(jobId, key)`, `put(jobId, key, json)`, `count(jobId)` and `clear(jobId)`. `clear` deletes that job's folder contents and returns how many answers it removed.
+  - `TypeSafeClient.evaluate(jobId, request)`.
+  - `ScreeningService.isCached(jobId, request)`.
+  - The cache-status endpoint and the preview's `X-Answer-Cached` header look in the job's folder.
+- **One-time migration** (`CacheMigration`, run when the app starts, a no-op once there are no top-level `*.json` files):
+  - For each job, it rebuilds the request for every resume in `resumes/<jobId>_candidates/` with the current spec. A matching top-level file is moved into `.cache/<jobId>/`.
+  - **Every top-level `*.json` file left after that is deleted, as you asked.** That covers answers from uploads, other folders, or older spec wording.
+  - The log reports how many files were moved per job and how many were deleted.
+- **Tests never touch the real `.cache/`:** a test `application.properties` points `typesafe.cache-dir` at `target/test-cache`, so the migration can't run on your cache during `./mvnw test`.
+
+### Clear cache (Screen page)
+
+- **`GET /api/screenings/{jobId}/cache`** returns `{count}` for the job.
+- **`DELETE /api/screenings/{jobId}/cache`** returns `{removed}`. An unknown job gives 404.
+- **The button:** "Clear cache for this job (N answers)" sits next to the cache line, and is disabled when N is 0. Clicking it opens an inline confirmation:
+  > Delete N cached answers for <job title>? Every answer for this job is removed, from any folder or upload. The next screening will call Jev for each resume and cost money.
+
+  It has **Delete** and **Cancel** buttons. After deleting, the cache line, the count and any open preview's Cached badge refresh.
+
+### Tests and verification
+
+- **Java:**
+  - `AnswerCache` get, put, count and clear per job; an invalid job id is rejected; clearing one job leaves the others alone.
+  - `TypeSafeClientTest` updated for `evaluate(jobId, …)`.
+  - Migration: a matching flat file is moved into its job's folder, and a flat file that matches nothing is deleted.
+  - Endpoints: count, delete, 404 for an unknown job.
+  - Cache-status and preview read the job's folder.
+- **Vitest:**
+  - The weight total is plain at 1.00, and shows ▲ below 1 and ▼ above 1.
+  - The Clear cache confirmation calls DELETE only after **Delete** is clicked.
+- **Your real cache:**
+  - Back up `.cache/` to the scratchpad first.
+  - Start the new jar once so the migration runs on it, and report the moved and deleted counts.
+  - Check the Screen page cache lines for each folder.
+- **Clear cache in the browser:** tested only on a scratch copy of the cache, never your real one.
+- **Docs:** the `CLAUDE.md` cache section, and the README API table.
+
+## Phase 2.2: rename "competencies" to "skills"
+
+### Why
+
+You want the term "skills" everywhere instead of "competencies", including the question ids sent to Jev (option B).
+
+### What changes
+
+1. **Job specs** (`jobs/*.yaml`, all 4): the YAML key `competencies:` becomes `skills:`, and the comments change to match. Your uncommitted edits in `senior_backend_engineer.yaml` and `senior_hr_product_owner.yaml` are kept.
+2. **Question ids sent to Jev:** `comp_<id>` becomes `skill_<id>` (`QuestionBuilder.skillId`).
+3. **Java:**
+   - `JobSpec.Competency` becomes `JobSpec.Skill`, and `competencies()` becomes `skills()`.
+   - `QuestionBuilder.competencyId` becomes `skillId`.
+   - Local names such as `comp` and `compIds` in `ScreeningPolicy`, `CsvWriter` and `CandidateResult` change.
+   - Javadoc and the validation messages in `JobSpecRepository` change, for example "at least one skill is required" and "skill X needs a positive weight".
+4. **REST API:** in `GET /api/jobs`, the JSON field `competencies` becomes `skills`. This is a breaking change for outside scripts.
+5. **Web app:**
+   - `api.ts` types (`Skill`, `JobSpec.skills`).
+   - `policy.ts`, `JobsPage`, `ResultsPage` (the `comp:` sort keys, the `comp-col` class), `PreviewPanel` ("Skills (5): scored on levels"), `WhatIfPanel` ("Skill weights"), `WeightStack`, and `styles.css`.
+6. **Tests:**
+   - Java: `TestAnswers`, `ScreeningPolicyTest` (for example `lowConfidenceOnHeavySkillGoesToReview`), `ScreeningApiTest`, `TypeSafeClientTest` (`comp_depth`), `WebAppApiTest`, and the preview assertions that count question cards.
+   - Vitest tests.
+   - The 3 parity fixtures: rename the `competencies` key in each saved spec. The scores and the expected results stay the same, because they don't depend on the question ids.
+7. **Docs:**
+   - `job-spec-guide.{md,html}` and `jev-resume-screening.{md,html}`, including the HTML diagrams and example request JSON (`skill_python_depth`). Each md/html pair stays in sync, and code lines stay at 70 characters or fewer.
+   - `README.md`, `CLAUDE.md`, and this plan.
+   - The recorded A–D numbers in the docs stay as they are, with a note that they were recorded when the ids were `comp_*`.
+8. **Not changed:** `.claude/skills/typesafe-ai/` (TypeSafe's skill), `node_modules`, and build output.
+
+### Cost and the cache
+
+- Every request changes, because the question ids are part of what's sent. So none of the 40 cached answers will match any more. The next screening of each sample folder calls Jev: **about 40 paid calls** across the 4 jobs. You chose this.
+- The old answers are left in each job's folder, where they are never used again. **After the rename, I copy `.cache/` to the scratchpad, then clear all 4 job caches** so no dead entries remain. This costs nothing extra, because those entries could never be used again anyway.
+- I won't run any real screening. You decide when to spend the 40 calls.
+
+### Verification (no paid calls)
+
+- `./mvnw test`: all Java and front-end tests pass.
+- `git grep -i -E "competenc|comp_|comp-col"` finds nothing outside `.claude/skills/`. The only exception is the docs note about the old `comp_*` ids.
+- The app starts with the renamed specs.
+- **In the browser**, using a scratch cache folder with no API key:
+  - The Jobs cards say "Skills".
+  - The preview shows `skill_*` ids and **Not cached**.
+  - The Screen page says "0 already cached, 10 will call Jev".
+  - The what-if panel says "Skill weights".
 
 ## Verification
 
@@ -133,7 +367,7 @@ A shared component, used on the Screen page, in the Results side panel and on ea
     - Neither endpoint calls TypeSafe (`verifyNoInteractions(client)`).
   - **Spec saving:** create, update and invalid-spec cases return 400 with the error messages. These tests write to a **temp `jobs/` folder**, never the checked-in specs, because the existing tests depend on `senior_backend_engineer.yaml`.
 - **Front end:** `npm test` (Vitest).
-  - `policy.ts` tests reproduce the cases in `ScreeningPolicyTest` and the recorded A–D results from the docs: composites 0.906 / 0.706 / 0.368 / 0.649, and candidate_c `missing`.
+  - `policy.ts` tests reproduce the cases in `ScreeningPolicyTest`, plus a parity check against a real server report (see phase 2).
   - Component tests cover status pills and error messages.
 - **End to end:** `./mvnw spring-boot:run`, then open `localhost:8080` and check:
   - A folder screening of `senior_backend_engineer_candidates` works. Its answers are already cached, so it costs nothing.
@@ -142,7 +376,7 @@ A shared component, used on the Screen page, in the Results side panel and on ea
   - CSV downloads.
   - With no API key set, preview `candidate_c` from the Screen page. Check that:
     - the redactions are highlighted
-    - 2 must-have cards and 5 competency cards appear
+    - 2 must-have cards and 5 skill cards appear
     - Raw JSON copies
     - the badge reads **Cached**
   - Edit a resume's text in a review card, then preview it: the change shows before saving.

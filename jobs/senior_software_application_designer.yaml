@@ -20,9 +20,9 @@ must_haves:
   - id: hands_on_development
     requirement: Has worked as a software developer or engineer writing production code in a paid role
 
-# Each competency becomes one Score. Levels run from least to most and must
+# Each skill becomes one Score. Levels run from least to most and must
 # each describe a concrete situation on their own.
-competencies:
+skills:
   - id: application_design_depth
     weight: 0.30
     question: How much experience does the candidate have designing software applications, such as component structure, data models, and workflows, based on `resume`?
@@ -73,4 +73,4 @@ competencies:
 thresholds:
   must_have_pass: 0.80    # at or above: requirement met
   must_have_fail: 0.20    # below: requirement not shown; between: human review
-  min_confidence: 0.45    # a Score below this on a weight >= 0.2 competency goes to review
+  min_confidence: 0.45    # a Score below this on a weight >= 0.2 skill goes to review

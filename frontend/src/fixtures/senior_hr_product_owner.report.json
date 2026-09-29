@@ -1,0 +1,351 @@
+{
+  "_comment": "Captured from the Java service (cached answers, no API call) for policy.test.ts parity checks. Scores only; no resume text.",
+  "job": {
+    "id": "senior_hr_product_owner",
+    "title": "Senior Human Resources Product Owner",
+    "summary": "Own the internal HR technology products behind our payments company: HRIS (Workday or SAP SuccessFactors style), recruiting/ATS, onboarding, performance management, compensation, and employee self-service. Senior product owners own the backlog and roadmap, turn HR stakeholder and employee needs into requirements for agile engineering teams, manage vendor/SaaS integrations, protect sensitive employee data under privacy and compliance rules, and mentor other product owners and analysts.\n",
+    "mustHaves": [
+      {
+        "id": "product_owner_professional",
+        "requirement": "Has worked as a product owner or product manager in a paid role, owning a product backlog or roadmap (not only as a stakeholder or end user)"
+      },
+      {
+        "id": "hr_systems_experience",
+        "requirement": "Has worked on HR technology such as an HRIS, ATS, onboarding, performance, compensation, or payroll system, as owner, implementer, or analyst"
+      }
+    ],
+    "skills": [
+      {
+        "id": "product_ownership",
+        "weight": 0.35,
+        "question": "How much experience does the candidate have owning a product backlog and roadmap in agile delivery, based on `resume`?",
+        "levels": [
+          "No product ownership or backlog work mentioned",
+          "Wrote user stories or requirements for a team, but did not own prioritization",
+          "Owned the backlog for a single agile team, running refinement and sprint planning",
+          "Owned the roadmap and backlog for a product, setting priorities and measuring outcomes",
+          "Owned roadmaps across several products or teams, with evidence of measurable business results"
+        ]
+      },
+      {
+        "id": "hr_tech_depth",
+        "weight": 0.2,
+        "question": "How deep is the candidate's experience with HR technology products such as HRIS, ATS, onboarding, performance, or compensation systems, based on `resume`?",
+        "levels": [
+          "No HR technology experience mentioned",
+          "Used or supported an HR system as an end user or administrator, with no detail on configuration or delivery",
+          "Configured, implemented, or delivered features for one HR system such as Workday, SuccessFactors, or an ATS",
+          "Owned one or more HR systems end to end, including rollout, upgrades, or process redesign",
+          "Led HR technology strategy across several HR domains, such as a platform replacement or multi-system HR ecosystem"
+        ]
+      },
+      {
+        "id": "stakeholder_leadership",
+        "weight": 0.2,
+        "question": "How much leadership has the candidate shown across stakeholders, such as aligning HR, finance, legal, and engineering or mentoring other product owners and analysts, based on `resume`?",
+        "levels": [
+          "No stakeholder management or mentoring mentioned",
+          "Worked with stakeholders from one team to gather requirements",
+          "Aligned several stakeholder groups on priorities for a project, or mentored an individual analyst or product owner",
+          "Led a cross-functional initiative with senior HR or business leaders and coached a group of product owners or analysts",
+          "Set product direction for an HR or business function, owning executive stakeholder relationships and building a product practice"
+        ]
+      },
+      {
+        "id": "integrations_and_data_privacy",
+        "weight": 0.15,
+        "question": "How much experience does the candidate have with SaaS vendor integrations and handling sensitive personal data under privacy or compliance rules, based on `resume`?",
+        "levels": [
+          "No integration, vendor, or data privacy work mentioned",
+          "Worked with a SaaS vendor or on a system integration, with no further detail",
+          "Defined requirements for integrations or data flows between systems, or for access controls on personal data",
+          "Owned vendor relationships or integrations for sensitive data, with evidence of GDPR, SOC 2, or similar compliance work"
+        ]
+      },
+      {
+        "id": "domain_relevance",
+        "weight": 0.1,
+        "question": "How relevant is the candidate's industry experience to `job.summary`?",
+        "levels": [
+          "Unrelated industry with no transferable domain exposure",
+          "Adjacent domain, such as internal enterprise tools or B2B SaaS",
+          "HR technology, or fintech, payments, or other regulated financial companies"
+        ]
+      }
+    ],
+    "thresholds": {
+      "mustHavePass": 0.8,
+      "mustHaveFail": 0.2,
+      "minConfidence": 0.45
+    }
+  },
+  "report": {
+    "jobId": "senior_hr_product_owner",
+    "title": "Senior Human Resources Product Owner",
+    "candidates": [
+      {
+        "rank": 1,
+        "name": "candidate_e",
+        "status": "meets",
+        "composite": 0.999125,
+        "reasons": [],
+        "mustHaves": {
+          "product_owner_professional": 0.99,
+          "hr_systems_experience": 0.99
+        },
+        "scores": {
+          "product_ownership": 0.9975,
+          "hr_tech_depth": 1.0,
+          "stakeholder_leadership": 1.0,
+          "integrations_and_data_privacy": 1.0,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "product_ownership": 0.99,
+          "hr_tech_depth": 1.0,
+          "stakeholder_leadership": 1.0,
+          "integrations_and_data_privacy": 1.0,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 2,
+        "name": "candidate_b",
+        "status": "meets",
+        "composite": 0.9570000000000001,
+        "reasons": [],
+        "mustHaves": {
+          "product_owner_professional": 0.99,
+          "hr_systems_experience": 0.99
+        },
+        "scores": {
+          "product_ownership": 1.0,
+          "hr_tech_depth": 1.0,
+          "stakeholder_leadership": 0.785,
+          "integrations_and_data_privacy": 1.0,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "product_ownership": 1.0,
+          "hr_tech_depth": 1.0,
+          "stakeholder_leadership": 0.88,
+          "integrations_and_data_privacy": 1.0,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 3,
+        "name": "candidate_h",
+        "status": "meets",
+        "composite": 0.846,
+        "reasons": [],
+        "mustHaves": {
+          "product_owner_professional": 0.99,
+          "hr_systems_experience": 0.99
+        },
+        "scores": {
+          "product_ownership": 0.94,
+          "hr_tech_depth": 0.6925,
+          "stakeholder_leadership": 0.645,
+          "integrations_and_data_privacy": 0.9966666666666667,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "product_ownership": 0.8,
+          "hr_tech_depth": 0.66,
+          "stakeholder_leadership": 0.65,
+          "integrations_and_data_privacy": 0.99,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 4,
+        "name": "candidate_j",
+        "status": "meets",
+        "composite": 0.4691249999999999,
+        "reasons": [],
+        "mustHaves": {
+          "product_owner_professional": 0.96,
+          "hr_systems_experience": 0.98
+        },
+        "scores": {
+          "product_ownership": 0.5075,
+          "hr_tech_depth": 0.5025,
+          "stakeholder_leadership": 0.2475,
+          "integrations_and_data_privacy": 0.27666666666666667,
+          "domain_relevance": 1.0
+        },
+        "confidences": {
+          "product_ownership": 0.93,
+          "hr_tech_depth": 0.99,
+          "stakeholder_leadership": 0.99,
+          "integrations_and_data_privacy": 0.73,
+          "domain_relevance": 1.0
+        }
+      },
+      {
+        "rank": 5,
+        "name": "candidate_f",
+        "status": "review",
+        "composite": 0.527125,
+        "reasons": [
+          "unclear: hr_systems_experience (0.78)"
+        ],
+        "mustHaves": {
+          "product_owner_professional": 0.98,
+          "hr_systems_experience": 0.78
+        },
+        "scores": {
+          "product_ownership": 0.5675,
+          "hr_tech_depth": 0.415,
+          "stakeholder_leadership": 0.375,
+          "integrations_and_data_privacy": 0.6666666666666666,
+          "domain_relevance": 0.705
+        },
+        "confidences": {
+          "product_ownership": 0.77,
+          "hr_tech_depth": 0.69,
+          "stakeholder_leadership": 0.58,
+          "integrations_and_data_privacy": 1.0,
+          "domain_relevance": 0.38
+        }
+      },
+      {
+        "rank": 6,
+        "name": "candidate_a",
+        "status": "review",
+        "composite": 0.488,
+        "reasons": [
+          "unclear: product_owner_professional (0.26)"
+        ],
+        "mustHaves": {
+          "product_owner_professional": 0.26,
+          "hr_systems_experience": 0.98
+        },
+        "scores": {
+          "product_ownership": 0.31,
+          "hr_tech_depth": 0.5525,
+          "stakeholder_leadership": 0.3675,
+          "integrations_and_data_privacy": 0.6666666666666666,
+          "domain_relevance": 0.955
+        },
+        "confidences": {
+          "product_ownership": 0.8,
+          "hr_tech_depth": 0.83,
+          "stakeholder_leadership": 0.61,
+          "integrations_and_data_privacy": 1.0,
+          "domain_relevance": 0.86
+        }
+      },
+      {
+        "rank": 7,
+        "name": "candidate_i",
+        "status": "missing",
+        "composite": 0.701875,
+        "reasons": [
+          "not shown: hr_systems_experience (0.04)"
+        ],
+        "mustHaves": {
+          "product_owner_professional": 0.99,
+          "hr_systems_experience": 0.04
+        },
+        "scores": {
+          "product_ownership": 0.9725,
+          "hr_tech_depth": 0.0,
+          "stakeholder_leadership": 0.56,
+          "integrations_and_data_privacy": 1.0,
+          "domain_relevance": 0.995
+        },
+        "confidences": {
+          "product_ownership": 0.91,
+          "hr_tech_depth": 1.0,
+          "stakeholder_leadership": 0.8,
+          "integrations_and_data_privacy": 1.0,
+          "domain_relevance": 0.98
+        }
+      },
+      {
+        "rank": 8,
+        "name": "candidate_d",
+        "status": "missing",
+        "composite": 0.445625,
+        "reasons": [
+          "not shown: hr_systems_experience (0.02)"
+        ],
+        "mustHaves": {
+          "product_owner_professional": 0.98,
+          "hr_systems_experience": 0.02
+        },
+        "scores": {
+          "product_ownership": 0.9475,
+          "hr_tech_depth": 0.0,
+          "stakeholder_leadership": 0.5075,
+          "integrations_and_data_privacy": 0.07333333333333333,
+          "domain_relevance": 0.015
+        },
+        "confidences": {
+          "product_ownership": 0.83,
+          "hr_tech_depth": 1.0,
+          "stakeholder_leadership": 0.97,
+          "integrations_and_data_privacy": 0.78,
+          "domain_relevance": 0.96
+        }
+      },
+      {
+        "rank": 9,
+        "name": "candidate_g",
+        "status": "missing",
+        "composite": 0.28,
+        "reasons": [
+          "not shown: product_owner_professional (0.04)"
+        ],
+        "mustHaves": {
+          "product_owner_professional": 0.04,
+          "hr_systems_experience": 0.98
+        },
+        "scores": {
+          "product_ownership": 0.0,
+          "hr_tech_depth": 0.5925,
+          "stakeholder_leadership": 0.0825,
+          "integrations_and_data_privacy": 0.3133333333333333,
+          "domain_relevance": 0.98
+        },
+        "confidences": {
+          "product_ownership": 1.0,
+          "hr_tech_depth": 0.69,
+          "stakeholder_leadership": 0.72,
+          "integrations_and_data_privacy": 0.46,
+          "domain_relevance": 0.93
+        }
+      },
+      {
+        "rank": 10,
+        "name": "candidate_c",
+        "status": "missing",
+        "composite": 0.276,
+        "reasons": [
+          "not shown: product_owner_professional (0.03)",
+          "unclear: hr_systems_experience (0.77)"
+        ],
+        "mustHaves": {
+          "product_owner_professional": 0.03,
+          "hr_systems_experience": 0.77
+        },
+        "scores": {
+          "product_ownership": 0.0,
+          "hr_tech_depth": 0.335,
+          "stakeholder_leadership": 0.51,
+          "integrations_and_data_privacy": 0.2966666666666667,
+          "domain_relevance": 0.625
+        },
+        "confidences": {
+          "product_ownership": 1.0,
+          "hr_tech_depth": 0.72,
+          "stakeholder_leadership": 0.82,
+          "integrations_and_data_privacy": 0.89,
+          "domain_relevance": 0.28
+        }
+      }
+    ]
+  }
+}

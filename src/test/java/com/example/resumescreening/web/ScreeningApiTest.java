@@ -55,7 +55,7 @@ class ScreeningApiTest {
 		mvc.perform(get("/api/jobs"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$[0].id").value(TestAnswers.JOB_ID))
-			.andExpect(jsonPath("$[0].competencies.length()").value(5));
+			.andExpect(jsonPath("$[0].skills.length()").value(5));
 	}
 
 	@Test
@@ -89,18 +89,18 @@ class ScreeningApiTest {
 			.andExpect(jsonPath("$.questions.must_python_professional.instructions.question")
 				.value("Does `resume` show evidence that the candidate meets `requirement`?"))
 			.andExpect(jsonPath("$.questions.must_python_professional.criteria.true").exists())
-			.andExpect(jsonPath("$.questions.comp_python_depth.type").value("score"))
-			.andExpect(jsonPath("$.questions.comp_python_depth.criteria.length()").value(5))
+			.andExpect(jsonPath("$.questions.skill_python_depth.type").value("score"))
+			.andExpect(jsonPath("$.questions.skill_python_depth.criteria.length()").value(5))
 			.andExpect(jsonPath("$.questions.length()").value(7));
 		verifyNoInteractions(client);
 	}
 
 	@Test
 	void screensFolderAndRanks() throws Exception {
-		given(client.evaluate(any())).willReturn(TestAnswers.strong(job).response());
-		given(client.evaluate(argThat(resumeContaining("Senior Java engineer"))))
+		given(client.evaluate(any(), any())).willReturn(TestAnswers.strong(job).response());
+		given(client.evaluate(any(), argThat(resumeContaining("Senior Java engineer"))))
 			.willReturn(TestAnswers.strong(job).mustHave("python_professional", 0.02).response());
-		given(client.evaluate(argThat(resumeContaining("Full-stack developer"))))
+		given(client.evaluate(any(), argThat(resumeContaining("Full-stack developer"))))
 			.willReturn(TestAnswers.strong(job).mustHave("backend_services", 0.6).score("python_depth", 1, 0.9)
 				.response());
 
@@ -118,7 +118,7 @@ class ScreeningApiTest {
 
 	@Test
 	void screensUploadsAsCsv() throws Exception {
-		given(client.evaluate(any())).willReturn(TestAnswers.strong(job).response());
+		given(client.evaluate(any(), any())).willReturn(TestAnswers.strong(job).response());
 
 		mvc.perform(multipart(BASE).param("format", "csv")
 			.file(new MockMultipartFile("files", "candidate_a.txt", "text/plain",
@@ -134,7 +134,7 @@ class ScreeningApiTest {
 
 	@Test
 	void missingApiKeyIs503() throws Exception {
-		given(client.evaluate(any())).willThrow(new MissingApiKeyException());
+		given(client.evaluate(any(), any())).willThrow(new MissingApiKeyException());
 
 		mvc.perform(post(BASE + "/folder").param("path", TestAnswers.RESUMES_FOLDER))
 			.andExpect(status().isServiceUnavailable())

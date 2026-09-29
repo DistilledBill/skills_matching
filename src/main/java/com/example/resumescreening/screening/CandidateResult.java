@@ -10,10 +10,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /**
  * One screened resume.
  *
- * @param composite   weighted average of normalized competency scores, 0 to 1
+ * @param composite   weighted average of normalized skill scores, 0 to 1
  * @param mustHaves   probability each must-have is shown, by must-have id
- * @param scores      competency scores normalized to 0 to 1, by competency id
- * @param confidences Score confidence, by competency id
+ * @param scores      skill scores normalized to 0 to 1, by skill id
+ * @param confidences Score confidence, by skill id
  */
 public record CandidateResult(int rank, String name, Status status, double composite, List<String> reasons,
 		Map<String, Double> mustHaves, Map<String, Double> scores, Map<String, Double> confidences) {

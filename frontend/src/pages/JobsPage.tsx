@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { api, type JobSpec } from '../api'
 import { ErrorBox } from '../components/ErrorBox'
+import { segmentColor, WeightStack } from '../components/WeightStack'
 import { fixed, humanize } from '../format'
 import { useResults } from '../results'
 
@@ -41,18 +42,19 @@ function JobCard({ job }: { job: JobSpec }) {
         ))}
       </ul>
 
-      <h3>Competencies</h3>
-      <ul className="weights">
-        {job.competencies.map((c) => (
-          <li key={c.id}>
-            <span>{humanize(c.id)}</span>
-            <span className="weight-track" aria-hidden="true">
-              <span className="weight-fill" style={{ width: `${c.weight * 100}%` }} />
-            </span>
-            <span className="num">{fixed(c.weight)}</span>
-          </li>
-        ))}
-      </ul>
+      <h3>Skills</h3>
+      <div className="weights-block">
+        <ul className="weights">
+          {job.skills.map((c, i) => (
+            <li key={c.id}>
+              <span className="swatch" style={{ background: segmentColor(i) }} aria-hidden="true" />
+              <span>{humanize(c.id)}</span>
+              <span className="num">{fixed(c.weight)}</span>
+            </li>
+          ))}
+        </ul>
+        <WeightStack skills={job.skills} />
+      </div>
 
       <p className="muted small">
         Thresholds: pass ≥ {fixed(t.mustHavePass)} · fail &lt; {fixed(t.mustHaveFail)} · min confidence{' '}

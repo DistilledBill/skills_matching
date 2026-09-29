@@ -28,7 +28,7 @@ class ScreeningPolicyTest {
 	void compositeIsWeightedAverageOfNormalizedScores() {
 		// python_depth has 5 levels (0-4) and weight 0.30; everything else at 0.
 		TestAnswers answers = TestAnswers.strong(job);
-		job.competencies().forEach(c -> answers.score(c.id(), 0, 0.9));
+		job.skills().forEach(c -> answers.score(c.id(), 0, 0.9));
 		answers.score("python_depth", 2, 0.9);
 
 		CandidateResult result = ScreeningPolicy.decide("a", job, answers.response());
@@ -69,7 +69,7 @@ class ScreeningPolicyTest {
 	}
 
 	@Test
-	void lowConfidenceOnHeavyCompetencyGoesToReview() {
+	void lowConfidenceOnHeavySkillGoesToReview() {
 		// python_depth weight 0.30 >= 0.2; min_confidence 0.45
 		CandidateResult result = ScreeningPolicy.decide("d", job,
 				TestAnswers.strong(job).score("python_depth", 3, 0.30).response());
@@ -79,7 +79,7 @@ class ScreeningPolicyTest {
 	}
 
 	@Test
-	void lowConfidenceOnLightCompetencyIsIgnored() {
+	void lowConfidenceOnLightSkillIsIgnored() {
 		// domain_relevance weight 0.10 < 0.2
 		CandidateResult result = ScreeningPolicy.decide("d", job,
 				TestAnswers.strong(job).score("domain_relevance", 1, 0.10).response());

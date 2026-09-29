@@ -2,6 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState, type DragEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api, baseName, type Source } from '../api'
+import { ClearCache } from '../components/ClearCache'
 import { ErrorBox } from '../components/ErrorBox'
 import { PreviewPanel } from '../components/PreviewPanel'
 import { sourceKey } from '../format'
@@ -135,6 +136,7 @@ export function ScreenPage() {
           </p>
         )}
         <ErrorBox error={cache.error ?? folderFiles.error} />
+        {job && <ClearCache jobId={jobId} jobTitle={job.title} />}
 
         <div className="actions">
           <button className="button" disabled={!source || run.isPending} onClick={() => source && run.mutate(source)}>

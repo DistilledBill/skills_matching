@@ -16,9 +16,9 @@ must_haves:
   - id: backend_services
     requirement: Has built or maintained server-side services or APIs that ran in production
 
-# Each competency becomes one Score. Levels run from least to most and must
+# Each skill becomes one Score. Levels run from least to most and must
 # each describe a concrete situation on their own.
-competencies:
+skills:
   - id: python_depth
     weight: 0.30
     question: How deep is the candidate's professional Python experience, based on `resume`?
@@ -60,7 +60,7 @@ competencies:
 
   - id: domain_relevance
     weight: 0.10
-    question: How relevant is the candidate's industry experience to `job.summary`?
+    question: How relevant is the candidate's industry experience in 'resume' to `job.summary`?
     levels:
       - Unrelated industry with no transferable domain exposure
       - Adjacent domain, such as general e-commerce or B2B SaaS
@@ -69,4 +69,4 @@ competencies:
 thresholds:
   must_have_pass: 0.80    # at or above: requirement met
   must_have_fail: 0.20    # below: requirement not shown; between: human review
-  min_confidence: 0.45    # a Score below this on a weight >= 0.2 competency goes to review
+  min_confidence: 0.45    # a Score below this on a weight >= 0.2 skill goes to review

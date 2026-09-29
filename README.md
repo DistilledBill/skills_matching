@@ -21,7 +21,7 @@ The app starts without a key. Listing jobs and previewing requests still work, a
 
 ## Web app
 
-`./mvnw spring-boot:run` also builds and serves the web app at http://localhost:8080. From there you can pick a job, screen a resume folder or uploaded files, see the ranked results, download the CSV, and preview exactly what each resume sends to Jev. The preview never calls Jev, so it's free and works without an API key. The Screen page shows how many resumes already have a cached answer before you run a screening.
+`./mvnw spring-boot:run` also builds and serves the web app at http://localhost:8080. From there you can pick a job, screen a resume folder or uploaded files, see the ranked results, download the CSV, and preview exactly what each resume sends to Jev. On the results page, **What-if tuning** re-ranks the candidates in the browser under other weights and thresholds (nothing is saved, and no API call is made), and selecting a candidate shows their resume with contact details next to their scores. The preview never calls Jev, so it's free and works without an API key. The Screen page shows how many resumes already have a cached answer before you run a screening.
 
 The app lives in `frontend/` (React, TypeScript and Vite). The Maven build downloads its own Node into `frontend/.node`, so you don't need Node installed. To work on the UI with live reload, run the Spring app, then in another terminal:
 
@@ -43,6 +43,11 @@ Add `-Dskip.frontend` to any Maven command to skip building and testing the web 
 | POST | `/api/screenings/{jobId}/cache-status` | `{total, cached}` for uploaded `files` or `?path=`: how many resumes would be answered from the cache |
 | GET | `/api/resume-folders` | Folders under `resumes/` with their resume counts |
 | GET | `/api/resume-folders/{folder}` | The resume files in one folder |
+| GET | `/api/resume-folders/{folder}/resumes/{fileName}?redacted=` | One resume's text (PDFs extracted). `redacted=false` includes contact details; `true`, the default, is the text as Jev receives it |
+| GET | `/api/resume-folders/{folder}/files/{fileName}` | The stored file, byte for byte (a PDF opens in the browser) |
+| GET | `/api/screenings/{jobId}/cache` | `{count}`: how many answers are cached for the job |
+| DELETE | `/api/screenings/{jobId}/cache` | Delete every cached answer for the job (`{removed}`); the next screening calls Jev again |
+| POST | `/api/resumes/text?redacted=` | The text of uploaded resumes (multipart `files`), with the same `redacted` rules |
 
 Add `?format=csv` to either screening endpoint to get a CSV instead of JSON.
 
@@ -74,17 +79,17 @@ For each resume, one request asks every question in parallel:
 | Question | Primitive | Used for |
 | --- | --- | --- |
 | One per `must_haves` entry | Noul: does the resume show evidence of this requirement? | Gate: `meets` / `review` / `missing` |
-| One per `competencies` entry | Score on the levels you write | Weighted composite that sets the rank |
+| One per `skills` entry | Score on the levels you write | Weighted composite that sets the rank |
 
 The code then:
 - removes emails, phone numbers and profile links before sending the resume ([Redactor](src/main/java/com/example/resumescreening/screening/Redactor.java))
 - sets a candidate to `missing` if any must-have falls below `must_have_fail`. Values between the two thresholds go to `review`
-- sends the candidate to `review` if a competency weighted 0.2 or more has a Score confidence below `min_confidence`
+- sends the candidate to `review` if a skill weighted 0.2 or more has a Score confidence below `min_confidence`
 - ranks by status, then by the weighted composite ([ScreeningPolicy](src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java))
 
 TypeSafe has no Java SDK, so [TypeSafeClient](src/main/java/com/example/resumescreening/typesafe/TypeSafeClient.java) calls `POST /v1/systemone` directly. It retries 429, 500, 502, 503, 504 and 529 responses and connection errors with exponential backoff, and caps concurrent requests at `typesafe.max-concurrent`.
 
-Raw answers are cached in `.cache/`, keyed by the full request. Changing a `weight` or a threshold and restarting re-ranks with no API calls. Changing a question or a level re-asks only the affected requests. Settings are in [application.yml](src/main/resources/application.yml).
+Raw answers are cached in `.cache/<job id>/`, keyed by the full request. The Screen page's **Clear cache for this job** button deletes one job's answers. Changing a `weight` or a threshold and restarting re-ranks with no API calls. Changing a question or a level re-asks only the affected requests. Settings are in [application.yml](src/main/resources/application.yml).
 
 ## Adding a role
 
