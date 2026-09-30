@@ -1,0 +1,22 @@
+Candidate B
+b.candidate@example.com | (555) 601-3344
+
+SUMMARY
+VP of Product at a fast-growing payments company. Former payments engineer who moved into product 10 years ago.
+
+EXPERIENCE
+VP of Product, Payments, Tallyroute (payment orchestration fintech) — 2020–present
+- Own the product roadmap for the payment orchestration platform: routing across 25 acquirers, retries, and alternative payment methods; volume grew from $4B to $31B a year.
+- Built the product team from 3 to 14: 2 Group Product Managers and 12 product managers.
+- Designed the smart routing strategy with the architecture team (cost- and approval-based routing, cascading retries); lifted approval rates 3 points.
+- Align Engineering, Operations and Sales on quarterly platform priorities.
+- Worked with the compliance lead on PCI-DSS scope reduction through tokenization.
+
+Group Product Manager, Checkout, Loomcart (e-commerce) — 2016–2020
+- Owned checkout and payment method integrations for the marketplace.
+
+Software Engineer, Payments, Loomcart — 2012–2016
+- Built integrations with card processors and wallets in Java.
+
+SKILLS
+Payment orchestration, smart routing, APIs, product management, team building

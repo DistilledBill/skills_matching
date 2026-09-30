@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { api, type JobSpec } from '../api'
 import { ErrorBox } from '../components/ErrorBox'
@@ -7,11 +7,42 @@ import { fixed, humanize } from '../format'
 import { useResults } from '../results'
 
 export function JobsPage() {
+  const queryClient = useQueryClient()
   const jobs = useQuery({ queryKey: ['jobs'], queryFn: api.jobs })
+  // Picks up specs edited in the IDE without restarting the app.
+  const reload = useMutation({
+    mutationFn: api.reloadJobs,
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['jobs'] }),
+  })
+  const invalid = reload.data ? Object.entries(reload.data.errors) : []
   return (
     <>
-      <h1>Jobs</h1>
+      <div className="title-row">
+        <h1>Jobs</h1>
+        <div className="actions">
+          <button className="button button-secondary" onClick={() => reload.mutate()} disabled={reload.isPending}>
+            {reload.isPending ? 'Reloading…' : 'Reload specs from disk'}
+          </button>
+          <Link className="button" to="/jobs/new">
+            New job
+          </Link>
+        </div>
+      </div>
       <p className="lede">Each job spec defines what Jev judges. Pick one to screen resumes against it.</p>
+      {reload.data && (
+        <div className={invalid.length ? 'error-box' : 'notice'} role="status">
+          <p>
+            Reloaded {reload.data.loaded.length} spec{reload.data.loaded.length === 1 ? '' : 's'} from disk
+            {reload.data.removed.length ? `; removed ${reload.data.removed.join(', ')} (file gone)` : ''}.
+          </p>
+          {invalid.map(([id, errs]) => (
+            <p key={id}>
+              <code>{id}</code> is invalid and was not reloaded: {errs.join('; ')}
+            </p>
+          ))}
+        </div>
+      )}
+      <ErrorBox error={reload.error} />
       {jobs.isPending && <p className="muted">Loading job specs…</p>}
       <ErrorBox error={jobs.error} />
       <div className="card-grid">
@@ -65,6 +96,9 @@ function JobCard({ job }: { job: JobSpec }) {
       <footer className="actions">
         <Link className="button" to={`/jobs/${job.id}/screen`}>
           Screen resumes
+        </Link>
+        <Link className="button button-secondary" to={`/jobs/${job.id}/edit`}>
+          Edit
         </Link>
         {run && (
           <Link className="button button-secondary" to={`/jobs/${job.id}/results`}>

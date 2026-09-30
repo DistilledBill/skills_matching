@@ -1,0 +1,21 @@
+Candidate G
+g.candidate@example.com | (555) 601-8830 | linkedin.com/in/cand-g
+
+SUMMARY
+Partner in a strategy consultancy's payments practice. 14 years advising banks, processors and card networks.
+
+EXPERIENCE
+Partner, Payments Practice, Aldermoor Consulting — 2017–present
+- Lead engagements on payments strategy for banks and processors: real-time payments readiness, acquiring strategy and payment modernization roadmaps.
+- Wrote the target architecture and business case for a top-10 bank's move to a new payments hub; the client's teams delivered it.
+- Advise clients on PSD2, PCI-DSS and data localization requirements across Europe and Asia.
+- Lead teams of up to 20 consultants per engagement.
+
+Principal, Aldermoor Consulting — 2012–2017
+- Due diligence on payments acquisitions for private equity clients.
+
+Analyst, Westhaven Capital — 2010–2012
+- Equity research covering payment networks.
+
+SKILLS
+Payments strategy, business cases, regulation, client leadership

@@ -3,6 +3,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
+import { EditJobPage } from './pages/EditJobPage'
 import { JobsPage } from './pages/JobsPage'
 import { ResultsPage } from './pages/ResultsPage'
 import { ScreenPage } from './pages/ScreenPage'
@@ -21,6 +22,8 @@ createRoot(document.getElementById('root')!).render(
           <Routes>
             <Route element={<Layout />}>
               <Route index element={<JobsPage />} />
+              <Route path="jobs/new" element={<EditJobPage />} />
+              <Route path="jobs/:jobId/edit" element={<EditJobPage />} />
               <Route path="jobs/:jobId/screen" element={<ScreenPage />} />
               <Route path="jobs/:jobId/results" element={<ResultsPage />} />
               <Route path="*" element={<p>Page not found.</p>} />

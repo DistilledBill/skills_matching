@@ -1,0 +1,73 @@
+# Job spec for the screener. Everything the model judges comes from here;
+# weights and thresholds are applied in code, so editing them re-ranks from
+# cached answers without new API calls.
+
+title: Managing Director of Product for the Payments Platform
+target_level: Managing Director
+summary: |-
+  The Managing Director of Product for the Payments Platform is an executive leadership role responsible for owning the strategic vision, lifecycle development, and commercial success of our enterprise-grade payment infrastructure. This leader will oversee a high-performing product management organization to build and scale secure, resilient, and highly available core processing capabilities. The position bridges business intent, technical architecture, and complex regulatory landscapes to ensure frictionless financial movement globally.
+  Core Responsibilities
+  • Platform Vision & Roadmap: Own the end-to-end strategic roadmap for foundational payment platforms. This includes pay-in processing, transaction orchestration, alternative payment methods, smart routing, and clearing/settlement.
+  • Scale & Modernization: Drive continuous infrastructure modernization across multiple payment rails, ensuring high throughput, lower cost-of-payments, and platform reuse.
+  • Regulatory & Compliance Controls: Partner closely with Risk, Compliance, and Security teams to ensure absolute adherence to PCI-DSS, local banking laws, network mandates, and data governance.
+  • Cross-Functional Alignment: Serve as the chief alignment engine between Engineering, Architecture, Operations, Data Analytics, and line-of-business stakeholders.
+  • Team Leadership: Cultivate a top-tier product culture. Recruit, develop, and mentor a team of Product Directors and Managers handling deeply technical domain areas.
+
+# Each must-have becomes one Noul: "does the resume show evidence of this?"
+must_haves:
+  - id: product_owner_professional
+    requirement: "Has held an executive-level product leadership role (e.g., VP or Managing Director of Product) owning a payments or financial infrastructure platform at a company processing real-world transaction volume (not only mid-level product manager roles or academic/consulting projects)"
+  - id: payment_platform_experience
+    requirement: "Has directly led product management for a payment processing platform (e.g., pay-in processing, transaction orchestration, or clearing/settlement) that was live in production (not only involvement in general fintech or unrelated financial software products)"
+
+# Each skill becomes one Score. Levels run from least to most and must
+# each describe a concrete situation on their own.
+skills:
+  - id: product_ownership
+    weight: 0.35
+    question: "How deep is the candidate's experience owning a payments or financial infrastructure product, based on `resume`?"
+    levels:
+      - No evidence in the resume of owning a payments or financial infrastructure product
+      - "Contributed as a product manager on a payments or financial infrastructure feature within a larger platform, without owning the roadmap"
+      - "Owned the roadmap for a single payments or financial infrastructure product or module, such as one payment method or a settlement component, live in production"
+      - "Owned the end-to-end roadmap across multiple payment rails or processing stages (e.g., pay-in, orchestration, settlement) for a platform handling significant real-world transaction volume"
+      - "Owned the strategic vision and roadmap for an enterprise-grade payments platform spanning multiple rails and regions, while directing a multi-layer product organization of directors and managers"
+  - id: payments_tech_depth
+    weight: 0.2
+    question: "How deep is the candidate's technical understanding of payment processing systems (e.g., transaction orchestration, payment rails, clearing/settlement, or smart routing), based on `resume`?"
+    levels:
+      - No evidence in the resume of technical understanding of payment processing systems
+      - "Shows awareness of payment processing concepts, such as referencing payment gateways or transaction flows, without detail on how they work"
+      - "Describes working knowledge of specific payment mechanics, such as how a payment rail, orchestration layer, or settlement process functions, gained through direct product or engineering involvement"
+      - "Shows detailed technical fluency across multiple payment processing components (e.g., orchestration, smart routing, clearing/settlement), demonstrated through decisions on architecture, trade-offs, or system design with engineering teams"
+      - "Shows command of technical depth across the full payments stack, demonstrated by driving major architecture or modernization decisions (e.g., multi-rail routing, settlement redesign, latency or cost optimization) at a platform processing significant real-world transaction volume"
+  - id: integrations_and_data_privacy
+    weight: 0.15
+    question: "How deep is the candidate's experience with payment data privacy and regulatory compliance controls (e.g., PCI-DSS, data governance, network mandates), based on `resume`?"
+    levels:
+      - No evidence in the resume of experience with payment data privacy or regulatory compliance controls
+      - Mentions awareness of compliance requirements such as PCI-DSS or data governance without describing direct involvement in meeting them
+      - "Worked within established compliance controls on a payments product, such as implementing PCI-DSS requirements or responding to audit findings, under guidance from Risk or Compliance teams"
+      - "Owned compliance strategy for a payments product, such as leading PCI-DSS certification, data governance policy, or network mandate adherence, partnering directly with Risk, Compliance, and Security teams"
+      - "Directed compliance and regulatory strategy across multiple payment rails or jurisdictions, shaping how Risk, Compliance, and Security teams engage with the product organization on PCI-DSS, local banking laws, and data governance"
+  - id: stakeholder_leadership
+    weight: 0.2
+    question: "How deep is the candidate's experience leading cross-functional alignment and building product teams, based on `resume`?"
+    levels:
+      - No evidence in the resume of leading cross-functional alignment or building product teams
+      - "Worked with other functions such as engineering or operations on shared deliverables, without leading the alignment or owning team-building responsibilities"
+      - "Led cross-functional alignment among engineering, operations, or business stakeholders on a specific product initiative, and managed a small team of individual contributor product managers"
+      - "Served as the primary alignment point between engineering, architecture, operations, and business stakeholders across a product area, while recruiting and developing a team of product managers"
+      - "Directed alignment across engineering, architecture, operations, data analytics, and business stakeholders at an organization-wide level, while building and mentoring a multi-layer team of product directors and managers"
+  - id: domain_relevance
+    weight: 0.1
+    question: How relevant is the candidate's industry experience to `job.summary`?
+    levels:
+      - "Career has been in industries unrelated to payments or financial infrastructure, such as consumer retail, media, or general enterprise software with no financial transaction component"
+      - "Career includes experience in adjacent domains that touch financial or transactional systems, such as e-commerce checkout, banking technology, or fraud/risk platforms, without being focused on payments infrastructure itself"
+      - "Career has been substantially built within payments or financial infrastructure, such as payment processors, card networks, or banking rails, spanning multiple roles or years"
+
+thresholds:
+  must_have_pass: 0.8
+  must_have_fail: 0.2
+  min_confidence: 0.45

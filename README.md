@@ -19,9 +19,15 @@ You can also `export TYPESAFE_API_KEY=...`. An exported variable takes priority 
 
 The app starts without a key. Listing jobs and previewing requests still work, and screening returns 503 until a key is set.
 
+`ANTHROPIC_API_KEY` is optional. Set it the same way to turn on Claude suggestions in the job spec editor (see below).
+
 ## Web app
 
 `./mvnw spring-boot:run` also builds and serves the web app at http://localhost:8080. From there you can pick a job, screen a resume folder or uploaded files, see the ranked results, download the CSV, and preview exactly what each resume sends to Jev. On the results page, **What-if tuning** re-ranks the candidates in the browser under other weights and thresholds (nothing is saved, and no API call is made), and selecting a candidate shows their resume with contact details next to their scores. The preview never calls Jev, so it's free and works without an API key. The Screen page shows how many resumes already have a cached answer before you run a screening.
+
+**Editing job specs.** The Jobs page has **New job** and **Edit** buttons, and What-if tuning has **Save to spec**. The editor checks the same rules as the server as you type, shows the weight total, and says whether a change is free (weights and thresholds re-rank from cached answers) or paid (anything sent to Jev, so every resume is asked again). Saving writes `jobs/<id>.yaml` in a standard layout; hand-written comments other than the header aren't kept. If the file changed on disk since the editor loaded it (say, in your IDE), the save is refused and you can load the version on disk instead. **Reload specs from disk** on the Jobs page picks up IDE edits without a restart, and keeps the loaded version of any file that's invalid.
+
+**Claude suggestions.** With `ANTHROPIC_API_KEY` set, ✨ buttons in the editor ask Claude (`claude-sonnet-5`, set by `anthropic.model`) to draft a skill's question, its levels (you pick how many), a must-have's requirement, or a whole new skill from a one-line description. Claude gets the spec-writing rules and the unsaved draft, never resumes. Each press is one small paid call, suggestions are checked against the spec rules, and nothing changes until you press **Accept**.
 
 The app lives in `frontend/` (React, TypeScript and Vite). The Maven build downloads its own Node into `frontend/.node`, so you don't need Node installed. To work on the UI with live reload, run the Spring app, then in another terminal:
 
@@ -35,7 +41,12 @@ Add `-Dskip.frontend` to any Maven command to skip building and testing the web 
 
 | Method | Path | Does |
 | --- | --- | --- |
-| GET | `/api/jobs` | List the loaded job specs |
+| GET | `/api/jobs` | List the loaded job specs, each with the `version` a save must send back |
+| POST | `/api/jobs` | Create `jobs/<id>.yaml` (and `resumes/<id>_candidates/`) from a spec; 409 if the id exists, 400 with `errors` if invalid |
+| PUT | `/api/jobs/{id}` | Save a spec (`{version, spec}`); 409 if the file changed on disk since `version` |
+| POST | `/api/jobs/{id}/reload`, `/api/jobs/reload` | Re-read one spec, or all of them, from disk |
+| GET | `/api/assist` | Whether Claude suggestions are on (`{enabled, model}`) |
+| POST | `/api/assist/skill-question`, `/skill-levels`, `/must-have`, `/skill` | Claude drafts for the editor (`{draft, index, hint, count}`); 503 without `ANTHROPIC_API_KEY` |
 | POST | `/api/screenings/{jobId}` | Screen uploaded resumes (multipart `files`: .txt, .md, .pdf) |
 | POST | `/api/screenings/{jobId}/folder?path=` | Screen a folder inside `resumes/`, normally the job's own folder such as `senior_backend_engineer_candidates` (a blank `path` means `resumes/` itself, which holds no resumes) |
 | POST | `/api/screenings/{jobId}/preview` | Show the TypeSafe request for one resume (uploaded `files` or `?path=`; `name` picks the resume, otherwise the first) without calling the API. The `X-Answer-Cached` header says whether screening it would be free |
@@ -94,7 +105,7 @@ Raw answers are cached in `.cache/<job id>/`, keyed by the full request. The Scr
 
 ## Adding a role
 
-Copy any spec in `jobs/` to `jobs/<id>.yaml`, put its resumes in `resumes/<id>_candidates/`, and restart; specs are loaded and validated at startup. The [job spec guide](docs/job-spec-guide.md) explains every field, the thresholds and the validation rules. Keep every criterion job-related, and write Score levels as concrete situations that make sense on their own. Before you trust a ranking, check it against a set of resumes your recruiters have already judged, and tune the thresholds on that set. The output is meant to decide which resumes a person reads first. It should not make the hiring decision.
+Use **New job** in the web app, or copy any spec in `jobs/` to `jobs/<id>.yaml` and press **Reload specs from disk** (or restart). Put its resumes in `resumes/<id>_candidates/`. The [job spec guide](docs/job-spec-guide.md) explains every field, the thresholds and the validation rules. Keep every criterion job-related, and write Score levels as concrete situations that make sense on their own. Before you trust a ranking, check it against a set of resumes your recruiters have already judged, and tune the thresholds on that set. The output is meant to decide which resumes a person reads first. It should not make the hiring decision.
 
 ## Test
 

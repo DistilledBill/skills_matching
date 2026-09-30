@@ -1,0 +1,20 @@
+Candidate C
+c.candidate@example.com | (555) 601-4471
+
+SUMMARY
+Senior Product Manager with 6 years in payments, focused on settlement and reconciliation.
+
+EXPERIENCE
+Senior Product Manager, Settlement, Clearwave Payments — 2021–present
+- Own the reconciliation module within the settlement platform, used by 9,000 merchants.
+- Wrote requirements for daily settlement file processing and exception handling with 2 engineering squads.
+- Implemented PCI-DSS logging requirements identified in the annual audit, working with the compliance team.
+
+Product Manager, Payouts, Clearwave Payments — 2018–2021
+- Delivered instant payout features on the existing payouts platform, under the Director of Product.
+
+Business Analyst, Hollis Insurance — 2015–2018
+- Gathered requirements for claims payment workflows.
+
+SKILLS
+Settlement, reconciliation, requirements, SQL, Jira

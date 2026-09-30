@@ -1,0 +1,22 @@
+Candidate H
+h.candidate@example.com | (555) 601-9102
+
+SUMMARY
+Director of Product for card issuing and settlement at a mid-sized processor. 11 years in payments product.
+
+EXPERIENCE
+Director of Product, Issuing and Settlement, Quillpay Processing — 2020–present
+- Own the roadmap for the card issuing platform and its clearing and settlement components, processing $9B a year for 60 fintech clients.
+- Manage 5 product managers; hired 4 of them.
+- Led the platform's PCI-DSS Level 1 certification and the move to network tokenization, partnering with Security and Compliance.
+- Specified the new settlement reconciliation engine with the architecture team, cutting breaks by 70%.
+- Primary product contact for Engineering, Operations and client success on issuing.
+
+Senior Product Manager, Card Issuing, Quillpay Processing — 2016–2020
+- Owned virtual card and spend controls features.
+
+Product Manager, Fenwick Bank — 2013–2016
+- Owned the debit card program for retail customers.
+
+SKILLS
+Card issuing, settlement, PCI-DSS, tokenization, product management

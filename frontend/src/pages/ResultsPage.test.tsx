@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import type { JobSpec, ScreeningReport } from '../api'
 import backend from '../fixtures/senior_backend_engineer.report.json'
@@ -8,11 +8,22 @@ import { Results } from './ResultsPage'
 
 const { job, report } = backend as unknown as { job: JobSpec; report: ScreeningReport }
 
+/** Stands in for the editor: shows the router state it was opened with. */
+function EditorStub() {
+  return <pre data-testid="editor-state">{JSON.stringify(useLocation().state)}</pre>
+}
+
 function renderResults() {
   render(
     <QueryClientProvider client={new QueryClient()}>
       <MemoryRouter>
-        <Results job={job} run={{ report, source: { kind: 'folder', path: 'x' }, ranAt: new Date() }} />
+        <Routes>
+          <Route
+            path="/"
+            element={<Results job={job} run={{ report, source: { kind: 'folder', path: 'x' }, ranAt: new Date() }} />}
+          />
+          <Route path="/jobs/:jobId/edit" element={<EditorStub />} />
+        </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
   )
@@ -59,5 +70,18 @@ describe('what-if tuning on the results page', () => {
     renderResults()
     fireEvent.change(screen.getByRole('slider', { name: /Must-have fail/ }), { target: { value: '0.9' } })
     expect(screen.getByRole('slider', { name: /Must-have pass/ })).toHaveValue('0.9')
+  })
+
+  it('Save to spec opens the editor with the what-if weights and thresholds', () => {
+    renderResults()
+    expect(screen.getByRole('button', { name: 'Save to spec…' })).toBeDisabled()
+    fireEvent.change(screen.getByRole('slider', { name: /Domain relevance/ }), { target: { value: '0.3' } })
+    fireEvent.change(screen.getByRole('slider', { name: /Min confidence/ }), { target: { value: '0.6' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save to spec…' }))
+
+    const state = JSON.parse(screen.getByTestId('editor-state').textContent!)
+    expect(state.whatIf.weights.domain_relevance).toBe(0.3)
+    expect(state.whatIf.weights.python_depth).toBe(0.3)
+    expect(state.whatIf.thresholds.minConfidence).toBe(0.6)
   })
 })

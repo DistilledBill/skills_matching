@@ -1,0 +1,21 @@
+Candidate E
+e.candidate@example.com | (555) 601-6612
+
+SUMMARY
+VP of Engineering for a card processing platform. 18 years building payment systems; never held a product title.
+
+EXPERIENCE
+VP of Engineering, Payments Core, Ironbridge Processing — 2017–present
+- Lead 110 engineers across authorization, transaction orchestration, clearing and settlement, and the ledger.
+- Led the re-architecture of the authorization switch for 12,000 transactions per second at 99.995% availability.
+- Own engineering for PCI-DSS Level 1 and SOC 2; run the annual audit with the Security and Compliance teams.
+- Work with the Head of Product on the platform roadmap and sequence delivery across 12 teams.
+
+Director of Engineering, Settlement, Ironbridge Processing — 2011–2017
+- Rebuilt the settlement engine for multi-currency net settlement with card networks.
+
+Senior Software Engineer, Payments, Crestline Bank — 2006–2011
+- Built ACH and wire transfer processing systems.
+
+SKILLS
+Payments architecture, ISO 8583, settlement, PCI-DSS, engineering leadership

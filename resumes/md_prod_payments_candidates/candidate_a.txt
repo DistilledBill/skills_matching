@@ -1,0 +1,22 @@
+Candidate A
+a.candidate@example.com | (555) 601-2210 | linkedin.com/in/cand-a
+
+SUMMARY
+Managing Director of Product with 17 years in payments, the last 7 owning a global payments platform processing $180B a year across cards, bank transfers and wallets.
+
+EXPERIENCE
+Managing Director, Product — Payments Platform, Northgate Payments (global processor) — 2018–present
+- Own the strategy and roadmap for pay-in processing, transaction orchestration, smart routing, alternative payment methods and clearing/settlement across 40 markets.
+- Lead a product organization of 4 Product Directors and 22 product managers; hired all 4 directors and run the product career framework.
+- Drove the move from three regional processing stacks to one orchestration layer; cut cost-of-payments 18% and raised authorization rates 2.4 points through multi-rail smart routing.
+- Co-own the PCI-DSS Level 1 program with the CISO and Chief Compliance Officer; led product readiness for PSD2 SCA and network tokenization mandates in the EU and UK.
+- Chair the monthly platform council with Engineering, Architecture, Operations, Data Analytics and the merchant business lines.
+
+Director of Product, Settlement, Northgate Payments — 2013–2018
+- Owned the clearing and settlement roadmap; redesigned the settlement engine for T+0 payouts to merchants.
+
+Senior Product Manager, Card Acquiring, Meridian Bank — 2008–2013
+- Owned merchant acquiring features for card-present and e-commerce payments.
+
+SKILLS
+Payments strategy, orchestration, smart routing, settlement, PCI-DSS, PSD2, product org leadership

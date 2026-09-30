@@ -19,6 +19,16 @@ typesafe:
   timeout: 60s
   cache-dir: .cache
 
+# Claude, used only to suggest questions, levels and requirements in the spec editor.
+anthropic:
+  api-key: ${ANTHROPIC_API_KEY:}
+  base-url: https://api.anthropic.com
+  model: claude-sonnet-5
+  max-tokens: 2000
+  max-attempts: 3         # retries 429/529/5xx and connection errors
+  initial-backoff: 1s     # doubled after each retry
+  timeout: 60s
+
 screening:
   jobs-dir: jobs
   resumes-dir: resumes    # /folder?path= is resolved inside this directory

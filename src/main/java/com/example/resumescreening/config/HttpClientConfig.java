@@ -19,4 +19,12 @@ public class HttpClientConfig {
 		return RestClient.builder().requestFactory(factory);
 	}
 
+	@Bean
+	RestClient.Builder anthropicRestClientBuilder(AnthropicProperties props) {
+		HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+		JdkClientHttpRequestFactory factory = new JdkClientHttpRequestFactory(httpClient);
+		factory.setReadTimeout(props.timeout());
+		return RestClient.builder().requestFactory(factory);
+	}
+
 }

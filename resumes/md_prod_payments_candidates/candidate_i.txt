@@ -1,0 +1,22 @@
+Candidate I
+i.candidate@example.com | (555) 601-1147
+
+SUMMARY
+Chief Product Officer of an HR software company. 15 years in B2B SaaS product leadership.
+
+EXPERIENCE
+Chief Product Officer, Peoplegrid (HR and payroll SaaS) — 2019–present
+- Lead a product organization of 3 Product Directors and 16 product managers across recruiting, performance and payroll.
+- Set product vision with the CEO and board; grew annual recurring revenue from $40M to $150M.
+- The payroll module pays out through a third-party payments provider; own the vendor relationship.
+- Run the quarterly business review with Engineering, Sales, Customer Success and Finance.
+- Sponsor the SOC 2 and GDPR programs for customer data.
+
+VP of Product, Peoplegrid — 2015–2019
+- Built the product team from 2 to 10.
+
+Product Manager, Ledgerly (accounting software) — 2010–2015
+- Owned invoicing features for small businesses.
+
+SKILLS
+Product leadership, B2B SaaS, org building, GDPR

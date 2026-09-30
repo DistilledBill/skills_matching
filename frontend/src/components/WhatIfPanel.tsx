@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import type { JobSpec, Thresholds } from '../api'
 import { fixed, humanize } from '../format'
 import { HEAVY_WEIGHT, type Policy } from '../policy'
@@ -22,6 +23,7 @@ export function WhatIfPanel({
   onChange: (policy: Policy) => void
   onReset: () => void
 }) {
+  const navigate = useNavigate()
   const total = job.skills.reduce((sum, c) => sum + (policy.weights[c.id] ?? 0), 0)
   const t = policy.thresholds
 
@@ -91,6 +93,13 @@ export function WhatIfPanel({
       <div className="actions">
         <button className="button button-secondary" onClick={onReset} disabled={!modified}>
           Reset to spec values
+        </button>
+        <button
+          className="button button-secondary"
+          disabled={!modified}
+          onClick={() => navigate(`/jobs/${job.id}/edit`, { state: { whatIf: policy } })}
+        >
+          Save to spec…
         </button>
       </div>
     </details>

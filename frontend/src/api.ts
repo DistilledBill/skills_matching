@@ -32,6 +32,44 @@ export interface JobSpec {
   thresholds: Thresholds
 }
 
+/** A job spec as listed by the API, with the version (a hash of its file) that a save must send back. */
+export interface VersionedJobSpec extends JobSpec {
+  version: string
+}
+
+/** Whether Claude suggestions are available in the spec editor (an Anthropic API key is set). */
+export interface AssistStatus {
+  enabled: boolean
+  model: string
+}
+
+/** Advice with a suggestion, such as a question that doesn't name `resume`; the spec is valid without it. */
+interface Warned {
+  warnings: string[]
+}
+export interface QuestionSuggestion extends Warned {
+  question: string
+}
+export interface LevelsSuggestion extends Warned {
+  levels: string[]
+}
+export interface RequirementSuggestion extends Warned {
+  requirement: string
+}
+export interface SkillSuggestion extends Warned {
+  id: string
+  question: string
+  levels: string[]
+  weight: number
+}
+
+/** The result of re-reading every spec from disk. */
+export interface ReloadResult {
+  loaded: string[]
+  removed: string[]
+  errors: Record<string, string[]>
+}
+
 export interface CandidateResult {
   rank: number
   name: string
@@ -100,19 +138,23 @@ export type Source = { kind: 'folder'; path: string } | { kind: 'upload'; files:
 /** An RFC 9457 problem detail returned by the API, or a network failure. */
 export class ApiError extends Error {
   readonly status: number
+  /** Every validation problem, when the API lists them (an invalid job spec). */
+  readonly errors: string[]
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, errors: string[] = []) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.errors = errors
   }
 }
 
 export async function toApiError(response: Response): Promise<ApiError> {
   let message = `Request failed (HTTP ${response.status})`
   try {
-    const problem = (await response.json()) as { title?: string; detail?: string }
+    const problem = (await response.json()) as { title?: string; detail?: string; errors?: unknown }
     message = problem.detail || problem.title || message
+    if (Array.isArray(problem.errors)) return new ApiError(response.status, message, problem.errors.map(String))
   } catch {
     // Not a problem-detail body; keep the generic message.
   }
@@ -136,6 +178,10 @@ async function json<T>(url: string, init?: RequestInit): Promise<T> {
   return (await (await call(url, init)).json()) as T
 }
 
+function postJson<T>(url: string, body: unknown): Promise<T> {
+  return json<T>(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+}
+
 /** Request body for a folder or an upload, plus any extra parameters. */
 function sourceBody(source: Source, extra: Record<string, string> = {}): FormData | URLSearchParams {
   if (source.kind === 'upload') {
@@ -150,7 +196,26 @@ function sourceBody(source: Source, extra: Record<string, string> = {}): FormDat
 const enc = encodeURIComponent
 
 export const api = {
-  jobs: () => json<JobSpec[]>('/api/jobs'),
+  jobs: () => json<VersionedJobSpec[]>('/api/jobs'),
+
+  createJob: (spec: JobSpec) =>
+    json<VersionedJobSpec>('/api/jobs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(spec),
+    }),
+
+  /** Saves a spec; `version` must match the file on disk or the API answers 409. */
+  updateJob: (id: string, version: string, spec: JobSpec) =>
+    json<VersionedJobSpec>(`/api/jobs/${enc(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ version, spec }),
+    }),
+
+  reloadJob: (id: string) => json<VersionedJobSpec>(`/api/jobs/${enc(id)}/reload`, { method: 'POST' }),
+
+  reloadJobs: () => json<ReloadResult>('/api/jobs/reload', { method: 'POST' }),
 
   folders: () => json<ResumeFolder[]>('/api/resume-folders'),
 
@@ -203,6 +268,19 @@ export const api = {
   /** Deletes every cached answer for the job; the next screening calls Jev again. */
   clearJobCache: (jobId: string) =>
     json<{ removed: number }>(`/api/screenings/${enc(jobId)}/cache`, { method: 'DELETE' }),
+
+  /** Claude suggestions for the spec editor. Each call sends the unsaved draft (never resumes) and is paid. */
+  assist: {
+    status: () => json<AssistStatus>('/api/assist'),
+    skillQuestion: (draft: JobSpec, index: number, hint?: string) =>
+      postJson<QuestionSuggestion>('/api/assist/skill-question', { draft, index, hint }),
+    skillLevels: (draft: JobSpec, index: number, count: number) =>
+      postJson<LevelsSuggestion>('/api/assist/skill-levels', { draft, index, count }),
+    mustHave: (draft: JobSpec, index: number, hint?: string) =>
+      postJson<RequirementSuggestion>('/api/assist/must-have', { draft, index, hint }),
+    skill: (draft: JobSpec, description: string, count: number) =>
+      postJson<SkillSuggestion>('/api/assist/skill', { draft, hint: description, count }),
+  },
 
   cacheStatus: (jobId: string, source: Source) =>
     json<CacheStatus>(`/api/screenings/${enc(jobId)}/cache-status`, {

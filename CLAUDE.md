@@ -21,7 +21,7 @@ cd frontend && npm test                       # Vitest; npx tsc --noEmit to type
 
 No linter is configured. Java sources are indented with tabs.
 
-The API key comes from `TYPESAFE_API_KEY`, either exported or in a git-ignored `.env` in the project root (`spring.config.import: optional:file:.env[.properties]`). The app starts without a key: `/api/jobs` and `/preview` still work, and screening returns 503.
+The API key comes from `TYPESAFE_API_KEY`, either exported or in a git-ignored `.env` in the project root (`spring.config.import: optional:file:.env[.properties]`). The app starts without a key: `/api/jobs` and `/preview` still work, and screening returns 503. `ANTHROPIC_API_KEY` (same places) turns on Claude suggestions in the spec editor; without it `/api/assist/*` returns 503 and the ✨ buttons are disabled.
 
 ## Architecture
 
@@ -48,7 +48,15 @@ Key design points that span several files:
 - `src/policy.ts` is a TypeScript copy of `ScreeningPolicy.decide` and `CandidateResult.RANKING`, used for what-if tuning. **Change both together.** `policy.test.ts` checks the copy against real reports saved in `src/fixtures/*.report.json` (each holds the job spec it was run with, so later spec edits don't break it). Reason numbers use `format2`, which rounds like Java's `%.2f`, not like `toFixed`.
 - Resume text endpoints default to `redacted=true`. The viewer asks for `redacted=false` to show contact details; Jev only ever receives redacted text.
 - Screen-reader-only text (`.visually-hidden`) is absolutely positioned, so a scrolling container that holds it needs `position: relative`, or the page scrolls sideways on phones (see `.table-wrap`).
-- The plan for the remaining phases (resume management, spec editor) is in `.plans/web-frontend-plan.md`.
+- The plan, including the remaining phase (3, resume management), is in `.plans/web-frontend-plan.md`.
+
+## Job spec editing and Claude suggestions
+
+- `JobSpecRepository` keeps each spec with its file and a **version** (SHA-256 of the file's bytes). `update` refuses (409) when the file on disk no longer matches the version the editor loaded, so hand edits in the IDE are never overwritten. `reload`/`reloadAll` re-read from disk and keep the loaded version of an invalid file. `validate` returns every error; at startup any error still stops the app.
+- `toYaml` writes the standard header, snake_case keys in the usual order, and the section comments. Other hand-written comments are lost on save.
+- `frontend/src/spec.ts` mirrors `validate` message for message, and `changeCost` decides free vs paid: anything in the request (title, target_level, summary, requirements, questions, levels, ids) is paid; weights, thresholds and reordering are free, because questions are keyed by id and the cache key sorts keys.
+- `assist/ClaudeClient` calls the Messages API with one forced tool (`tool_choice`), so answers are typed JSON; it retries 429/529/5xx like `TypeSafeClient`. `assist/SpecAssistant` sends the draft spec (never resumes), checks each suggestion (level count, unique snake_case id, weight range, non-empty text) and retries once with the problems spelled out. When the item already has text, the prompt gives the current version and asks for an improvement, not a copy; the tools have an optional `note` for "already as good as it can be", and a suggestion that repeats the current text (fully, or some of its levels) comes back with a warning. Its system prompt is `src/main/resources/assist/spec-writing-rules.md`: **keep it in step with sections 3 and 7 of `docs/job-spec-guide.md`.**
+- Tests never call Claude: `ClaudeClientTest` uses `MockRestServiceServer`, the others mock `ClaudeClient`. For a manual end-to-end check without cost, point `anthropic.base-url` at a local stub.
 
 ## Tests depend on real repo files
 

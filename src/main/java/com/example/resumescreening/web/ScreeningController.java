@@ -47,11 +47,6 @@ public class ScreeningController {
 		this.screening = screening;
 	}
 
-	@GetMapping("/jobs")
-	public List<JobSpec> listJobs() {
-		return jobs.all();
-	}
-
 	/** Screen uploaded resumes ({@code files} parts: .txt, .md, or .pdf). */
 	@PostMapping(path = "/screenings/{jobId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> screenUploads(@PathVariable String jobId, @RequestParam("files") List<MultipartFile> files,

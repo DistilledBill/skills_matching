@@ -154,6 +154,21 @@ public class ResumeLoader {
 		return file;
 	}
 
+	/** Creates a folder directly under the resumes root if it isn't there yet, and returns its name. */
+	public String ensureFolder(String name) {
+		if (name == null || !name.matches("[A-Za-z0-9_-]+")) {
+			throw new InvalidResumeException("'" + name + "' is not a valid folder name");
+		}
+		try {
+			Files.createDirectories(root.resolve(name));
+			resolveInsideRoot(name);
+			return name;
+		}
+		catch (IOException ex) {
+			throw new InvalidResumeException("Could not create folder '" + name + "'", ex);
+		}
+	}
+
 	private static int countResumes(Path dir) throws IOException {
 		try (Stream<Path> files = Files.list(dir)) {
 			return (int) files.filter(Files::isRegularFile).filter(p -> isSupported(p.getFileName().toString())).count();

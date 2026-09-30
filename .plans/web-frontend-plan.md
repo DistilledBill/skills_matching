@@ -113,9 +113,10 @@ A shared component, used on the Screen page, in the Results side panel and on ea
 2. **Analysis:** what-if tuning (`policy.ts`), the resume viewer and its read endpoints. See [Phase 2](#phase-2-analysis-what-if-tuning-and-resume-viewer) below. **Done** (commit `e6ca13c`).
 2.1. **Weight total indicator, per-job cache and Clear cache:** see [Phase 2.1](#phase-21-weight-total-indicator-per-job-cache-and-clear-cache) below. **Done** (commit `e6ca13c`).
 2.2. **Rename competencies to skills:** see [Phase 2.2](#phase-22-rename-competencies-to-skills) below. **Done** (commit `e6ca13c`).
-2.3. **Required `target_level` as context:** see [Phase 2.3](#phase-23-required-target_level-sent-as-context) below. **Done** (not yet committed).
+2.3. **Required `target_level` as context:** see [Phase 2.3](#phase-23-required-target_level-sent-as-context) below. **Done** (commit `eb18d86`).
 3. **Resume management:** the Resumes screen (upload, review, edit and save), plus the create-folder and save-resume endpoints.
-4. **Authoring:** the spec editor, the save endpoints and the repository changes. See [Phase 4](#phase-4-authoring-the-spec-editor) below.
+4. **Authoring:** the spec editor, the save endpoints and the repository changes. See [Phase 4](#phase-4-authoring-the-spec-editor) below. **Done** (committed with 4.1).
+4.1. **Claude suggestions in the editor:** suggest a skill's question, a skill's levels, a must-have's requirement, or a whole new skill. See [Phase 4.1](#phase-41-claude-suggestions-in-the-spec-editor) below. **Done**, including the manual check with a real key and the fix so suggestions improve existing text instead of repeating it.
 
 ## Phase 1.1: clearer scores and weights
 
@@ -452,6 +453,78 @@ Specs are written by hand in YAML today. The editor lets you create and change t
   - Change the file on disk, then save from the editor: 409, then Load the version on disk.
   - Reload specs from disk.
   - Check 390px width and dark mode.
+
+## Phase 4.1: Claude suggestions in the spec editor
+
+### Why
+
+Writing good questions and levels is the hard part of a spec. Each must stand on its own, point at `` `resume` ``, and describe concrete situations from least to most. Buttons in the editor ask a Claude model for a draft that follows those rules. You review it, then accept, edit or discard it. Nothing is saved until you press Save.
+
+### What you get in the editor
+
+- **Suggest question** (on a skill): drafts the skill's question from its id or name, an optional short hint, and the job's context.
+- **Suggest levels** (on a skill): drafts the ordered levels for the skill's current question. A count picker (2–10, default 5) sits next to the button.
+- **Suggest requirement** (on a must-have): drafts or tightens the requirement text so it reads well in the fixed Noul question: "Does `resume` show evidence that the candidate meets `requirement`?".
+- **New skill from a description:** a one-line box, for example "experience running on-call for payment systems". It drafts a whole skill: id, question, levels (using the count picker) and a suggested weight.
+- **Every suggestion appears in a review box** with **Accept**, **Try again** and **Discard**.
+  - Accept fills in the field or fields. It never overwrites silently.
+  - A new skill's suggested weight is added as-is, so the red ▲/▼ total shows whether to rebalance.
+- **Context sent:** the editor's current, unsaved draft (title, target level, summary, must-haves, other skills), so a suggestion fits the job and doesn't overlap existing items.
+- **Without `ANTHROPIC_API_KEY`:** the buttons are disabled with "Set ANTHROPIC_API_KEY to enable suggestions". The rest of the editor works as normal.
+- **Cost note beside the buttons:** "Uses Claude (paid, about one small call per press)". Accepting a changed question or levels makes the save paid for Jev too, and phase 4's cost preview already covers that.
+
+### Backend
+
+- **Configuration** (`application.yml`, new `anthropic` section):
+  - `api-key: ${ANTHROPIC_API_KEY:}`, read from the environment or the git-ignored `.env`, like the TypeSafe key.
+  - `model: claude-sonnet-5`, `base-url: https://api.anthropic.com`, `timeout: 60s`, `max-tokens: 2000`, and `max-attempts: 3`.
+  - Bound by a new `AnthropicProperties` record.
+- **`assist/ClaudeClient`:** calls `POST /v1/messages` with the same `RestClient` style as `TypeSafeClient`. No new dependency.
+  - Headers: `x-api-key` and `anthropic-version: 2023-06-01`.
+  - Each suggestion type is a **forced tool call** with a JSON schema: `tool_choice` set to that tool. The answer is always typed JSON, for example `{question}`, `{levels: [...]}`, `{requirement}` or `{id, question, levels, weight}`.
+  - Retries 429, 529 and 5xx with backoff. A missing key gives the existing 503 pattern (`MissingApiKeyException` style), and an upstream failure gives 502.
+- **`assist/SpecAssistant`:** builds the prompts and checks the results.
+  - **System prompt:** the spec-writing rules, kept in `src/main/resources/assist/spec-writing-rules.md`, drawn from section 7 of the job spec guide ("Writing a good spec") and `QuestionBuilder`'s fixed must-have question. The rules:
+    - questions stand alone and refer to `` `resume` `` (and `` `job.summary` `` or `` `job.target_level` `` only when the question is about them)
+    - one narrow judgment per skill
+    - levels are ordered least to most, each a concrete situation that stands on its own
+    - requirements have a clear boundary and are provable from a resume
+    - ids are snake_case
+  - **User prompt:** the draft spec, plus the target item and any hint or requested count.
+  - **Checks, using the same rules as `JobSpecRepository.validate`:**
+    - the text is not blank
+    - the level count is exactly the one requested
+    - a new id is snake_case and not already used
+    - the weight is between 0 and 1
+
+    The checks also warn when a question doesn't reference `` `resume` ``. A suggestion that fails a check is retried once, then reported as an error.
+- **`web/AssistController`:**
+  - `GET /api/assist` returns `{enabled, model}`, which the UI uses to enable or disable the buttons.
+  - `POST /api/assist/skill-question`, `POST /api/assist/skill-levels` (with `count`), `POST /api/assist/must-have` and `POST /api/assist/skill`. Each takes `{draft, target, hint?, count?}`.
+- **Privacy:** only spec text is sent to Anthropic, never resumes or candidate data. The app logs each call's token usage without the prompt text.
+
+### Tests and verification
+
+- **Java** (`ClaudeClientTest` with `MockRestServiceServer`, like `TypeSafeClientTest`; `AssistApiTest` with a mocked client):
+  - **The request:** model `claude-sonnet-5`, a forced `tool_choice`, the system prompt containing the rules, and the draft included.
+  - **Parsing:** the tool-use output is parsed into typed results.
+  - **Retries:** 429 and 529 are retried.
+  - **Missing key:** 503, and `GET /api/assist` returns `enabled: false`.
+  - **Bad suggestions:** a wrong level count or a duplicate id is retried once, then returns 502 with a clear message.
+  - **Nothing leaks:** no resume text in any request.
+- **Vitest:**
+  - The buttons are disabled when assist is off.
+  - A suggestion changes nothing until **Accept**.
+  - The level-count picker sends `count`.
+  - Accepting a new skill appends it and updates the weight total.
+- **Manual check with your `ANTHROPIC_API_KEY`:** about 5 small paid calls, run only with your OK.
+  - Suggest a question, levels (3 and 5) and a requirement for the Director of Engineering spec in a scratch copy of `jobs/`.
+  - Draft one new skill from a description.
+  - Check that each passes validation and reads well.
+- **Docs:**
+  - README: `ANTHROPIC_API_KEY`, and what the buttons do.
+  - `CLAUDE.md`: the assist flow, and the note that the rules file must stay in sync with section 7 of the guide.
+  - Job spec guide (md and html): a short "Suggestions" note.
 
 ## Verification
 

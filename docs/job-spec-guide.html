@@ -414,7 +414,7 @@ curl -X POST \
 
     <!-- 5 -->
     <h2 id="validation">5. Validation rules</h2>
-    <p>Checked at startup by <a href="../src/main/java/com/example/resumescreening/job/JobSpecRepository.java"><code>JobSpecRepository</code></a>. Any failure stops the app with <code>Invalid job spec &lt;file&gt;: &lt;problem&gt;</code>.</p>
+    <p>Checked by <a href="../src/main/java/com/example/resumescreening/job/JobSpecRepository.java"><code>JobSpecRepository</code></a> at startup, on every save from the editor, and on every reload from disk. At startup any failure stops the app with <code>Invalid job spec &lt;file&gt;: &lt;problems&gt;</code>. A save or reload is refused with every problem listed, and the version already loaded stays in use. The editor runs the same checks as you type.</p>
     <div class="table-wrap"><table>
       <thead><tr><th>Rule</th><th>Error message</th></tr></thead>
       <tbody>
@@ -425,13 +425,17 @@ curl -X POST \
         <tr><td><code>must_haves</code> is present (an empty list is fine)</td><td><code>must_haves is required (may be empty)</code></td></tr>
         <tr><td>at least one skill</td><td><code>at least one skill is required</code></td></tr>
         <tr><td><code>thresholds</code> is present</td><td><code>thresholds is required</code></td></tr>
+        <tr><td>every must-have and skill has an id</td><td><code>every must_have needs an id</code>, <code>every skill needs an id</code></td></tr>
+        <tr><td>ids use lowercase letters, digits and <code>_</code></td><td><code>must_have id &lt;id&gt; may only use lowercase letters, digits and '_'</code> (same for skills)</td></tr>
         <tr><td>must-have ids are unique</td><td><code>duplicate must_have id &lt;id&gt;</code></td></tr>
         <tr><td>every must-have has a <code>requirement</code></td><td><code>must_have &lt;id&gt; needs a requirement</code></td></tr>
         <tr><td>skill ids are unique</td><td><code>duplicate skill id &lt;id&gt;</code></td></tr>
         <tr><td>every <code>weight</code> is above 0</td><td><code>skill &lt;id&gt; needs a positive weight</code></td></tr>
         <tr><td>every skill has a <code>question</code></td><td><code>skill &lt;id&gt; needs a question</code></td></tr>
         <tr><td>2 to 10 <code>levels</code></td><td><code>skill &lt;id&gt; needs 2 to 10 levels</code></td></tr>
+        <tr><td>no level is empty</td><td><code>skill &lt;id&gt; has an empty level</code></td></tr>
         <tr><td><code>0 ≤ must_have_fail ≤ must_have_pass ≤ 1</code></td><td><code>thresholds need 0 &lt;= must_have_fail &lt;= must_have_pass &lt;= 1</code></td></tr>
+        <tr><td><code>0 ≤ min_confidence ≤ 1</code></td><td><code>min_confidence must be between 0 and 1</code></td></tr>
       </tbody>
     </table></div>
     <p>YAML keys are snake_case (<code>must_haves</code>, <code>must_have_pass</code>). The file must end in <code>.yaml</code> or <code>.yml</code>.</p>
@@ -454,7 +458,9 @@ curl -X POST \
     <!-- 7 -->
     <h2 id="writing">7. Writing a good spec</h2>
     <ul>
-      <li><strong>Start from an existing spec.</strong> Copy the closest one in <a href="../jobs/"><code>jobs/</code></a> to <code>jobs/&lt;id&gt;.yaml</code>, put resumes in <code>resumes/&lt;id&gt;_candidates/</code>, and restart.</li>
+      <li><strong>Start from an existing spec.</strong> Use <strong>New job</strong> in the web app, or copy the closest spec in <a href="../jobs/"><code>jobs/</code></a> to <code>jobs/&lt;id&gt;.yaml</code> and press <strong>Reload specs from disk</strong>. Put resumes in <code>resumes/&lt;id&gt;_candidates/</code>.</li>
+      <li><strong>Let the editor tell you the cost.</strong> It says whether a change is free (weights, thresholds, reordering) or paid (anything sent to Jev, which re-asks every resume), and it refuses to overwrite a file you changed on disk since opening it.</li>
+      <li><strong>Use suggestions as drafts.</strong> With <code>ANTHROPIC_API_KEY</code> set, the editor's ✨ buttons ask Claude to draft a question, levels, a requirement or a whole skill, following these rules. Read every draft before accepting it: you are responsible for what Jev is asked.</li>
       <li><strong>One idea per question.</strong> If a question or requirement needs "and", consider splitting it.</li>
       <li><strong>Use must-haves for true gates only.</strong> Anything that is a matter of degree belongs in a skill.</li>
       <li><strong>Write levels as concrete situations</strong>, least to most, each readable on its own.</li>

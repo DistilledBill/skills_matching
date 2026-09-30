@@ -1,0 +1,21 @@
+Candidate D
+d.candidate@example.com | (555) 601-5580 | linkedin.com/in/cand-d
+
+SUMMARY
+VP of Product for a consumer e-commerce marketplace with 20 million monthly buyers.
+
+EXPERIENCE
+VP of Product, Brightaisle (online marketplace) — 2019–present
+- Lead 3 Product Directors and 18 product managers across search, discovery, seller tools and the mobile apps.
+- Set the product vision and annual roadmap with the CEO and CTO; grew gross merchandise value 60% in 4 years.
+- Chair quarterly planning across Engineering, Design, Data Science and Marketing.
+- Checkout and payments are handled by a separate platform team; partnered with them on a one-click checkout launch.
+
+Director of Product, Discovery, Brightaisle — 2015–2019
+- Owned search and recommendations; built the experimentation program.
+
+Product Manager, Streamcast (media) — 2011–2015
+- Owned subscription and content features for the streaming app.
+
+SKILLS
+Product strategy, marketplaces, experimentation, org leadership

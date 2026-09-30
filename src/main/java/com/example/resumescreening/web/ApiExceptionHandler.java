@@ -1,6 +1,10 @@
 package com.example.resumescreening.web;
 
+import com.example.resumescreening.assist.AssistException;
+import com.example.resumescreening.assist.AssistUnavailableException;
+import com.example.resumescreening.job.InvalidJobSpecException;
 import com.example.resumescreening.job.JobNotFoundException;
+import com.example.resumescreening.job.JobSpecConflictException;
 import com.example.resumescreening.screening.InvalidResumeException;
 import com.example.resumescreening.screening.ResumeNotFoundException;
 import com.example.resumescreening.typesafe.MissingApiKeyException;
@@ -21,6 +25,36 @@ class ApiExceptionHandler {
 	@ExceptionHandler
 	ProblemDetail jobNotFound(JobNotFoundException ex) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+	}
+
+	/** 400 with every problem in {@code errors}, so the editor can show them all at once. */
+	@ExceptionHandler
+	ProblemDetail invalidJobSpec(InvalidJobSpecException ex) {
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+		problem.setProperty("errors", ex.errors());
+		return problem;
+	}
+
+	@ExceptionHandler
+	ProblemDetail jobSpecConflict(JobSpecConflictException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+	}
+
+	@ExceptionHandler
+	ProblemDetail assistUnavailable(AssistUnavailableException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+	}
+
+	@ExceptionHandler
+	ProblemDetail assistFailed(AssistException ex) {
+		log.warn("Spec suggestion failed: {}", ex.getMessage());
+		return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, ex.getMessage());
+	}
+
+	/** A request the handler can't act on, such as an out-of-range level count. */
+	@ExceptionHandler
+	ProblemDetail badArgument(IllegalArgumentException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
 	}
 
 	@ExceptionHandler

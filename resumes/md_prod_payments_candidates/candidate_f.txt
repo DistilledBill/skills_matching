@@ -1,0 +1,21 @@
+Candidate F
+f.candidate@example.com | (555) 601-7765
+
+SUMMARY
+Head of Digital Product at a regional bank, leading the mobile and online banking apps.
+
+EXPERIENCE
+Head of Digital Product, Harborline Bank — 2019–present
+- Lead 2 Product Directors and 9 product managers owning the mobile app, online banking and customer onboarding for 1.4 million customers.
+- Launched in-app person-to-person transfers and bill pay, built on the bank's core payments system owned by the operations technology team.
+- Work with Risk and Compliance on KYC and data privacy requirements for new features.
+- Align Digital, Branch Operations, Marketing and IT on the annual digital roadmap.
+
+Senior Product Manager, Mobile Banking, Harborline Bank — 2014–2019
+- Owned the mobile app roadmap; grew monthly active users 3x.
+
+Product Manager, Tenfold (travel booking) — 2010–2014
+- Owned the hotel booking funnel.
+
+SKILLS
+Digital banking, mobile product, customer experience, KYC

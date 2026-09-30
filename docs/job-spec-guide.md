@@ -266,7 +266,7 @@ curl -X POST \
 
 ## 5. Validation rules
 
-Checked at startup by [`JobSpecRepository`](../src/main/java/com/example/resumescreening/job/JobSpecRepository.java). Any failure stops the app with `Invalid job spec <file>: <problem>`.
+Checked by [`JobSpecRepository`](../src/main/java/com/example/resumescreening/job/JobSpecRepository.java) at startup, on every save from the editor, and on every reload from disk. At startup any failure stops the app with `Invalid job spec <file>: <problems>`. A save or reload is refused with every problem listed, and the version already loaded stays in use. The editor runs the same checks as you type.
 
 | Rule | Error message |
 | --- | --- |
@@ -277,13 +277,17 @@ Checked at startup by [`JobSpecRepository`](../src/main/java/com/example/resumes
 | `must_haves` is present (an empty list is fine) | `must_haves is required (may be empty)` |
 | at least one skill | `at least one skill is required` |
 | `thresholds` is present | `thresholds is required` |
+| every must-have and skill has an id | `every must_have needs an id`, `every skill needs an id` |
+| ids use lowercase letters, digits and `_` | `must_have id <id> may only use lowercase letters, digits and '_'` (same for skills) |
 | must-have ids are unique | `duplicate must_have id <id>` |
 | every must-have has a `requirement` | `must_have <id> needs a requirement` |
 | skill ids are unique | `duplicate skill id <id>` |
 | every `weight` is above 0 | `skill <id> needs a positive weight` |
 | every skill has a `question` | `skill <id> needs a question` |
 | 2 to 10 `levels` | `skill <id> needs 2 to 10 levels` |
+| no level is empty | `skill <id> has an empty level` |
 | `0 ≤ must_have_fail ≤ must_have_pass ≤ 1` | `thresholds need 0 <= must_have_fail <= must_have_pass <= 1` |
+| `0 ≤ min_confidence ≤ 1` | `min_confidence must be between 0 and 1` |
 
 YAML keys are snake_case (`must_haves`, `must_have_pass`). The file must end in `.yaml` or `.yml`.
 
@@ -307,7 +311,9 @@ Because every question for a resume travels in one request, changing any questio
 
 ## 7. Writing a good spec
 
-- **Start from an existing spec.** Copy the closest one in [`jobs/`](../jobs/) to `jobs/<id>.yaml`, put resumes in `resumes/<id>_candidates/`, and restart.
+- **Start from an existing spec.** Use **New job** in the web app, or copy the closest spec in [`jobs/`](../jobs/) to `jobs/<id>.yaml` and press **Reload specs from disk**. Put resumes in `resumes/<id>_candidates/`.
+- **Let the editor tell you the cost.** It says whether a change is free (weights, thresholds, reordering) or paid (anything sent to Jev, which re-asks every resume), and it refuses to overwrite a file you changed on disk since opening it.
+- **Use suggestions as drafts.** With `ANTHROPIC_API_KEY` set, the editor's ✨ buttons ask Claude to draft a question, levels, a requirement or a whole skill, following these rules. Read every draft before accepting it: you are responsible for what Jev is asked.
 - **One idea per question.** If a question or requirement needs "and", consider splitting it.
 - **Use must-haves for true gates only.** Anything that is a matter of degree belongs in a skill.
 - **Write levels as concrete situations**, least to most, each readable on its own.
