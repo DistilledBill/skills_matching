@@ -214,7 +214,7 @@
   }
 }</code></pre>
     <ul>
-      <li><strong>State</strong> is the content to judge, as a string or structured JSON. Here it is <code>{ "job": {title, summary}, "resume": "&lt;redacted text&gt;" }</code>. Questions can point at parts of the state with backticked paths such as <code>`resume`</code> or <code>`job.summary`</code>.</li>
+      <li><strong>State</strong> is the content to judge, as a string or structured JSON. Here it is <code>{ "job": {title, target_level, summary}, "resume": "&lt;redacted text&gt;" }</code>. Questions can point at parts of the state with backticked paths such as <code>`resume`</code> or <code>`job.summary`</code>.</li>
       <li><strong>Question</strong> is one judgment about the state:
         <ul>
           <li>The <strong>id</strong> (such as <code>skill_python_depth</code>) is only for your code. It is <strong>not sent to the model</strong>, so the instructions must be complete on their own.</li>

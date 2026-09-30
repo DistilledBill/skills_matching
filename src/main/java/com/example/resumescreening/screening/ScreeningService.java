@@ -82,6 +82,7 @@ public class ScreeningService {
 	private SystemOneRequest request(JobSpec job, ResumeDocument resume, Map<String, Question> questions) {
 		Map<String, Object> jobState = new LinkedHashMap<>();
 		jobState.put("title", job.title());
+		jobState.put("target_level", job.targetLevel().strip());
 		jobState.put("summary", job.summary().strip());
 		Map<String, Object> state = new LinkedHashMap<>();
 		state.put("job", jobState);

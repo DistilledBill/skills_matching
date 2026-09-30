@@ -175,7 +175,7 @@
     <div class="table-wrap"><table>
       <thead><tr><th>Part of the spec</th><th>Who uses it</th><th>What it does</th></tr></thead>
       <tbody>
-        <tr><td><code>title</code>, <code>summary</code>, <code>must_haves</code>, <code>skills</code> (the requirement text, questions and levels)</td><td><strong>Jev</strong>, the model</td><td>Decides <strong>what the resume shows</strong>. This is the judgment.</td></tr>
+        <tr><td><code>title</code>, <code>target_level</code>, <code>summary</code>, <code>must_haves</code>, <code>skills</code> (the requirement text, questions and levels)</td><td><strong>Jev</strong>, the model</td><td>Decides <strong>what the resume shows</strong>. This is the judgment.</td></tr>
         <tr><td><code>weight</code> on each skill, and <code>thresholds</code></td><td><strong>The code</strong>, in <a href="../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java"><code>ScreeningPolicy</code></a></td><td>Decides <strong>what that means for this job</strong>: status, composite and rank. This is the policy.</td></tr>
       </tbody>
     </table></div>
@@ -192,6 +192,10 @@
     <p><a href="../jobs/senior_backend_engineer.yaml"><code>jobs/senior_backend_engineer.yaml</code></a>, shortened, with what each part becomes:</p>
 <pre><code><span class="c"># Sent to Jev with every resume</span>
 title: Senior Backend Engineer
+
+<span class="c"># Sent to Jev with every resume, as context. No question</span>
+<span class="c"># names `job.target_level` yet</span>
+target_level: Vice President
 
 <span class="c"># Sent to Jev with every resume. Only questions that</span>
 <span class="c"># name `job.summary` use it</span>
@@ -253,18 +257,19 @@ thresholds:
     <!-- 3 -->
     <h2 id="sections">3. Section by section</h2>
 
-    <h3 id="title-summary">3.1 <code>title</code> and <code>summary</code></h3>
-    <p>Both go into the <strong>state</strong>, the content Jev reads, together with the resume (<a href="../src/main/java/com/example/resumescreening/screening/ScreeningService.java"><code>ScreeningService</code></a>):</p>
+    <h3 id="title-summary">3.1 <code>title</code>, <code>target_level</code> and <code>summary</code></h3>
+    <p>All three go into the <strong>state</strong>, the content Jev reads, together with the resume (<a href="../src/main/java/com/example/resumescreening/screening/ScreeningService.java"><code>ScreeningService</code></a>):</p>
     <div class="formula">state = {
-  job:    { title, summary },
+  job:    { title, target_level, summary },
   resume: "&lt;resume text, contact details removed&gt;"
 }</div>
-    <p>Every question sees the whole state, but a question only <strong>points at</strong> the parts it names in backticks. In all four included specs, the only question that names <code>`job.summary`</code> is <code>domain_relevance</code>, weighted 0.10. So:</p>
+    <p>Every question sees the whole state, but a question only <strong>points at</strong> the parts it names in backticks. In all five included specs, the only question that names <code>`job.summary`</code> is <code>domain_relevance</code>, weighted 0.10. So:</p>
     <ul>
       <li><strong>The summary affects at most 10% of the composite</strong>, through one industry-relevance question.</li>
       <li><strong>The summary never affects the must-haves</strong>, so it can't change whether a candidate is <span class="pill meets">meets</span>, <span class="pill review">review</span> or <span class="pill missing">missing</span>.</li>
       <li><strong>Editing the summary re-asks every question.</strong> Answers are cached by the full request, and the summary is part of every request. See <a href="#cost">section 6</a>.</li>
     </ul>
+    <p><code>target_level</code> is the seniority the role is hired at, for example <code>Vice President</code> or <code>Executive Director</code>. It is required. For now it is <strong>context only</strong>: no question names <code>`job.target_level`</code>, so Jev can see it but no answer is asked about it. To use it, add a skill whose question names it, for example "How closely does the seniority shown in <code>`resume`</code> match <code>`job.target_level`</code>?". Like the summary, editing it re-asks every question for the job.</p>
     <p>Write the summary as a short description of the role and its setting (industry, product, stack, what "senior" means here). It is context, not a list of requirements. Put requirements in <code>must_haves</code> and <code>skills</code>, where each one gets its own answer.</p>
 
     <h3 id="must-haves">3.2 <code>must_haves</code>: the gate</h3>
@@ -288,7 +293,7 @@ false:       The resume does not mention it, or what it
     <ul>
       <li><strong>Make the boundary explicit.</strong> "Has used Python in a paid engineering role (not only coursework or hobby projects)" says exactly what counts and what doesn't.</li>
       <li><strong>Keep it to things a resume can show.</strong> "Is a fast learner" isn't checkable; "Has owned a product backlog in a paid role" is.</li>
-      <li><strong>Keep the list short.</strong> A candidate who fails any single must-have ranks last, however strong they are elsewhere. The included specs use two each. An empty list (<code>must_haves: []</code>) is allowed and means there is no gate.</li>
+      <li><strong>Keep the list short.</strong> A candidate who fails any single must-have ranks last, however strong they are elsewhere. The included specs use two each, except <code>director_of_engineering</code>, which adds a third for people management. An empty list (<code>must_haves: []</code>) is allowed and means there is no gate.</li>
     </ul>
 
     <h3 id="skills">3.3 <code>skills</code>: the ranking</h3>
@@ -392,11 +397,11 @@ composite  = Σ (weight / total weight × normalized)</div>
 
     <!-- 4 -->
     <h2 id="request">4. How a spec becomes a request</h2>
-    <p>For each resume, the screener sends <strong>one request</strong> containing the state and every question from the spec. The included specs each produce seven questions:</p>
+    <p>For each resume, the screener sends <strong>one request</strong> containing the state and every question from the spec. The included specs produce seven questions each (eight for <code>director_of_engineering</code>, which has three must-haves):</p>
     <div class="table-wrap"><table>
       <thead><tr><th>From the spec</th><th>Becomes</th><th class="num">Count</th></tr></thead>
       <tbody>
-        <tr><td><code>title</code>, <code>summary</code> + the resume (contact details removed)</td><td><code>state</code></td><td class="num">1</td></tr>
+        <tr><td><code>title</code>, <code>target_level</code>, <code>summary</code> + the resume (contact details removed)</td><td><code>state</code></td><td class="num">1</td></tr>
         <tr><td>each <code>must_haves</code> entry</td><td>Noul <code>must_&lt;id&gt;</code></td><td class="num">2</td></tr>
         <tr><td>each <code>skills</code> entry</td><td>Score <code>skill_&lt;id&gt;</code></td><td class="num">5</td></tr>
       </tbody>
@@ -413,7 +418,9 @@ curl -X POST \
     <div class="table-wrap"><table>
       <thead><tr><th>Rule</th><th>Error message</th></tr></thead>
       <tbody>
+        <tr><td>the file name (the job id) uses only letters, digits, <code>_</code> and <code>-</code></td><td><code>the file name (the job id) may only use letters, digits, '_' and '-'</code></td></tr>
         <tr><td><code>title</code> has text</td><td><code>title is required</code></td></tr>
+        <tr><td><code>target_level</code> has text</td><td><code>target_level is required</code></td></tr>
         <tr><td><code>summary</code> has text</td><td><code>summary is required</code></td></tr>
         <tr><td><code>must_haves</code> is present (an empty list is fine)</td><td><code>must_haves is required (may be empty)</code></td></tr>
         <tr><td>at least one skill</td><td><code>at least one skill is required</code></td></tr>
@@ -437,7 +444,7 @@ curl -X POST \
       <tbody>
         <tr><td><code>weight</code>, any <code>thresholds</code> value</td><td>No</td><td><strong>None.</strong> Re-ranked from cache</td></tr>
         <tr><td>A skill's <code>question</code> or <code>levels</code>, or a must-have's <code>requirement</code></td><td>Yes</td><td>Re-asks the affected requests</td></tr>
-        <tr><td><code>title</code> or <code>summary</code></td><td>Yes, in the state of <strong>every</strong> request</td><td>Re-asks <strong>everything</strong> for that job</td></tr>
+        <tr><td><code>title</code>, <code>target_level</code> or <code>summary</code></td><td>Yes, in the state of <strong>every</strong> request</td><td>Re-asks <strong>everything</strong> for that job</td></tr>
         <tr><td>New spec</td><td>n/a</td><td>One request per resume screened</td></tr>
         <tr><td>Model version (<code>typesafe.model</code>)</td><td>Yes</td><td>Re-asks everything</td></tr>
       </tbody>
@@ -460,13 +467,14 @@ curl -X POST \
     <div class="table-wrap"><table>
       <thead><tr><th>Job id</th><th>Title</th><th>Resumes</th></tr></thead>
       <tbody>
+        <tr><td><a href="../jobs/director_of_engineering.yaml"><code>director_of_engineering</code></a></td><td>Director of Engineering</td><td><a href="../resumes/director_of_engineering_candidates/"><code>resumes/director_of_engineering_candidates/</code></a></td></tr>
         <tr><td><a href="../jobs/senior_backend_engineer.yaml"><code>senior_backend_engineer</code></a></td><td>Senior Backend Engineer</td><td><a href="../resumes/senior_backend_engineer_candidates/"><code>resumes/senior_backend_engineer_candidates/</code></a></td></tr>
         <tr><td><a href="../jobs/senior_hr_product_owner.yaml"><code>senior_hr_product_owner</code></a></td><td>Senior Human Resources Product Owner</td><td><a href="../resumes/senior_hr_product_owner_candidates/"><code>resumes/senior_hr_product_owner_candidates/</code></a></td></tr>
         <tr><td><a href="../jobs/technical_product_owner.yaml"><code>technical_product_owner</code></a></td><td>Technical Product Owner</td><td><a href="../resumes/technical_product_owner_candidates/"><code>resumes/technical_product_owner_candidates/</code></a></td></tr>
         <tr><td><a href="../jobs/senior_software_application_designer.yaml"><code>senior_software_application_designer</code></a></td><td>Senior Software Application Designer</td><td><a href="../resumes/senior_software_application_designer_candidates/"><code>resumes/senior_software_application_designer_candidates/</code></a></td></tr>
       </tbody>
     </table></div>
-    <p>All four have two must-haves, five skills with weights that add up to 1.00, a <code>domain_relevance</code> skill at 0.10 that scores against <code>`job.summary`</code>, and the same thresholds.</p>
+    <p>All five have five skills with weights that add up to 1.00, a <code>domain_relevance</code> skill at 0.10 that scores against <code>`job.summary`</code>, and the same thresholds. Four have two must-haves; <code>director_of_engineering</code> has three (it adds <code>people_management</code>) and weights leadership most heavily (<code>technical_leadership</code> 0.40).</p>
   </main>
 </div>
 </body>

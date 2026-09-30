@@ -65,6 +65,7 @@ Included roles:
 
 | Job id | Title | Sample resumes |
 | --- | --- | --- |
+| `director_of_engineering` | Director of Engineering | 10 in `resumes/director_of_engineering_candidates/` |
 | `senior_backend_engineer` | Senior Backend Engineer | 10 in `resumes/senior_backend_engineer_candidates/` |
 | `senior_hr_product_owner` | Senior Human Resources Product Owner | 10 in `resumes/senior_hr_product_owner_candidates/` |
 | `technical_product_owner` | Technical Product Owner | 10 in `resumes/technical_product_owner_candidates/` |

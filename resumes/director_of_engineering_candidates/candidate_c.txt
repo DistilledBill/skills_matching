@@ -1,0 +1,20 @@
+Candidate C
+c.candidate@example.com | (555) 401-4432 | linkedin.com/in/cand-c
+
+SUMMARY
+Director of Engineering at a retail bank, leading Java platform teams.
+
+EXPERIENCE
+Director of Engineering, First Harbor Bank — 2019–present
+- Lead core banking engineering: 5 managers and 45 engineers building account, card, and payments services in Java (Spring Boot) on Oracle and PostgreSQL.
+- Own the department budget, hiring plan, and delivery commitments to the CIO.
+- Ran the modernization of the card authorization platform onto Kubernetes with 99.99% availability targets and a formal incident process.
+
+Engineering Manager, First Harbor Bank — 2014–2019
+- Managed the payments integration team (10 engineers) building Java services and batch jobs.
+
+Senior Java Developer, Tradeco — 2008–2014
+- Built order-matching services in Java and C++.
+
+SKILLS
+Java, Spring Boot, Oracle, PostgreSQL, Kubernetes, engineering management

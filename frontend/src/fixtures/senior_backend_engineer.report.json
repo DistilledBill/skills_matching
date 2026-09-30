@@ -3,6 +3,7 @@
   "job": {
     "id": "senior_backend_engineer",
     "title": "Senior Backend Engineer",
+    "targetLevel": "Vice President",
     "summary": "Build and operate the Python services behind our payments platform: REST/gRPC APIs on PostgreSQL, event pipelines on Kafka, deployed to Kubernetes on AWS. Senior engineers own services end to end, lead designs across teams, and mentor other engineers.\n",
     "mustHaves": [
       {

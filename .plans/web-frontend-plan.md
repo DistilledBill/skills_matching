@@ -19,7 +19,7 @@ Today the service is used through curl: 4 REST endpoints (`GET /api/jobs`, `POST
    - **Controls:** filter by status, sort by any column, and a **Download CSV** button (`format=csv`, fetched as a file).
    - **Row click:** opens the **resume viewer** side panel. Its **Resume** tab shows the resume **with contact details** (the original text, `redacted=false`) alongside that candidate's scores. A **What was sent to Jev** tab shows the preview panel for that candidate, which is redacted because that is what Jev receives.
    - **What-if panel:** sliders for each skill weight plus `must_have_pass`, `must_have_fail` and `min_confidence`. The ranking recomputes instantly in the browser and arrows show rank changes. **Reset** restores the spec's values; **Save to spec** opens the editor pre-filled. After a save, the next screening re-ranks from the cache for free, because weights and thresholds aren't part of the request.
-4. **Spec editor** (`/jobs/:id/edit`, `/jobs/new`): a form for title, summary, must-haves (add, remove, reorder), and skills (weight, question, levels list), plus thresholds.
+4. **Spec editor** (`/jobs/:id/edit`, `/jobs/new`): a form for title, target level, summary, must-haves (add, remove, reorder), and skills (weight, question, levels list), plus thresholds. Details, including cost warnings and protection for hand edits, are in [Phase 4](#phase-4-authoring-the-spec-editor).
    - It checks the same rules as `JobSpecRepository.validate` on the client, and the server re-checks on save.
    - It shows the running weight total and whether each skill counts as heavy (0.2 or more).
    - A read-only YAML preview updates as you type.
@@ -86,7 +86,7 @@ A shared component, used on the Screen page, in the Results side panel and on ea
   - Add `listFolders()`, `listFolder(folder)`, `readOne(folder, fileName)` and `rawFile(folder, fileName)` to `ResumeLoader`. Put the writing methods, `createFolder(name)` and `save(folder, fileName, bytes, overwrite)`, in a new `ResumeLibrary` class next to it. `ResumeLoader.SUPPORTED` stays the single list of allowed formats.
   - Saved resumes are stored with contact details intact, exactly as uploaded. Redaction still happens only when a resume is sent to Jev, as it does today.
 - **Saving job specs:** `POST /api/jobs` creates a spec and `PUT /api/jobs/{id}` replaces one, in a new `web/JobController`. `JobSpecRepository` changes to support this:
-  - A job id must match `^[a-z0-9_]+$`, which also blocks paths outside `jobs/`.
+  - A job id may only use letters, digits, `_` and `-` (the rule `JobSpecRepository` already enforces since phase 2.1), which also blocks paths outside `jobs/`.
   - `validate` returns a list of error messages that the API returns as 400 responses, via a new `InvalidJobSpecException` handled in `ApiExceptionHandler`. Loading at startup still fails fast.
   - Save writes to a temp file and then moves it into place, the same pattern as `AnswerCache.put`. It writes snake_case YAML with the standard header comment, then swaps in the new spec.
   - The job map becomes safe for concurrent reads and writes (a `ConcurrentSkipListMap`).
@@ -109,12 +109,13 @@ A shared component, used on the Screen page, in the Results side panel and on ea
 ## Phases
 
 1. **Scaffold and core flow:** Maven and Vite wiring, the SPA forwarding, the folder endpoint, the preview panel with its endpoints and cache status, and the Jobs, Screen, Results and CSV screens. **Done** (commit `143499e`).
-1.1. **Clearer scores and weights:** see [Phase 1.1](#phase-11-clearer-scores-and-weights) below. Front end only. **Done** (not yet committed).
-2. **Analysis:** what-if tuning (`policy.ts`), the resume viewer and its read endpoints. See [Phase 2](#phase-2-analysis-what-if-tuning-and-resume-viewer) below. **Done** (not yet committed).
-2.1. **Weight total indicator, per-job cache and Clear cache:** see [Phase 2.1](#phase-21-weight-total-indicator-per-job-cache-and-clear-cache) below. **Done** (not yet committed).
-2.2. **Rename competencies to skills:** see [Phase 2.2](#phase-22-rename-competencies-to-skills) below. **Done** (not yet committed).
+1.1. **Clearer scores and weights:** see [Phase 1.1](#phase-11-clearer-scores-and-weights) below. Front end only. **Done** (commit `e6ca13c`).
+2. **Analysis:** what-if tuning (`policy.ts`), the resume viewer and its read endpoints. See [Phase 2](#phase-2-analysis-what-if-tuning-and-resume-viewer) below. **Done** (commit `e6ca13c`).
+2.1. **Weight total indicator, per-job cache and Clear cache:** see [Phase 2.1](#phase-21-weight-total-indicator-per-job-cache-and-clear-cache) below. **Done** (commit `e6ca13c`).
+2.2. **Rename competencies to skills:** see [Phase 2.2](#phase-22-rename-competencies-to-skills) below. **Done** (commit `e6ca13c`).
+2.3. **Required `target_level` as context:** see [Phase 2.3](#phase-23-required-target_level-sent-as-context) below. **Done** (not yet committed).
 3. **Resume management:** the Resumes screen (upload, review, edit and save), plus the create-folder and save-resume endpoints.
-4. **Authoring:** the spec editor, the save endpoints and the repository changes.
+4. **Authoring:** the spec editor, the save endpoints and the repository changes. See [Phase 4](#phase-4-authoring-the-spec-editor) below.
 
 ## Phase 1.1: clearer scores and weights
 
@@ -347,6 +348,111 @@ You want the term "skills" everywhere instead of "competencies", including the q
   - The Screen page says "0 already cached, 10 will call Jev".
   - The what-if panel says "Skill weights".
 
+## Phase 2.3: required `target_level`, sent as context
+
+### Why
+
+You added `target_level` after `title` in every spec: Vice President for backend and Technical Product Owner, Executive Director for HR and Application Designer. It's required, and for now it only gives Jev context in the state; no question names it.
+
+### Changes
+
+- **`JobSpec`:** a new `targetLevel` field, mapped from `target_level`. `JobSpecRepository.validate` requires it ("target_level is required"), so a spec without it stops the app at startup.
+- **State:** `ScreeningService` sends `job: {title, target_level, summary}`.
+- **Web app:**
+  - The `JobSpec` and `SystemOneRequest` types.
+  - A "Target level" line on each Jobs card.
+  - The preview's State section shows the level.
+- **Tests:**
+  - Validation rejects a spec without `target_level`.
+  - The preview request carries `job.target_level`.
+  - The front-end fixtures and types include it.
+- **Docs:**
+  - `job-spec-guide.{md,html}`: the field and the state shape.
+  - `jev-resume-screening.{md,html}`: the state shape.
+  - `CLAUDE.md` and the README where the state is described.
+
+### Cost and the cache
+
+- The state is part of every request, so every request changes.
+- The 20 answers cached after the rename (10 backend, 10 HR) are backed up to the scratchpad and wiped at your request.
+- The next screening of each folder is about 10 paid calls.
+
+## Phase 4: authoring (the spec editor)
+
+### Why
+
+Specs are written by hand in YAML today. The editor lets you create and change them in the app, with the same validation, and shows before you save what a change will cost. The first draft of this phase predates `target_level`, per-job caching and your habit of editing specs in the IDE, so this section folds those in.
+
+### Editor (`/jobs/:id/edit`, `/jobs/new`)
+
+- **Entry points:** **Edit** and **New job** buttons on the Jobs page, and **Save to spec** in the What-if panel. Save to spec opens the editor with the slider weights and thresholds filled in.
+- **Fields:**
+  - Job id: only on new jobs, and it can't be changed afterwards. It's suggested from the title in lowercase with `_`, and allows letters, digits, `_` and `-`.
+  - Title, **target level** (required) and summary.
+  - Must-haves: add, remove, reorder, any number. The director spec has 3.
+  - Skills: id, weight, question and levels (2–10). Add, remove, reorder.
+  - Thresholds.
+- **Live checks:** the same rules as `JobSpecRepository.validate`, shown beside each field. The server checks again on save.
+- **Live summary:**
+  - The weight total, with the red ▲/▼ indicator from phase 2.1 when it isn't 1.00.
+  - A "heavy" marker on each skill weighted 0.2 or more.
+  - A read-only YAML preview.
+- **Cost of the change**, updated as you type and shown again in the save confirmation:
+  - **Free:** only weights or thresholds changed. The next screening re-ranks from the cache.
+  - **Paid:** anything sent to Jev changed: title, target level, summary, a must-have's requirement, a skill's question or levels, or adding or removing a must-have or skill. The cache key covers the whole request, so every resume is asked again. The message names the fields that changed and estimates the cost, for example "the next screening of `<id>_candidates` makes about 10 calls to Jev".
+- **Comments:** a note that hand-written YAML comments, other than the standard header, are dropped on save.
+- **New jobs** also get a `resumes/<id>_candidates/` folder.
+
+### Protecting hand edits in the IDE
+
+- **The problem:** the app reads specs only at startup, and you also edit them in the IDE. Saving from the editor could overwrite changes made on disk since the app loaded the file.
+- **The fix:** each spec is loaded with a version, a SHA-256 of the file's bytes, returned as `version` by `GET /api/jobs`.
+  - `PUT /api/jobs/{id}` must send that version back. If the file on disk no longer matches it, the save is refused with **409** "changed on disk since it was loaded".
+  - On a 409, the editor offers **Load the version on disk**, after a confirmation because it replaces the form's contents.
+- **Reload without a restart:** `POST /api/jobs/{id}/reload` re-reads one spec from disk, and `POST /api/jobs/reload` re-reads all of them.
+  - They validate first. An invalid file gives a 400 with the errors and keeps the version already loaded, so a typo in the IDE can't take the job out of the app.
+  - The Jobs page gets a **Reload specs from disk** button, so IDE edits show up without restarting.
+
+### Old cached answers after a paid change
+
+- After a save that changes anything sent to Jev, every answer in the job's cache folder is out of date. The success message offers **Clear N old cached answers**, using `DELETE /api/screenings/{jobId}/cache` from phase 2.1.
+- Declining keeps them, which is useful if you might undo the change. A free save makes no offer.
+
+### Backend
+
+- **`JobController`:**
+  - `POST /api/jobs` returns 201. An id that already exists gives 409.
+  - `PUT /api/jobs/{id}` takes a version and returns 200, or 409 on a version mismatch.
+  - `POST /api/jobs/{id}/reload` and `POST /api/jobs/reload`.
+  - `GET /api/jobs` now includes `version`.
+- **`JobSpecRepository`:**
+  - `validate` returns a list of error messages. At startup any error still stops the app; through the API they come back as a 400 via a new `InvalidJobSpecException`.
+  - The job map becomes a `ConcurrentSkipListMap`, and each job stores its version.
+  - Save writes snake_case YAML with the standard header comment to a temp file, checks the version, moves the file into place, then updates the map.
+  - A job id must be letters, digits, `_` and `-` (already enforced), which also blocks paths outside `jobs/`.
+- **Not included:** deleting specs, renaming a job id, and authentication. The editor writes files on the server, so add authentication before exposing the app beyond localhost.
+
+### Tests and verification
+
+- **Java** (all against a **temp `jobs/` folder**, never the checked-in specs):
+  - create, update, and invalid spec → 400 with every error listed
+  - a duplicate id on create → 409
+  - a stale version → 409
+  - `target_level` is required
+  - reload picks up a hand edit; reloading an invalid file keeps the old version
+  - the saved YAML loads back to an equal spec
+- **Vitest:**
+  - The cost classifier: weights and thresholds only is free; title, target level, summary, question, levels, or adding or removing a must-have or skill is paid.
+  - The field checks match the server's rules.
+  - The weight total indicator.
+- **In the browser, with no API key and scratch copies of `jobs/`, `resumes/` and the cache:**
+  - Create a job, and check its resume folder appears.
+  - Edit its weights: the change is free, and the What-if panel's Save to spec opens it pre-filled.
+  - Edit its summary: the save is paid, and the clear-cache offer appears.
+  - Change the file on disk, then save from the editor: 409, then Load the version on disk.
+  - Reload specs from disk.
+  - Check 390px width and dark mode.
+
 ## Verification
 
 - **Backend:** `./mvnw test`. The existing 38 tests must still pass. New tests:
@@ -365,7 +471,7 @@ You want the term "skills" everywhere instead of "competencies", including the q
     - `X-Answer-Cached` is `true` after a mocked screening of that resume and `false` before.
     - `cache-status` counts correctly.
     - Neither endpoint calls TypeSafe (`verifyNoInteractions(client)`).
-  - **Spec saving:** create, update and invalid-spec cases return 400 with the error messages. These tests write to a **temp `jobs/` folder**, never the checked-in specs, because the existing tests depend on `senior_backend_engineer.yaml`.
+  - **Spec saving:** see [Phase 4](#phase-4-authoring-the-spec-editor). These tests write to a **temp `jobs/` folder**, never the checked-in specs, because the existing tests depend on `senior_backend_engineer.yaml`.
 - **Front end:** `npm test` (Vitest).
   - `policy.ts` tests reproduce the cases in `ScreeningPolicyTest`, plus a parity check against a real server report (see phase 2).
   - Component tests cover status pills and error messages.
@@ -395,4 +501,4 @@ Authentication (the spec editor and resume saving write files on the server, so 
 
 ## Decision needed before phase 3: real resumes and git
 
-`resumes/` is committed to git and pushed to GitHub. Real candidate resumes saved through the UI would contain personal data, including names and contact details, and would be picked up by the next `git add`. Recommendation: keep the four sample folders tracked, and ignore every other folder under `resumes/` (a `resumes/*` rule plus `!` exceptions for the sample folders). Alternatively, keep real resumes outside the repo by pointing `screening.resumes-dir` somewhere else.
+`resumes/` is committed to git and pushed to GitHub. Real candidate resumes saved through the UI would contain personal data, including names and contact details, and would be picked up by the next `git add`. Recommendation: keep the five sample folders tracked, and ignore every other folder under `resumes/` (a `resumes/*` rule plus `!` exceptions for the sample folders). Alternatively, keep real resumes outside the repo by pointing `screening.resumes-dir` somewhere else.

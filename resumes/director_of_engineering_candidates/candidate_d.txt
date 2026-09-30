@@ -1,0 +1,21 @@
+Candidate D
+d.candidate@example.com | (555) 401-5543 | github.com/cand-d
+
+SUMMARY
+Principal engineer in payments, deep in Python and distributed systems. Prefers the technical track.
+
+EXPERIENCE
+Principal Engineer, Clearpath Payments — 2019–present
+- Technical lead across the payments platform; set the architecture for moving settlement to event-driven processing on Kafka.
+- Author of the company's Python service framework and async database layer, used by 12 teams.
+- Led the PostgreSQL sharding project for a 6 TB ledger.
+- Mentor staff and senior engineers; run the cross-team design review. No direct reports.
+
+Staff Engineer, Clearpath Payments — 2015–2019
+- Tech lead for the fraud-scoring services (Python, Redis, PostgreSQL).
+
+Software Engineer, Netforge — 2011–2015
+- Built Python APIs and background workers.
+
+SKILLS
+Python (CPython internals, asyncio), Kafka, PostgreSQL, distributed systems design

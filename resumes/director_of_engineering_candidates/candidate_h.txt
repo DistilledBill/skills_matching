@@ -1,0 +1,22 @@
+Candidate H
+h.candidate@example.com | (555) 401-9987 | github.com/cand-h
+
+SUMMARY
+Senior Director of Engineering at a healthcare SaaS company, leading an 80-person Python organization.
+
+EXPERIENCE
+Senior Director of Engineering, CareGrid (healthcare SaaS) — 2018–present
+- Lead the platform and clinical-data organization: 7 engineering managers and 80 engineers, all Python services on PostgreSQL and Kafka.
+- Own org design, the annual hiring plan, and a $14M engineering budget; member of the executive leadership team.
+- Established company-wide SLOs, incident command, and capacity planning; led the platform to 99.95% availability under HIPAA.
+- Set data strategy across teams, including the move to managed PostgreSQL and a shared event-streaming platform.
+- Defined Python engineering standards, shared service templates, and the architecture review process.
+
+Director of Engineering, CareGrid — 2014–2018
+- Grew the backend group from 12 to 40 engineers through 4 managers.
+
+Software Engineer to Engineering Manager, Healthbyte — 2006–2014
+- Built Python APIs, then managed the API team.
+
+SKILLS
+Engineering leadership, Python, PostgreSQL, Kafka, AWS, compliance (HIPAA, SOC 2)

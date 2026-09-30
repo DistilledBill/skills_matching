@@ -1,0 +1,22 @@
+Candidate A
+a.candidate@example.com | (555) 401-2210 | linkedin.com/in/cand-a
+
+SUMMARY
+Director of Engineering with 15 years in backend engineering, the last 6 leading payments platform organizations. Came up as a Python backend engineer.
+
+EXPERIENCE
+Director of Engineering, Paylane (card payments) — 2020–present
+- Lead the payments platform organization: 4 engineering managers, 2 staff engineers, 38 engineers across authorization, settlement, ledger, and developer APIs.
+- Own delivery, hiring plans, and the engineering budget; partner with the CPO and CFO on the platform roadmap.
+- Introduced SLOs and an incident management program; availability of the authorization API rose from 99.9% to 99.99%.
+- Set Python engineering standards across teams (typing, FastAPI service template, shared libraries) and chair the architecture review.
+- Sponsored the migration of the PostgreSQL ledger to a sharded cluster and chose the event-streaming platform (Kafka) for all teams.
+
+Engineering Manager, Paylane — 2017–2020
+- Managed the settlement team (9 engineers); hired 6, ran performance reviews and promotions.
+
+Senior Software Engineer, Brightcart (e-commerce) — 2011–2017
+- Built order and payment services in Python (Django, Celery) on PostgreSQL.
+
+SKILLS
+Engineering leadership, org design, Python, PostgreSQL, Kafka, Kubernetes, AWS

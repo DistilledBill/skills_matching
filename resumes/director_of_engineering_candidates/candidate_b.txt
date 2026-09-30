@@ -1,0 +1,21 @@
+Candidate B
+b.candidate@example.com | (555) 401-3321
+
+SUMMARY
+Engineering manager at a fintech lender, still hands-on with Python.
+
+EXPERIENCE
+Engineering Manager, LendRight (consumer lending) — 2021–present
+- Manage the loan-servicing team of 7 engineers; hired 4, run 1:1s, performance reviews, and career plans.
+- Own the team's roadmap and delivery; ship repayment and collections APIs in Python (FastAPI) on PostgreSQL.
+- Led the move from a monolith to three services communicating over SQS; set up on-call and alerting for the team.
+- Still review most designs and write code for critical paths.
+
+Senior Software Engineer, LendRight — 2018–2021
+- Built the payments scheduler and ACH integration in Python.
+
+Software Engineer, Quantly (analytics) — 2015–2018
+- Python data pipelines and internal Flask APIs.
+
+SKILLS
+Python, FastAPI, PostgreSQL, AWS, SQS, people management

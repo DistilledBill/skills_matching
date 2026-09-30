@@ -3,6 +3,7 @@
   "job": {
     "id": "senior_hr_product_owner",
     "title": "Senior Human Resources Product Owner",
+    "targetLevel": "Executive Director",
     "summary": "Own the internal HR technology products behind our payments company: HRIS (Workday or SAP SuccessFactors style), recruiting/ATS, onboarding, performance management, compensation, and employee self-service. Senior product owners own the backlog and roadmap, turn HR stakeholder and employee needs into requirements for agile engineering teams, manage vendor/SaaS integrations, protect sensitive employee data under privacy and compliance rules, and mentor other product owners and analysts.\n",
     "mustHaves": [
       {

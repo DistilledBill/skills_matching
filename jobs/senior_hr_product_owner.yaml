@@ -3,6 +3,7 @@
 # cached answers without new API calls.
 
 title: Senior Human Resources Product Owner
+target_level: Executive Director
 summary: >
   Own the internal HR technology products behind our payments company:
   HRIS (Workday or SAP SuccessFactors style), recruiting/ATS, onboarding,

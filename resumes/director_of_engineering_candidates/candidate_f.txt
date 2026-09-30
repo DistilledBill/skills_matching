@@ -1,0 +1,21 @@
+Candidate F
+f.candidate@example.com | (555) 401-7765
+
+SUMMARY
+Director of Engineering in advertising technology, leading Go and Scala platform teams.
+
+EXPERIENCE
+Director of Engineering, Bidstream (adtech) — 2019–present
+- Lead 4 managers and 32 engineers building the real-time bidding platform in Go and Scala, processing 2M requests/sec.
+- Own the reliability program (SLOs, error budgets, incident reviews) and the capacity plan across teams.
+- Own hiring and the engineering budget; partner with the COO on platform strategy.
+- Occasionally write Python scripts for data analysis and tooling.
+
+Engineering Manager, Bidstream — 2015–2019
+- Managed the auction services team (9 engineers) writing Go services on Cassandra.
+
+Software Engineer, Streamly — 2010–2015
+- Built Scala services on Kafka and Cassandra.
+
+SKILLS
+Go, Scala, Kafka, Cassandra, Kubernetes, engineering management

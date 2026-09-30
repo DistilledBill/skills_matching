@@ -5,8 +5,11 @@ import java.util.List;
 /**
  * A role to screen for, loaded from {@code jobs/<id>.yaml}. Everything the
  * model judges comes from here; weights and thresholds are applied in code.
+ *
+ * @param targetLevel the seniority the role is hired at (for example "Vice President"); sent to Jev as
+ *                    context in the state, though no question names it yet
  */
-public record JobSpec(String id, String title, String summary, List<MustHave> mustHaves,
+public record JobSpec(String id, String title, String targetLevel, String summary, List<MustHave> mustHaves,
 		List<Skill> skills, Thresholds thresholds) {
 
 	/** Becomes one Noul: does the resume show evidence of this? */
@@ -31,7 +34,7 @@ public record JobSpec(String id, String title, String summary, List<MustHave> mu
 	}
 
 	public JobSpec withId(String id) {
-		return new JobSpec(id, title, summary, mustHaves, skills, thresholds);
+		return new JobSpec(id, title, targetLevel, summary, mustHaves, skills, thresholds);
 	}
 
 	public double totalWeight() {

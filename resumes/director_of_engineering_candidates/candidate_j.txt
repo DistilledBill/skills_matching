@@ -1,0 +1,21 @@
+Candidate J
+j.candidate@example.com | (555) 402-2109
+
+SUMMARY
+Technical program manager coordinating delivery across backend teams in payments.
+
+EXPERIENCE
+Senior Technical Program Manager, Swiftpay (payments) — 2019–present
+- Coordinate delivery of cross-team programs for the payments platform (6 teams), including the migration to Kubernetes.
+- Run program reviews, dependency tracking, and launch readiness with engineering managers.
+- Track reliability metrics and incident follow-ups for leadership.
+- Write Python scripts to pull delivery metrics from Jira and GitHub.
+
+Program Manager, Swiftpay — 2016–2019
+- Managed release planning for the merchant dashboard.
+
+Business Analyst, Finserve — 2012–2016
+- Gathered requirements for banking back-office systems.
+
+SKILLS
+Program management, Agile delivery, Jira, stakeholder management, Python scripting

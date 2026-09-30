@@ -64,6 +64,8 @@ export function PreviewView({ preview }: { preview: Preview }) {
           <dl className="state">
             <dt>Job title</dt>
             <dd>{request.state.job.title}</dd>
+            <dt>Target level</dt>
+            <dd>{request.state.job.target_level}</dd>
             <dt>Job summary</dt>
             <dd>{request.state.job.summary}</dd>
             <dt>Resume, as Jev receives it</dt>

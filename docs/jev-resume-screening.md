@@ -61,7 +61,7 @@ Every call is `POST https://api.typesafe.ai/v1/systemone` with three fields:
 }
 ```
 
-- **State** is the content to judge, as a string or structured JSON. Here it is `{ "job": {title, summary}, "resume": "<redacted text>" }`. Questions can point at parts of the state with backticked paths such as `` `resume` `` or `` `job.summary` ``.
+- **State** is the content to judge, as a string or structured JSON. Here it is `{ "job": {title, target_level, summary}, "resume": "<redacted text>" }`. Questions can point at parts of the state with backticked paths such as `` `resume` `` or `` `job.summary` ``.
 - **Question** is one judgment about the state:
   - The **id** (such as `skill_python_depth`) is only for your code. It is **not sent to the model**, so the instructions must be complete on their own.
   - **`instructions`** is the question itself. It can be a string, or an object that holds the question plus data it refers to.

@@ -54,8 +54,7 @@ class ScreeningApiTest {
 	void listsJobs() throws Exception {
 		mvc.perform(get("/api/jobs"))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$[0].id").value(TestAnswers.JOB_ID))
-			.andExpect(jsonPath("$[0].skills.length()").value(5));
+			.andExpect(jsonPath("$[?(@.id == '%s')].skills.length()", TestAnswers.JOB_ID).value(5));
 	}
 
 	@Test
@@ -84,6 +83,7 @@ class ScreeningApiTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.model").value("jev-latest"))
 			.andExpect(jsonPath("$.state.job.title").value("Senior Backend Engineer"))
+			.andExpect(jsonPath("$.state.job.target_level").value("Vice President"))
 			.andExpect(jsonPath("$.state.resume").value(startsWith("Candidate A\n[email] | [phone] | [link]")))
 			.andExpect(jsonPath("$.questions.must_python_professional.type").value("noul"))
 			.andExpect(jsonPath("$.questions.must_python_professional.instructions.question")

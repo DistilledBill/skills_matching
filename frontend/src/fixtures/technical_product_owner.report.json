@@ -3,6 +3,7 @@
   "job": {
     "id": "technical_product_owner",
     "title": "Technical Product Owner",
+    "targetLevel": "Vice President",
     "summary": "Own the backlog and roadmap for the technical products behind our payments platform: payments APIs, the developer platform, and internal platform services built on Python, REST/gRPC, PostgreSQL, Kafka, and Kubernetes on AWS. Technical product owners write requirements and acceptance criteria for API and platform features, balance technical debt against new features, work through trade-offs with engineers and architects, and define the metrics that show whether a product is working.\n",
     "mustHaves": [
       {

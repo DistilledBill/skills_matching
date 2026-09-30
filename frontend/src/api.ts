@@ -24,6 +24,8 @@ export interface Thresholds {
 export interface JobSpec {
   id: string
   title: string
+  /** The seniority the role is hired at; sent to Jev as context. */
+  targetLevel: string
   summary: string
   mustHaves: MustHave[]
   skills: Skill[]
@@ -77,7 +79,7 @@ export type Question =
 
 export interface SystemOneRequest {
   model: string
-  state: { job: { title: string; summary: string }; resume: string }
+  state: { job: { title: string; target_level: string; summary: string }; resume: string }
   questions: Record<string, Question>
 }
 

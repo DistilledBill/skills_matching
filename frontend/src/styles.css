@@ -99,6 +99,7 @@ h4 { margin: 20px 0 8px; }
 .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
 .job-card { display: flex; flex-direction: column; margin: 0; }
 .job-card header { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.job-card .target-level { font-size: 0.9em; font-weight: 600; }
 .job-card .summary { color: var(--muted); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .job-card .actions { margin-top: auto; padding-top: 12px; }
 ul.plain { list-style: none; padding: 0; margin: 0; }

@@ -37,7 +37,10 @@ const preview: Preview = {
   cached: true,
   request: {
     model: 'jev-latest',
-    state: { job: { title: 'Senior Backend Engineer', summary: 'Payments.' }, resume: 'Candidate C\n[email] | [phone]' },
+    state: {
+      job: { title: 'Senior Backend Engineer', target_level: 'Vice President', summary: 'Payments.' },
+      resume: 'Candidate C\n[email] | [phone]',
+    },
     questions: {
       must_python_professional: {
         type: 'noul',
@@ -57,6 +60,7 @@ describe('PreviewView', () => {
     expect(screen.getByText('must_python_professional')).toBeInTheDocument()
     expect(screen.getByText('skill_python_depth')).toBeInTheDocument()
     expect(screen.getByText('Has used Python')).toBeInTheDocument()
+    expect(screen.getByText('Vice President')).toBeInTheDocument()
     expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual(
       expect.arrayContaining(['None', 'Some', 'Lots']),
     )

@@ -1,0 +1,21 @@
+Candidate I
+i.candidate@example.com | (555) 402-1098 | linkedin.com/in/cand-i
+
+SUMMARY
+VP of Engineering at an early-stage payments startup, hands-on with Python.
+
+EXPERIENCE
+VP of Engineering, Tillpay (payments startup, 40 employees) — 2021–present
+- Built and lead the engineering team of 12 engineers (direct reports); hired all of them.
+- Own the technical direction, delivery, and on-call for the merchant payments platform: Python (FastAPI) services on PostgreSQL, deployed to AWS.
+- Designed the ledger and payout services and still write code weekly.
+- Present engineering plans to the CEO and board.
+
+Senior Software Engineer, Stripeline (payments) — 2016–2021
+- Built payout and reconciliation services in Python on PostgreSQL.
+
+Software Engineer, Codewave — 2013–2016
+- Python web services.
+
+SKILLS
+Python, FastAPI, PostgreSQL, AWS, startup engineering leadership

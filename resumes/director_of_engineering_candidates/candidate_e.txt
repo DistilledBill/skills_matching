@@ -1,0 +1,21 @@
+Candidate E
+e.candidate@example.com | (555) 401-6654 | linkedin.com/in/cand-e
+
+SUMMARY
+Director of Engineering for a large online marketplace, leading Python backend teams through managers.
+
+EXPERIENCE
+Director of Engineering, Marketstall (online marketplace) — 2020–present
+- Lead 3 engineering managers and 26 engineers across search, orders, and seller services, all Python (Django) services.
+- Own hiring, performance calibration, and quarterly planning for the group; report to the VP of Engineering.
+- Set up an on-call rotation and incident reviews across the three teams; cut severity-1 incidents by half in a year.
+- Run the group's architecture review and Python style guide.
+
+Engineering Manager, Marketstall — 2016–2020
+- Managed the orders team (8 engineers); owned checkout reliability during peak sales.
+
+Software Engineer, Webbly — 2012–2016
+- Built REST APIs in Python on MySQL.
+
+SKILLS
+Engineering management, Python, Django, MySQL, AWS

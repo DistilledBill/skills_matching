@@ -71,6 +71,7 @@ public class JobSpecRepository {
 		require(file, job.id().matches("[A-Za-z0-9_-]+"),
 				"the file name (the job id) may only use letters, digits, '_' and '-'");
 		require(file, StringUtils.hasText(job.title()), "title is required");
+		require(file, StringUtils.hasText(job.targetLevel()), "target_level is required");
 		require(file, StringUtils.hasText(job.summary()), "summary is required");
 		require(file, job.mustHaves() != null, "must_haves is required (may be empty)");
 		require(file, job.skills() != null && !job.skills().isEmpty(), "at least one skill is required");

@@ -26,7 +26,7 @@ The spec splits the work in two:
 
 | Part of the spec | Who uses it | What it does |
 | --- | --- | --- |
-| `title`, `summary`, `must_haves`, `skills` (the requirement text, questions and levels) | **Jev**, the model | Decides **what the resume shows**. This is the judgment. |
+| `title`, `target_level`, `summary`, `must_haves`, `skills` (the requirement text, questions and levels) | **Jev**, the model | Decides **what the resume shows**. This is the judgment. |
 | `weight` on each skill, and `thresholds` | **The code**, in [`ScreeningPolicy`](../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java) | Decides **what that means for this job**: status, composite and rank. This is the policy. |
 
 Jev never sees the weights or thresholds. That keeps the policy readable, testable, and cheap to change.
@@ -46,6 +46,10 @@ Conventions:
 ```yaml
 # Sent to Jev with every resume
 title: Senior Backend Engineer
+
+# Sent to Jev with every resume, as context. No question
+# names `job.target_level` yet
+target_level: Vice President
 
 # Sent to Jev with every resume. Only questions that
 # name `job.summary` use it
@@ -110,22 +114,24 @@ A shortened excerpt, reformatted to fit the page. Long values are wrapped over s
 
 ## 3. Section by section
 
-### 3.1 `title` and `summary`
+### 3.1 `title`, `target_level` and `summary`
 
-Both go into the **state**, the content Jev reads, together with the resume ([`ScreeningService`](../src/main/java/com/example/resumescreening/screening/ScreeningService.java)):
+All three go into the **state**, the content Jev reads, together with the resume ([`ScreeningService`](../src/main/java/com/example/resumescreening/screening/ScreeningService.java)):
 
 ```
 state = {
-  job:    { title, summary },
+  job:    { title, target_level, summary },
   resume: "<resume text, contact details removed>"
 }
 ```
 
-Every question sees the whole state, but a question only **points at** the parts it names in backticks. In all four included specs, the only question that names `` `job.summary` `` is `domain_relevance`, weighted 0.10. So:
+Every question sees the whole state, but a question only **points at** the parts it names in backticks. In all five included specs, the only question that names `` `job.summary` `` is `domain_relevance`, weighted 0.10. So:
 
 - **The summary affects at most 10% of the composite**, through one industry-relevance question.
 - **The summary never affects the must-haves**, so it can't change whether a candidate is `meets`, `review` or `missing`.
 - **Editing the summary re-asks every question.** Answers are cached by the full request, and the summary is part of every request. See [section 6](#6-what-each-change-costs).
+
+`target_level` is the seniority the role is hired at, for example `Vice President` or `Executive Director`. It is required. For now it is **context only**: no question names `` `job.target_level` ``, so Jev can see it but no answer is asked about it. To use it, add a skill whose question names it, for example "How closely does the seniority shown in `` `resume` `` match `` `job.target_level` ``?". Like the summary, editing it re-asks every question for the job.
 
 Write the summary as a short description of the role and its setting (industry, product, stack, what "senior" means here). It is context, not a list of requirements. Put requirements in `must_haves` and `skills`, where each one gets its own answer.
 
@@ -154,7 +160,7 @@ Writing requirements:
 
 - **Make the boundary explicit.** "Has used Python in a paid engineering role (not only coursework or hobby projects)" says exactly what counts and what doesn't.
 - **Keep it to things a resume can show.** "Is a fast learner" isn't checkable; "Has owned a product backlog in a paid role" is.
-- **Keep the list short.** A candidate who fails any single must-have ranks last, however strong they are elsewhere. The included specs use two each. An empty list (`must_haves: []`) is allowed and means there is no gate.
+- **Keep the list short.** A candidate who fails any single must-have ranks last, however strong they are elsewhere. The included specs use two each, except `director_of_engineering`, which adds a third for people management. An empty list (`must_haves: []`) is allowed and means there is no gate.
 
 ### 3.3 `skills`: the ranking
 
@@ -238,11 +244,11 @@ The values in the included specs (0.80 / 0.20 / 0.45) are starting points. Tune 
 
 ## 4. How a spec becomes a request
 
-For each resume, the screener sends **one request** containing the state and every question from the spec. The included specs each produce seven questions:
+For each resume, the screener sends **one request** containing the state and every question from the spec. The included specs produce seven questions each (eight for `director_of_engineering`, which has three must-haves):
 
 | From the spec | Becomes | Count |
 | --- | --- | --- |
-| `title`, `summary` + the resume (contact details removed) | `state` | 1 |
+| `title`, `target_level`, `summary` + the resume (contact details removed) | `state` | 1 |
 | each `must_haves` entry | Noul `must_<id>` | 2 |
 | each `skills` entry | Score `skill_<id>` | 5 |
 
@@ -264,7 +270,9 @@ Checked at startup by [`JobSpecRepository`](../src/main/java/com/example/resumes
 
 | Rule | Error message |
 | --- | --- |
+| the file name (the job id) uses only letters, digits, `_` and `-` | `the file name (the job id) may only use letters, digits, '_' and '-'` |
 | `title` has text | `title is required` |
+| `target_level` has text | `target_level is required` |
 | `summary` has text | `summary is required` |
 | `must_haves` is present (an empty list is fine) | `must_haves is required (may be empty)` |
 | at least one skill | `at least one skill is required` |
@@ -289,7 +297,7 @@ Jev's raw answers are cached in `.cache/`, keyed by the full request: model, sta
 | --- | --- | --- |
 | `weight`, any `thresholds` value | No | **None.** Re-ranked from cache |
 | A skill's `question` or `levels`, or a must-have's `requirement` | Yes | Re-asks the affected requests |
-| `title` or `summary` | Yes, in the state of **every** request | Re-asks **everything** for that job |
+| `title`, `target_level` or `summary` | Yes, in the state of **every** request | Re-asks **everything** for that job |
 | New spec | n/a | One request per resume screened |
 | Model version (`typesafe.model`) | Yes | Re-asks everything |
 
@@ -311,9 +319,10 @@ Because every question for a resume travels in one request, changing any questio
 
 | Job id | Title | Resumes |
 | --- | --- | --- |
+| [`director_of_engineering`](../jobs/director_of_engineering.yaml) | Director of Engineering | [`resumes/director_of_engineering_candidates/`](../resumes/director_of_engineering_candidates/) |
 | [`senior_backend_engineer`](../jobs/senior_backend_engineer.yaml) | Senior Backend Engineer | [`resumes/senior_backend_engineer_candidates/`](../resumes/senior_backend_engineer_candidates/) |
 | [`senior_hr_product_owner`](../jobs/senior_hr_product_owner.yaml) | Senior Human Resources Product Owner | [`resumes/senior_hr_product_owner_candidates/`](../resumes/senior_hr_product_owner_candidates/) |
 | [`technical_product_owner`](../jobs/technical_product_owner.yaml) | Technical Product Owner | [`resumes/technical_product_owner_candidates/`](../resumes/technical_product_owner_candidates/) |
 | [`senior_software_application_designer`](../jobs/senior_software_application_designer.yaml) | Senior Software Application Designer | [`resumes/senior_software_application_designer_candidates/`](../resumes/senior_software_application_designer_candidates/) |
 
-All four have two must-haves, five skills with weights that add up to 1.00, a `domain_relevance` skill at 0.10 that scores against `` `job.summary` ``, and the same thresholds.
+All five have five skills with weights that add up to 1.00, a `domain_relevance` skill at 0.10 that scores against `` `job.summary` ``, and the same thresholds. Four have two must-haves; `director_of_engineering` has three (it adds `people_management`) and weights leadership most heavily (`technical_leadership` 0.40).

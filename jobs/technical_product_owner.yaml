@@ -3,6 +3,7 @@
 # cached answers without new API calls.
 
 title: Technical Product Owner
+target_level: Vice President
 summary: >
   Own the backlog and roadmap for the technical products behind our payments
   platform: payments APIs, the developer platform, and internal platform

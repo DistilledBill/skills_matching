@@ -32,6 +32,7 @@ function JobCard({ job }: { job: JobSpec }) {
       <header>
         <h2>{job.title}</h2>
         <code className="muted">{job.id}</code>
+        <span className="target-level">Target level: {job.targetLevel}</span>
       </header>
       <p className="summary">{job.summary}</p>
 

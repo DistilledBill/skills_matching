@@ -1,0 +1,20 @@
+Candidate G
+g.candidate@example.com | (555) 401-8876 | linkedin.com/in/cand-g
+
+SUMMARY
+Engineering manager for mobile and web client teams at a consumer fintech app.
+
+EXPERIENCE
+Engineering Manager, Pocketbank (consumer fintech) — 2020–present
+- Manage the iOS, Android, and web teams (3 tech leads, 18 engineers); own hiring, reviews, and release planning.
+- Led the redesign of the onboarding flow in Swift, Kotlin, and React, raising completion by 22%.
+- Work with the backend teams on API contracts for the mobile apps.
+
+Senior iOS Engineer, Pocketbank — 2017–2020
+- Built the card controls and payments screens in Swift.
+
+iOS Engineer, Appcraft — 2014–2017
+- Built consumer iOS apps; wrote Python scripts for build automation.
+
+SKILLS
+Swift, Kotlin, React, TypeScript, mobile release management, people management
