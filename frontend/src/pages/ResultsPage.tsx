@@ -1,11 +1,12 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, type CandidateResult, type JobSpec, type Status } from '../api'
 import { Bar } from '../components/Bar'
 import { ErrorBox } from '../components/ErrorBox'
 import { PreviewPanel } from '../components/PreviewPanel'
 import { ResumeView } from '../components/ResumeView'
+import { Splitter, usePanelWidth } from '../components/Splitter'
 import { StatusPill } from '../components/StatusPill'
 import { WhatIfPanel } from '../components/WhatIfPanel'
 import { describeSource, fixed, humanize, mustHaveBand } from '../format'
@@ -107,6 +108,8 @@ export function Results({ job, run }: { job: JobSpec; run: ScreeningRun }) {
   )
 
   const current = candidates.find((c) => c.name === selected)
+  const split = useRef<HTMLDivElement>(null)
+  const panel = usePanelWidth(split, !!current)
 
   return (
     <>
@@ -144,101 +147,113 @@ export function Results({ job, run }: { job: JobSpec; run: ScreeningRun }) {
         </p>
       )}
 
-      <div className="filters" role="radiogroup" aria-label="Filter by status">
-        {(['all', 'meets', 'review', 'missing'] as const).map((f) => (
-          <button key={f} role="radio" aria-checked={filter === f} onClick={() => setFilter(f)}>
-            {f === 'all' ? `All ${candidates.length}` : `${f} ${counts[f]}`}
-          </button>
-        ))}
-      </div>
-
-      <div className="table-wrap">
-        <table className="results">
-          <thead>
-            <tr>
-              {header('rank', '#')}
-              {header('name', 'Candidate')}
-              <th>Status</th>
-              {header('composite', 'Composite')}
-              {job.skills.map((c) => (
-                <th key={c.id} className="skill-col">
-                  <button className="th-button" onClick={() => sortBy(`skill:${c.id}`)} title={c.question}>
-                    {humanize(c.id)}
-                    <span className="muted"> {fixed(weightOf(c.id))}</span>
-                    {sort.key === `skill:${c.id}` ? (sort.desc ? ' ↓' : ' ↑') : ''}
-                    <span className="th-sub">score · conf.</span>
-                  </button>
-                </th>
-              ))}
-              {job.mustHaves.map((m) => (
-                <th key={m.id} className="skill-col">
-                  <button className="th-button" onClick={() => sortBy(`must:${m.id}`)} title={m.requirement}>
-                    {humanize(m.id)}
-                    {sort.key === `must:${m.id}` ? (sort.desc ? ' ↓' : ' ↑') : ''}
-                    <span className="th-sub">probability met</span>
-                  </button>
-                </th>
-              ))}
-              <th>Reasons</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((c) => (
-              <tr
-                key={c.name}
-                className={c.name === selected ? 'selected' : undefined}
-                onClick={() => setSelected(c.name)}
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && setSelected(c.name)}
-              >
-                <td className="num">
-                  {c.rank}
-                  {whatIf && <RankChange from={specRank.get(c.name) ?? c.rank} to={c.rank} />}
-                </td>
-                <td>
-                  <strong>{c.name}</strong>
-                </td>
-                <td>
-                  <StatusPill status={c.status} />
-                </td>
-                <td>
-                  <Bar value={c.composite} />
-                </td>
-                {job.skills.map((skill) => {
-                  const conf = c.confidences[skill.id] ?? 1
-                  return (
-                    <td key={skill.id}>
-                      <Bar
-                        value={c.scores[skill.id] ?? 0}
-                        confidence={conf}
-                        lowConfidence={conf < t.minConfidence}
-                      />
-                    </td>
-                  )
-                })}
-                {job.mustHaves.map((m) => {
-                  const p = c.mustHaves[m.id] ?? 0
-                  return (
-                    <td key={m.id}>
-                      <span className={`chip chip-${mustHaveBand(p, t)}`}>{fixed(p)}</span>
-                    </td>
-                  )
-                })}
-                <td className="reasons">{c.reasons.join('; ') || <span className="muted">none</span>}</td>
-              </tr>
+      {/* On wide screens the candidate panel docks to the right of the table, with a splitter between them. */}
+      <div
+        ref={split}
+        className={current ? 'split split-open' : 'split'}
+        style={current ? ({ '--panel-w': `${panel.width}px` } as CSSProperties) : undefined}
+      >
+        <div className="split-main">
+          <div className="filters" role="radiogroup" aria-label="Filter by status">
+            {(['all', 'meets', 'review', 'missing'] as const).map((f) => (
+              <button key={f} role="radio" aria-checked={filter === f} onClick={() => setFilter(f)}>
+                {f === 'all' ? `All ${candidates.length}` : `${f} ${counts[f]}`}
+              </button>
             ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="muted small">
-        Score (0–1) is inside each bar; the number beside it is Jev's confidence. Confidence below{' '}
-        {fixed(t.minConfidence)} is shown in amber. Select a row for details and the exact request
-        sent to Jev.
-      </p>
+          </div>
 
-      {current && (
-        <CandidatePanel job={job} run={run} policy={policy} candidate={current} onClose={() => setSelected(null)} />
-      )}
+          <div className="table-wrap">
+            <table className="results">
+              <thead>
+                <tr>
+                  {header('rank', '#')}
+                  {header('name', 'Candidate')}
+                  <th>Status</th>
+                  {header('composite', 'Composite')}
+                  {job.skills.map((c) => (
+                    <th key={c.id} className="skill-col">
+                      <button className="th-button" onClick={() => sortBy(`skill:${c.id}`)} title={c.question}>
+                        {humanize(c.id)}
+                        <span className="muted"> {fixed(weightOf(c.id))}</span>
+                        {sort.key === `skill:${c.id}` ? (sort.desc ? ' ↓' : ' ↑') : ''}
+                        <span className="th-sub">score · conf.</span>
+                      </button>
+                    </th>
+                  ))}
+                  {job.mustHaves.map((m) => (
+                    <th key={m.id} className="skill-col">
+                      <button className="th-button" onClick={() => sortBy(`must:${m.id}`)} title={m.requirement}>
+                        {humanize(m.id)}
+                        {sort.key === `must:${m.id}` ? (sort.desc ? ' ↓' : ' ↑') : ''}
+                        <span className="th-sub">probability met</span>
+                      </button>
+                    </th>
+                  ))}
+                  <th>Reasons</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((c) => (
+                  <tr
+                    key={c.name}
+                    className={c.name === selected ? 'selected' : undefined}
+                    onClick={() => setSelected(c.name)}
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && setSelected(c.name)}
+                  >
+                    <td className="num">
+                      {c.rank}
+                      {whatIf && <RankChange from={specRank.get(c.name) ?? c.rank} to={c.rank} />}
+                    </td>
+                    <td>
+                      <strong>{c.name}</strong>
+                    </td>
+                    <td>
+                      <StatusPill status={c.status} />
+                    </td>
+                    <td>
+                      <Bar value={c.composite} />
+                    </td>
+                    {job.skills.map((skill) => {
+                      const conf = c.confidences[skill.id] ?? 1
+                      return (
+                        <td key={skill.id}>
+                          <Bar
+                            value={c.scores[skill.id] ?? 0}
+                            confidence={conf}
+                            lowConfidence={conf < t.minConfidence}
+                          />
+                        </td>
+                      )
+                    })}
+                    {job.mustHaves.map((m) => {
+                      const p = c.mustHaves[m.id] ?? 0
+                      return (
+                        <td key={m.id}>
+                          <span className={`chip chip-${mustHaveBand(p, t)}`}>{fixed(p)}</span>
+                        </td>
+                      )
+                    })}
+                    <td className="reasons">{c.reasons.join('; ') || <span className="muted">none</span>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="muted small">
+            Score (0–1) is inside each bar; the number beside it is Jev's confidence. Confidence below{' '}
+            {fixed(t.minConfidence)} is shown in amber. Select a row for details and the exact request
+            sent to Jev.
+          </p>
+        </div>
+
+        {current && (
+          <>
+            <Splitter width={panel.width} onChange={panel.set} label="Resize the candidate panel" />
+            <CandidatePanel job={job} run={run} policy={policy} candidate={current} onClose={() => setSelected(null)} />
+          </>
+        )}
+      </div>
     </>
   )
 }

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import type { JobSpec, ScreeningReport } from '../api'
 import backend from '../fixtures/senior_backend_engineer.report.json'
 import { Results } from './ResultsPage'
@@ -109,6 +109,50 @@ describe('must-have columns on the results page', () => {
     fireEvent.click(screen.getByText('candidate_c'))
     const title = screen.getAllByText('Python professional').find((e) => e.classList.contains('item-title'))!
     expect(title.closest('li')).toHaveTextContent(job.mustHaves[0].requirement)
+  })
+})
+
+describe('candidate panel docked beside the table', () => {
+  afterEach(() => localStorage.clear())
+
+  const splitter = () => screen.queryByRole('separator', { name: 'Resize the candidate panel' })
+  const width = () => Number(splitter()!.getAttribute('aria-valuenow'))
+  const docked = () => document.querySelector('.split-open')
+
+  it('opens beside the table, resizes from the keyboard, and resets on double-click', () => {
+    renderResults()
+    expect(splitter()).toBeNull()
+    fireEvent.click(screen.getByText('candidate_c'))
+
+    expect(docked()).toContainElement(screen.getByRole('table'))
+    expect(docked()).toContainElement(screen.getByRole('complementary', { name: 'Details for candidate_c' }))
+    expect(splitter()).toHaveAttribute('aria-orientation', 'vertical')
+    const start = width()
+    fireEvent.keyDown(splitter()!, { key: 'ArrowLeft' })
+    expect(width()).toBe(start + 24)
+    expect(localStorage.getItem('results.panelWidth')).toBe(String(start + 24))
+    fireEvent.keyDown(splitter()!, { key: 'ArrowRight' })
+    fireEvent.keyDown(splitter()!, { key: 'ArrowRight' })
+    expect(width()).toBe(start - 24)
+    fireEvent.doubleClick(splitter()!)
+    expect(width()).toBe(start)
+    expect(localStorage.getItem('results.panelWidth')).toBeNull()
+  })
+
+  it('opens at the width last chosen, and Close or Escape gives the table its full width back', () => {
+    localStorage.setItem('results.panelWidth', '600')
+    renderResults()
+    fireEvent.click(screen.getByText('candidate_c'))
+    expect(width()).toBe(600)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close details' }))
+    expect(splitter()).toBeNull()
+    expect(docked()).toBeNull()
+
+    fireEvent.click(screen.getByText('candidate_a'))
+    expect(docked()).not.toBeNull()
+    fireEvent.keyDown(window, { key: 'Escape' })
+    expect(docked()).toBeNull()
   })
 })
 

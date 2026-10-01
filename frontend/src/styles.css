@@ -209,7 +209,11 @@ select, input[type="text"], input[type="number"], input:not([type]), textarea {
 .table-wrap { position: relative; overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
 table.results { border-collapse: collapse; width: 100%; font-size: 0.92em; }
 .results th, .results td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
-.results th { color: var(--muted); font-weight: 600; white-space: nowrap; background: var(--surface); position: sticky; top: 0; }
+/* z-index keeps the pinned headers above the score bars, which are positioned. */
+.results th {
+  color: var(--muted); font-weight: 600; white-space: nowrap; background: var(--surface); position: sticky; top: 0;
+  z-index: 1;
+}
 .results tbody tr { cursor: pointer; }
 .results tbody tr:hover, .results tbody tr.selected { background: var(--accent-soft); }
 .results tbody tr:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -224,6 +228,35 @@ table.results { border-collapse: collapse; width: 100%; font-size: 0.92em; }
 .drawer-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 16px 16px 8px; }
 .drawer > .tabs { padding: 0 16px; }
 .drawer-body { overflow-y: auto; padding: 0 16px 24px; }
+
+/* Wide screens: the candidate panel docks beside the table instead of covering it, with a splitter between.
+   Narrower screens keep the full-screen drawer above. */
+.splitter { display: none; }
+@media (min-width: 901px) {
+  .app-main:has(.split-open) { max-width: none; }
+  .split-open {
+    display: grid; align-items: start;
+    grid-template-columns: minmax(0, 1fr) 8px clamp(320px, var(--panel-w), calc(100% - 368px));
+  }
+  /* The table pane is window height and the table scrolls both ways inside it, so its sideways scrollbar is
+     always on screen and the headers stay pinned. */
+  .split-open > .split-main {
+    min-width: 0; position: sticky; top: 12px; height: calc(100vh - 24px); display: flex; flex-direction: column;
+  }
+  .split-open .table-wrap { flex: 1 1 auto; min-height: 0; overflow: auto; }
+  .split-open .split-main > p { flex: none; }
+  .split-open > .drawer {
+    position: sticky; top: 12px; height: calc(100vh - 24px); width: auto; z-index: auto;
+    box-shadow: none; border: 1px solid var(--border); border-radius: 8px;
+  }
+  .splitter {
+    display: flex; align-items: center; justify-content: center; position: sticky; top: 12px;
+    height: calc(100vh - 24px); cursor: col-resize; touch-action: none;
+  }
+  .splitter:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 4px; }
+  .splitter-grip { width: 4px; height: 40px; border-radius: 2px; background: var(--border); }
+  .splitter:hover .splitter-grip, .splitter:focus-visible .splitter-grip { background: var(--accent); }
+}
 
 /* Spec editor */
 .editor { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }

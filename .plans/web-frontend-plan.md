@@ -119,6 +119,7 @@ A shared component, used on the Screen page, in the Results side panel and on ea
 4.1. **Claude suggestions in the editor:** suggest a skill's question, a skill's levels, a must-have's requirement, or a whole new skill. See [Phase 4.1](#phase-41-claude-suggestions-in-the-spec-editor) below. **Done** (commit `7d01e67`), including the manual check with a real key and the fix so suggestions improve existing text instead of repeating it.
 4.2. **Claude-drafted job overview:** describe the job in a few words and press **Draft job overview** to get a suggested summary. See [Phase 4.2](#phase-42-claude-drafted-job-overview) below. **Done**, including the manual check with a real key (2 calls).
 4.3. **Must-have names on the Jobs and Results pages:** a subtitle above each must-have's requirement, and one Results column per must-have. See [Phase 4.3](#phase-43-must-have-names-on-the-jobs-and-results-pages) below. **Done**, including reasons that use the same names.
+4.4. **Candidate panel docked beside the results, with a splitter:** see [Phase 4.4](#phase-44-candidate-panel-docked-beside-the-results) below. **Done**.
 
 ## Phase 1.1: clearer scores and weights
 
@@ -588,6 +589,33 @@ Must-haves show only their requirement sentence on the Jobs page, and on the Res
 
 - **Vitest:** the job card shows each must-have's name above its requirement; the Results table has one header per must-have with "probability met"; sorting by a must-have orders the rows by its probability; the side panel shows the names.
 - **In the browser,** on the cached backend results with no API key (no paid calls): desktop, and dark mode at 390px with no sideways page scroll.
+
+## Phase 4.4: candidate panel docked beside the results
+
+### Why
+
+The candidate panel opens over the results table, covering it. You want it docked on the right, beside the table, with a vertical splitter to resize the two. Front end only.
+
+### Layout
+
+- **With a candidate selected,** the results area splits into two panes. Left: the status filters, the table and the note under it. Right: the candidate panel (Scores, Resume, What was sent to Jev). The title, buttons, summary line and What-if panel stay full width above both. No overlay or shadow; nothing is covered.
+- **Full width while split:** the page drops its usual 1,280px limit, so the table isn't squeezed. It returns to normal when the panel closes.
+- **Window-height panes:** while split, the table pane is as tall as the window and scrolls on its own both ways, so its sideways scrollbar is always on screen and the column headers stay pinned. The panel is also window height, stays in view, and scrolls on its own.
+- **Closing:** **Close** or Escape removes the split; the results view goes back to its normal width and height.
+- **Switching:** clicking another row shows that candidate; the open tab stays.
+- **Narrow screens** (900px or less): no room for two panes, so the panel opens full screen over the table, as now.
+
+### The splitter
+
+- A thin vertical bar with a grip. Drag it to resize; the table keeps at least 360px and the panel at least 320px, also when the window is resized.
+- Default: the panel takes about 40% of the width. Double-clicking the bar resets it.
+- The last width is remembered in this browser (`localStorage`, a convenience only; the page works without it).
+- Keyboard and screen readers: the bar is focusable (`role="separator"`, vertical, with its current width); Left and Right arrows move it 24px.
+
+### Tests and verification
+
+- **Vitest:** selecting a row opens the split with the separator; arrow keys change the width; double-click resets it; a remembered width is used; Escape and Close remove the split.
+- **In the browser,** on cached results with no API key (no paid calls): drag the splitter and check the limits; scroll the table sideways and down with the panel open; close and check the table returns to normal; 390px dark mode falls back to the full-screen panel with no sideways page scroll.
 
 ## Verification
 
