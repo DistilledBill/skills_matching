@@ -187,7 +187,7 @@ candidate_a:
 
 **Rank.** Candidates are sorted by status first (`meets`, then `review`, then `missing`) and by composite within each status. A `missing` candidate therefore ranks last even with a high composite.
 
-**Reasons** (the `reasons` field) are strings **written by the code** to say which rule fired, such as `not shown: python_professional (0.03)`. They are not an explanation from Jev, which never explains itself.
+**Reasons** (the `reasons` field) are strings **written by the code** to say which rule fired, such as `not shown: Python professional (0.03)`. They name the must-have or skill in words, as the web app's column headers do. They are not an explanation from Jev, which never explains itself.
 
 ---
 
@@ -280,7 +280,7 @@ Here is candidate_c from the JSON output, annotated (long decimals shortened):
   "status": "missing",              // a must-have fell below 0.20
   "composite": 0.649125,            // 3rd on skills alone...
   "reasons": [                      // ...but the gate comes first
-    "not shown: python_professional (0.03)"
+    "not shown: Python professional (0.03)"
   ],
   "mustHaves": {
     "python_professional": 0.03,    // 97% "no": no Python on it

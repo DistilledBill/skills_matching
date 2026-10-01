@@ -190,7 +190,7 @@
         "status": "review",
         "composite": 0.527125,
         "reasons": [
-          "unclear: hr_systems_experience (0.78)"
+          "unclear: Hr systems experience (0.78)"
         ],
         "mustHaves": {
           "product_owner_professional": 0.98,
@@ -217,7 +217,7 @@
         "status": "review",
         "composite": 0.488,
         "reasons": [
-          "unclear: product_owner_professional (0.26)"
+          "unclear: Product owner professional (0.26)"
         ],
         "mustHaves": {
           "product_owner_professional": 0.26,
@@ -244,7 +244,7 @@
         "status": "missing",
         "composite": 0.701875,
         "reasons": [
-          "not shown: hr_systems_experience (0.04)"
+          "not shown: Hr systems experience (0.04)"
         ],
         "mustHaves": {
           "product_owner_professional": 0.99,
@@ -271,7 +271,7 @@
         "status": "missing",
         "composite": 0.445625,
         "reasons": [
-          "not shown: hr_systems_experience (0.02)"
+          "not shown: Hr systems experience (0.02)"
         ],
         "mustHaves": {
           "product_owner_professional": 0.98,
@@ -298,7 +298,7 @@
         "status": "missing",
         "composite": 0.28,
         "reasons": [
-          "not shown: product_owner_professional (0.04)"
+          "not shown: Product owner professional (0.04)"
         ],
         "mustHaves": {
           "product_owner_professional": 0.04,
@@ -325,8 +325,8 @@
         "status": "missing",
         "composite": 0.276,
         "reasons": [
-          "not shown: product_owner_professional (0.03)",
-          "unclear: hr_systems_experience (0.77)"
+          "not shown: Product owner professional (0.03)",
+          "unclear: Hr systems experience (0.77)"
         ],
         "mustHaves": {
           "product_owner_professional": 0.03,

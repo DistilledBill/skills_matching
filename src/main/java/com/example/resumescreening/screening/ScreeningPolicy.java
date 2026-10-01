@@ -33,11 +33,11 @@ public final class ScreeningPolicy {
 			mustHaves.put(req.id(), p);
 			if (p < t.mustHaveFail()) {
 				status = Status.MISSING;
-				reasons.add(fmt("not shown: %s (%.2f)", req.id(), p));
+				reasons.add(fmt("not shown: %s (%.2f)", label(req.id()), p));
 			}
 			else if (p < t.mustHavePass()) {
 				status = worse(status, Status.REVIEW);
-				reasons.add(fmt("unclear: %s (%.2f)", req.id(), p));
+				reasons.add(fmt("unclear: %s (%.2f)", label(req.id()), p));
 			}
 		}
 
@@ -51,7 +51,7 @@ public final class ScreeningPolicy {
 			composite += skill.weight() / totalWeight * normalized;
 			if (skill.weight() >= HEAVY_WEIGHT && answer.confidence() < t.minConfidence()) {
 				status = worse(status, Status.REVIEW);
-				reasons.add(fmt("uncertain: %s (conf %.2f)", skill.id(), answer.confidence()));
+				reasons.add(fmt("uncertain: %s (conf %.2f)", label(skill.id()), answer.confidence()));
 			}
 		}
 
@@ -60,6 +60,15 @@ public final class ScreeningPolicy {
 
 	private static Status worse(Status a, Status b) {
 		return a.compareTo(b) >= 0 ? a : b;
+	}
+
+	/**
+	 * The name a reason uses for a must-have or skill, matching the web app's column headers:
+	 * {@code product_owner_professional} becomes "Product owner professional".
+	 */
+	static String label(String id) {
+		String words = id.replace('_', ' ');
+		return words.isEmpty() ? words : words.substring(0, 1).toUpperCase(Locale.ROOT) + words.substring(1);
 	}
 
 	private static String fmt(String format, Object... args) {

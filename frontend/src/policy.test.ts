@@ -48,7 +48,7 @@ describe('decide', () => {
     c.mustHaves.python_professional = 0.05
     const result = decideWith(c)
     expect(result.status).toBe('missing')
-    expect(result.reasons).toEqual(['not shown: python_professional (0.05)'])
+    expect(result.reasons).toEqual(['not shown: Python professional (0.05)'])
   })
 
   it('a must-have between the thresholds goes to review', () => {
@@ -56,7 +56,7 @@ describe('decide', () => {
     c.mustHaves.backend_services = 0.5
     const result = decideWith(c)
     expect(result.status).toBe('review')
-    expect(result.reasons).toEqual(['unclear: backend_services (0.50)'])
+    expect(result.reasons).toEqual(['unclear: Backend services (0.50)'])
   })
 
   it('missing is not downgraded by later review reasons', () => {
@@ -74,7 +74,7 @@ describe('decide', () => {
     c.confidences.python_depth = 0.3
     const result = decideWith(c)
     expect(result.status).toBe('review')
-    expect(result.reasons).toEqual(['uncertain: python_depth (conf 0.30)'])
+    expect(result.reasons).toEqual(['uncertain: Python depth (conf 0.30)'])
   })
 
   it('low confidence on a light skill is ignored', () => {

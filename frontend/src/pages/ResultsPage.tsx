@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { api, type CandidateResult, type JobSpec, type Status, type Thresholds } from '../api'
+import { api, type CandidateResult, type JobSpec, type Status } from '../api'
 import { Bar } from '../components/Bar'
 import { ErrorBox } from '../components/ErrorBox'
 import { PreviewPanel } from '../components/PreviewPanel'
@@ -12,7 +12,7 @@ import { describeSource, fixed, humanize, mustHaveBand } from '../format'
 import { rank, samePolicy, specPolicy, type Policy } from '../policy'
 import { useResults, type ScreeningRun } from '../results'
 
-type SortKey = 'rank' | 'name' | 'composite' | `skill:${string}`
+type SortKey = 'rank' | 'name' | 'composite' | `skill:${string}` | `must:${string}`
 
 export function ResultsPage() {
   const { jobId = '' } = useParams()
@@ -72,7 +72,9 @@ export function Results({ job, run }: { job: JobSpec; run: ScreeningRun }) {
           ? c.name
           : sort.key === 'composite'
             ? c.composite
-            : (c.scores[sort.key.slice(6)] ?? 0)
+            : sort.key.startsWith('must:')
+              ? (c.mustHaves[sort.key.slice(5)] ?? 0)
+              : (c.scores[sort.key.slice(6)] ?? 0)
     return [...visible].sort((a, b) => {
       const [x, y] = [value(a), value(b)]
       const cmp = typeof x === 'string' ? x.localeCompare(String(y)) : x - (y as number)
@@ -168,7 +170,15 @@ export function Results({ job, run }: { job: JobSpec; run: ScreeningRun }) {
                   </button>
                 </th>
               ))}
-              <th>Must-haves</th>
+              {job.mustHaves.map((m) => (
+                <th key={m.id} className="skill-col">
+                  <button className="th-button" onClick={() => sortBy(`must:${m.id}`)} title={m.requirement}>
+                    {humanize(m.id)}
+                    {sort.key === `must:${m.id}` ? (sort.desc ? ' ↓' : ' ↑') : ''}
+                    <span className="th-sub">probability met</span>
+                  </button>
+                </th>
+              ))}
               <th>Reasons</th>
             </tr>
           </thead>
@@ -206,9 +216,14 @@ export function Results({ job, run }: { job: JobSpec; run: ScreeningRun }) {
                     </td>
                   )
                 })}
-                <td>
-                  <MustHaveChips job={job} candidate={c} thresholds={t} />
-                </td>
+                {job.mustHaves.map((m) => {
+                  const p = c.mustHaves[m.id] ?? 0
+                  return (
+                    <td key={m.id}>
+                      <span className={`chip chip-${mustHaveBand(p, t)}`}>{fixed(p)}</span>
+                    </td>
+                  )
+                })}
                 <td className="reasons">{c.reasons.join('; ') || <span className="muted">none</span>}</td>
               </tr>
             ))}
@@ -237,29 +252,6 @@ function RankChange({ from, to }: { from: number; to: number }) {
       {up ? '▲' : '▼'}
       {Math.abs(from - to)}
       <span className="visually-hidden">{up ? ' places up' : ' places down'}</span>
-    </span>
-  )
-}
-
-function MustHaveChips({
-  job,
-  candidate,
-  thresholds,
-}: {
-  job: JobSpec
-  candidate: CandidateResult
-  thresholds: Thresholds
-}) {
-  return (
-    <span className="chips">
-      {job.mustHaves.map((m) => {
-        const p = candidate.mustHaves[m.id] ?? 0
-        return (
-          <span key={m.id} className={`chip chip-${mustHaveBand(p, thresholds)}`} title={m.requirement}>
-            {fixed(p)}
-          </span>
-        )
-      })}
     </span>
   )
 }
@@ -323,6 +315,7 @@ function CandidatePanel({
               const p = candidate.mustHaves[m.id] ?? 0
               return (
                 <li key={m.id}>
+                  <span className="item-title">{humanize(m.id)}</span>
                   <span className={`chip chip-${mustHaveBand(p, t)}`}>{fixed(p)}</span> {m.requirement}
                 </li>
               )

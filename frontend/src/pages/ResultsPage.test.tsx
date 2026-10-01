@@ -85,3 +85,30 @@ describe('what-if tuning on the results page', () => {
     expect(state.whatIf.thresholds.minConfidence).toBe(0.6)
   })
 })
+
+describe('must-have columns on the results page', () => {
+  it('gives each must-have its own named, sortable column', () => {
+    renderResults()
+    const headers = screen.getAllByRole('columnheader')
+    const python = headers.find((h) => h.textContent?.startsWith('Python professional'))!
+    const backendServices = headers.find((h) => h.textContent?.startsWith('Backend services'))!
+    expect(python).toHaveTextContent('probability met')
+    expect(within(backendServices).getByRole('button')).toHaveAttribute('title', job.mustHaves[1].requirement)
+    expect(headers.some((h) => h.textContent === 'Must-haves')).toBe(false)
+
+    // Highest first, then lowest first on a second click.
+    fireEvent.click(within(backendServices).getByRole('button'))
+    fireEvent.click(within(backendServices).getByRole('button'))
+    expect(names().slice(0, 3)).toEqual(['candidate_h', 'candidate_i', 'candidate_b'])
+    const firstRow = within(screen.getByRole('table')).getAllByRole('row')[1]
+    expect(firstRow).toHaveTextContent('0.07')
+  })
+
+  it('names each must-have in the candidate panel', () => {
+    renderResults()
+    fireEvent.click(screen.getByText('candidate_c'))
+    const title = screen.getAllByText('Python professional').find((e) => e.classList.contains('item-title'))!
+    expect(title.closest('li')).toHaveTextContent(job.mustHaves[0].requirement)
+  })
+})
+

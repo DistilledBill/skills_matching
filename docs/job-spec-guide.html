@@ -285,7 +285,7 @@ false:       The resume does not mention it, or what it
     <div class="table-wrap"><table>
       <thead><tr><th>Field</th><th>Rules</th></tr></thead>
       <tbody>
-        <tr><td><code>id</code></td><td>snake_case, unique in the file. Becomes the question id <code>must_&lt;id&gt;</code> and appears in the output and in reasons such as <code>not shown: python_professional (0.03)</code>.</td></tr>
+        <tr><td><code>id</code></td><td>snake_case, unique in the file. Becomes the question id <code>must_&lt;id&gt;</code> and appears in the output. Reasons and the web app use it in words, for example <code>not shown: Python professional (0.03)</code>.</td></tr>
         <tr><td><code>requirement</code></td><td>Required. One condition with a clear yes/no boundary.</td></tr>
       </tbody>
     </table></div>
@@ -366,13 +366,13 @@ composite  = Σ (weight / total weight × normalized)</div>
       <thead><tr><th>Must-have probability</th><th>Result</th><th>Reason written to the output</th></tr></thead>
       <tbody>
         <tr><td>at or above <code>must_have_pass</code> (0.80)</td><td>Requirement met</td><td>none</td></tr>
-        <tr><td>from <code>must_have_fail</code> (0.20) up to, but not including, 0.80</td><td>Candidate goes to <span class="pill review">review</span></td><td><code>unclear: &lt;id&gt; (0.xx)</code></td></tr>
-        <tr><td>below <code>must_have_fail</code> (0.20)</td><td>Candidate is <span class="pill missing">missing</span></td><td><code>not shown: &lt;id&gt; (0.xx)</code></td></tr>
+        <tr><td>from <code>must_have_fail</code> (0.20) up to, but not including, 0.80</td><td>Candidate goes to <span class="pill review">review</span></td><td><code>unclear: &lt;name&gt; (0.xx)</code></td></tr>
+        <tr><td>below <code>must_have_fail</code> (0.20)</td><td>Candidate is <span class="pill missing">missing</span></td><td><code>not shown: &lt;name&gt; (0.xx)</code></td></tr>
       </tbody>
     </table></div>
     <p>Real examples: candidate_c's <code>python_professional</code> came back <strong>0.03</strong>, so it's <code>missing</code> (Java and Kotlin only). candidate_b's came back <strong>0.93</strong>, so it's met, even though its only Python was "scripts for nightly catalog imports".</p>
 
-    <p><strong><code>min_confidence</code></strong> applies to skills. Each Score comes with a <code>confidence</code> from 0 to 1 that measures how concentrated Jev's probabilities are across the levels: 1.0 means all on one level, and lower means spread out. If a <strong>heavy</strong> skill (weight 0.20 or more) comes back with confidence <strong>below</strong> <code>min_confidence</code>, the candidate goes to <span class="pill review">review</span> with the reason <code>uncertain: &lt;id&gt; (conf 0.xx)</code>. Lighter skills are exempt, because an uncertain score there barely moves the composite. The 0.20 cutoff is fixed in code (<code>HEAVY_WEIGHT</code> in <a href="../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java"><code>ScreeningPolicy</code></a>), not set in the YAML.</p>
+    <p><strong><code>min_confidence</code></strong> applies to skills. Each Score comes with a <code>confidence</code> from 0 to 1 that measures how concentrated Jev's probabilities are across the levels: 1.0 means all on one level, and lower means spread out. If a <strong>heavy</strong> skill (weight 0.20 or more) comes back with confidence <strong>below</strong> <code>min_confidence</code>, the candidate goes to <span class="pill review">review</span> with the reason <code>uncertain: &lt;name&gt; (conf 0.xx)</code>, where the name is the id in words (<code>python_depth</code> becomes <code>Python depth</code>). Lighter skills are exempt, because an uncertain score there barely moves the composite. The 0.20 cutoff is fixed in code (<code>HEAVY_WEIGHT</code> in <a href="../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java"><code>ScreeningPolicy</code></a>), not set in the YAML.</p>
     <p>Real example: candidate_d's <code>python_depth</code> spread its probability across levels 2, 3 and 4, with confidence <strong>0.57</strong>. That is above 0.45, so it did not trigger review.</p>
 
     <p><strong>How the rules combine.</strong> The worst result wins:</p>

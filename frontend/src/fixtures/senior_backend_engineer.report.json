@@ -240,7 +240,7 @@
         "status": "review",
         "composite": 0.43925000000000003,
         "reasons": [
-          "unclear: backend_services (0.38)"
+          "unclear: Backend services (0.38)"
         ],
         "mustHaves": {
           "python_professional": 0.98,
@@ -267,7 +267,7 @@
         "status": "missing",
         "composite": 0.65225,
         "reasons": [
-          "not shown: python_professional (0.16)"
+          "not shown: Python professional (0.16)"
         ],
         "mustHaves": {
           "python_professional": 0.16,
@@ -294,7 +294,7 @@
         "status": "missing",
         "composite": 0.6491250000000001,
         "reasons": [
-          "not shown: python_professional (0.03)"
+          "not shown: Python professional (0.03)"
         ],
         "mustHaves": {
           "python_professional": 0.03,
@@ -321,7 +321,7 @@
         "status": "missing",
         "composite": 0.359375,
         "reasons": [
-          "not shown: backend_services (0.07)"
+          "not shown: Backend services (0.07)"
         ],
         "mustHaves": {
           "python_professional": 0.89,

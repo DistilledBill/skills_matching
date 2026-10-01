@@ -104,6 +104,9 @@ h4 { margin: 20px 0 8px; }
 .job-card .actions { margin-top: auto; padding-top: 12px; }
 ul.plain { list-style: none; padding: 0; margin: 0; }
 ul.plain li { margin: 4px 0; }
+/* A must-have's name, above its requirement. */
+.item-title { display: block; font-weight: 600; font-size: 0.9em; }
+ul.plain li:has(.item-title) { margin: 8px 0; }
 .weights-block { display: grid; grid-template-columns: 1fr 20px; gap: 12px; align-items: stretch; }
 .weights { list-style: none; padding: 0; margin: 0; }
 .weights li { display: grid; grid-template-columns: 10px 1fr 36px; align-items: center; gap: 8px; margin: 3px 0; }
@@ -157,7 +160,6 @@ select, input[type="text"], input[type="number"], input:not([type]), textarea {
 .badge { font-size: 0.85em; padding: 2px 10px; border-radius: 999px; }
 .badge-good { background: var(--good-soft); color: var(--good); }
 .badge-warn { background: var(--warn-soft); color: var(--warn); }
-.chips { display: inline-flex; gap: 4px; }
 .chip { font-size: 0.82em; padding: 0 6px; border-radius: 4px; font-variant-numeric: tabular-nums; }
 .chip-met { background: var(--good-soft); color: var(--good); }
 .chip-unclear { background: var(--warn-soft); color: var(--warn); }

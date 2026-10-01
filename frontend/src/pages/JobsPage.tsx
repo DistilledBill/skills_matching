@@ -70,7 +70,10 @@ function JobCard({ job }: { job: JobSpec }) {
       <h3>Must-haves</h3>
       <ul className="plain">
         {job.mustHaves.map((m) => (
-          <li key={m.id}>{m.requirement}</li>
+          <li key={m.id}>
+            <span className="item-title">{humanize(m.id)}</span>
+            {m.requirement}
+          </li>
         ))}
       </ul>
 

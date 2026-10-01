@@ -375,7 +375,7 @@
       </tbody>
     </table></div>
     <p><strong>Rank.</strong> Candidates are sorted by status first (<code>meets</code>, then <code>review</code>, then <code>missing</code>) and by composite within each status. A <code>missing</code> candidate therefore ranks last even with a high composite.</p>
-    <p><strong>Reasons</strong> (the <code>reasons</code> field) are strings <strong>written by the code</strong> to say which rule fired, such as <code>not shown: python_professional (0.03)</code>. They are not an explanation from Jev, which never explains itself.</p>
+    <p><strong>Reasons</strong> (the <code>reasons</code> field) are strings <strong>written by the code</strong> to say which rule fired, such as <code>not shown: Python professional (0.03)</code>. They name the must-have or skill in words, as the web app's column headers do. They are not an explanation from Jev, which never explains itself.</p>
 
     <!-- 4 -->
     <h2 id="applied">4. How this project applies Jev</h2>
@@ -505,7 +505,7 @@
   "status": "missing",              <span class="c">// a must-have fell below 0.20</span>
   "composite": 0.649125,            <span class="c">// 3rd on skills alone...</span>
   "reasons": [                      <span class="c">// ...but the gate comes first</span>
-    "not shown: python_professional (0.03)"
+    "not shown: Python professional (0.03)"
   ],
   "mustHaves": {
     "python_professional": 0.03,    <span class="c">// 97% "no": no Python on it</span>

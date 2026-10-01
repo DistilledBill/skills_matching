@@ -4,6 +4,7 @@
 // against a real report produced by the Java code.
 
 import type { CandidateResult, JobSpec, Status, Thresholds } from './api'
+import { humanize } from './format'
 
 /** Skills weighted at least this much send low-confidence answers to review (ScreeningPolicy.HEAVY_WEIGHT). */
 export const HEAVY_WEIGHT = 0.2
@@ -42,10 +43,10 @@ export function decide(job: JobSpec, candidate: CandidateResult, policy: Policy)
     const p = candidate.mustHaves[req.id] ?? 0
     if (p < t.mustHaveFail) {
       status = 'missing'
-      reasons.push(`not shown: ${req.id} (${format2(p)})`)
+      reasons.push(`not shown: ${humanize(req.id)} (${format2(p)})`)
     } else if (p < t.mustHavePass) {
       status = worse(status, 'review')
-      reasons.push(`unclear: ${req.id} (${format2(p)})`)
+      reasons.push(`unclear: ${humanize(req.id)} (${format2(p)})`)
     }
   }
 
@@ -59,7 +60,7 @@ export function decide(job: JobSpec, candidate: CandidateResult, policy: Policy)
     if (totalWeight > 0) composite += (weight(skill.id) / totalWeight) * normalized
     if (weight(skill.id) >= HEAVY_WEIGHT && confidence < t.minConfidence) {
       status = worse(status, 'review')
-      reasons.push(`uncertain: ${skill.id} (conf ${format2(confidence)})`)
+      reasons.push(`uncertain: ${humanize(skill.id)} (conf ${format2(confidence)})`)
     }
   }
 

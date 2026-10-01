@@ -153,7 +153,7 @@ Jev answers with **the probability that the answer is yes**, from 0 to 1. This i
 
 | Field | Rules |
 | --- | --- |
-| `id` | snake_case, unique in the file. Becomes the question id `must_<id>` and appears in the output and in reasons such as `not shown: python_professional (0.03)`. |
+| `id` | snake_case, unique in the file. Becomes the question id `must_<id>` and appears in the output. Reasons and the web app use it in words, for example `not shown: Python professional (0.03)`. |
 | `requirement` | Required. One condition with a clear yes/no boundary. |
 
 Writing requirements:
@@ -212,12 +212,12 @@ The thresholds decide each candidate's status: `meets`, `review` or `missing`. J
 | Must-have probability | Result | Reason written to the output |
 | --- | --- | --- |
 | at or above `must_have_pass` (0.80) | Requirement met | none |
-| from `must_have_fail` (0.20) up to, but not including, 0.80 | Candidate goes to `review` | `unclear: <id> (0.xx)` |
-| below `must_have_fail` (0.20) | Candidate is `missing` | `not shown: <id> (0.xx)` |
+| from `must_have_fail` (0.20) up to, but not including, 0.80 | Candidate goes to `review` | `unclear: <name> (0.xx)` |
+| below `must_have_fail` (0.20) | Candidate is `missing` | `not shown: <name> (0.xx)` |
 
 Real examples: candidate_c's `python_professional` came back **0.03**, so it's `missing` (Java and Kotlin only). candidate_b's came back **0.93**, so it's met, even though its only Python was "scripts for nightly catalog imports".
 
-**`min_confidence`** applies to skills. Each Score comes with a `confidence` from 0 to 1 that measures how concentrated Jev's probabilities are across the levels: 1.0 means all on one level, and lower means spread out. If a **heavy** skill (weight 0.20 or more) comes back with confidence **below** `min_confidence`, the candidate goes to `review` with the reason `uncertain: <id> (conf 0.xx)`. Lighter skills are exempt, because an uncertain score there barely moves the composite. The 0.20 cutoff is fixed in code (`HEAVY_WEIGHT` in [`ScreeningPolicy`](../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java)), not set in the YAML.
+**`min_confidence`** applies to skills. Each Score comes with a `confidence` from 0 to 1 that measures how concentrated Jev's probabilities are across the levels: 1.0 means all on one level, and lower means spread out. If a **heavy** skill (weight 0.20 or more) comes back with confidence **below** `min_confidence`, the candidate goes to `review` with the reason `uncertain: <name> (conf 0.xx)`, where the name is the id in words (`python_depth` becomes `Python depth`). Lighter skills are exempt, because an uncertain score there barely moves the composite. The 0.20 cutoff is fixed in code (`HEAVY_WEIGHT` in [`ScreeningPolicy`](../src/main/java/com/example/resumescreening/screening/ScreeningPolicy.java)), not set in the YAML.
 
 Real example: candidate_d's `python_depth` spread its probability across levels 2, 3 and 4, with confidence **0.57**. That is above 0.45, so it did not trigger review.
 

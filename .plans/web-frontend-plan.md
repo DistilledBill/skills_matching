@@ -118,6 +118,7 @@ A shared component, used on the Screen page, in the Results side panel and on ea
 4. **Authoring:** the spec editor, the save endpoints and the repository changes. See [Phase 4](#phase-4-authoring-the-spec-editor) below. **Done** (commit `7d01e67`).
 4.1. **Claude suggestions in the editor:** suggest a skill's question, a skill's levels, a must-have's requirement, or a whole new skill. See [Phase 4.1](#phase-41-claude-suggestions-in-the-spec-editor) below. **Done** (commit `7d01e67`), including the manual check with a real key and the fix so suggestions improve existing text instead of repeating it.
 4.2. **Claude-drafted job overview:** describe the job in a few words and press **Draft job overview** to get a suggested summary. See [Phase 4.2](#phase-42-claude-drafted-job-overview) below. **Done**, including the manual check with a real key (2 calls).
+4.3. **Must-have names on the Jobs and Results pages:** a subtitle above each must-have's requirement, and one Results column per must-have. See [Phase 4.3](#phase-43-must-have-names-on-the-jobs-and-results-pages) below. **Done**, including reasons that use the same names.
 
 ## Phase 1.1: clearer scores and weights
 
@@ -566,6 +567,27 @@ The summary is the job overview Jev reads with every resume, and `domain_relevan
 - **Manual check with your key:** about 2 small paid calls, run only with your OK. Draft an overview for a new job from a one-line description, and improve the existing payments summary, in a scratch copy of `jobs/`.
   - **Done.** Both passed first time (about 6 s each, 216 and 218 words, no warnings). The new-job draft was good as it stood. The improved payments summary was a real rewrite, but one sentence read as a requirement and it reused wording from the must-haves and skill levels, so review before accepting.
 - **Docs:** README (the endpoint and the button), `CLAUDE.md` (assist section), and the job spec guide.
+
+## Phase 4.3: must-have names on the Jobs and Results pages
+
+### Why
+
+Must-haves show only their requirement sentence on the Jobs page, and on the Results page they share one column of unlabelled chips (the requirement appears only on hover). You can't tell at a glance which chip is which. Front end only, except the reasons change below.
+
+### Changes
+
+- **Jobs page, each card:** a short bold subtitle above each requirement, made from the must-have's id with `humanize` (for example **Product owner professional**), the same way skills are named.
+- **Results table:** the single "Must-haves" column becomes **one column per must-have**, in the same place (after the skill columns).
+  - **Header:** the must-have's name, with a small "probability met" line under it, like the skill headers' "score · conf.". The requirement sentence moves to the header's hover text, as skill headers show their question.
+  - **Cell:** the same coloured chip with the probability, banded by the current (what-if or spec) thresholds. The chips lose their own hover text.
+  - **Sorting:** clicking a header sorts by that must-have's probability (highest first, then toggles), like the skill columns.
+- **Candidate side panel:** the Must-haves list gets the same subtitle above each requirement as the Jobs page.
+- **Reasons use the same names** (added after review): `not shown: Product owner professional (0.03)` instead of `not shown: product_owner_professional (0.03)`, and likewise `unclear:` and `uncertain:`. This one is not front-end only: `ScreeningPolicy` (Java, a new `label(id)` helper matching the web app's `humanize`) and its copy in `policy.ts` change together, so the API's `reasons` and the CSV change too (a breaking change for scripts that parse ids out of reasons). The three parity fixtures' recorded reasons are rewritten to the new wording; their scores are untouched. Docs: the reason examples in both guides (md and html).
+
+### Tests and verification
+
+- **Vitest:** the job card shows each must-have's name above its requirement; the Results table has one header per must-have with "probability met"; sorting by a must-have orders the rows by its probability; the side panel shows the names.
+- **In the browser,** on the cached backend results with no API key (no paid calls): desktop, and dark mode at 390px with no sideways page scroll.
 
 ## Verification
 

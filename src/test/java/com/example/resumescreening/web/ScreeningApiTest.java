@@ -113,7 +113,7 @@ class ScreeningApiTest {
 			.andExpect(jsonPath("$.candidates[9].name").value("candidate_c"))
 			.andExpect(jsonPath("$.candidates[9].status").value("missing"))
 			.andExpect(jsonPath("$.candidates[9].rank").value(10))
-			.andExpect(jsonPath("$.candidates[9].reasons[0]").value("not shown: python_professional (0.02)"));
+			.andExpect(jsonPath("$.candidates[9].reasons[0]").value("not shown: Python professional (0.02)"));
 	}
 
 	@Test

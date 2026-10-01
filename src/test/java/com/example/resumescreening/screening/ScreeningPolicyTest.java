@@ -43,7 +43,7 @@ class ScreeningPolicyTest {
 				TestAnswers.strong(job).mustHave("python_professional", 0.05).response());
 
 		assertThat(result.status()).isEqualTo(Status.MISSING);
-		assertThat(result.reasons()).containsExactly("not shown: python_professional (0.05)");
+		assertThat(result.reasons()).containsExactly("not shown: Python professional (0.05)");
 	}
 
 	@Test
@@ -52,7 +52,7 @@ class ScreeningPolicyTest {
 				TestAnswers.strong(job).mustHave("backend_services", 0.5).response());
 
 		assertThat(result.status()).isEqualTo(Status.REVIEW);
-		assertThat(result.reasons()).containsExactly("unclear: backend_services (0.50)");
+		assertThat(result.reasons()).containsExactly("unclear: Backend services (0.50)");
 	}
 
 	@Test
@@ -75,7 +75,7 @@ class ScreeningPolicyTest {
 				TestAnswers.strong(job).score("python_depth", 3, 0.30).response());
 
 		assertThat(result.status()).isEqualTo(Status.REVIEW);
-		assertThat(result.reasons()).containsExactly("uncertain: python_depth (conf 0.30)");
+		assertThat(result.reasons()).containsExactly("uncertain: Python depth (conf 0.30)");
 	}
 
 	@Test
