@@ -180,4 +180,50 @@ class SpecAssistantTest {
 				"Write an improved version");
 	}
 
+	@Test
+	void draftsASummaryFromADescriptionWithTheSpecAsContext() {
+		JobSpec blank = new JobSpec(job.id(), job.title(), job.targetLevel(), "", job.mustHaves(), job.skills(),
+				job.thresholds());
+		when(claude.callTool(anyString(), any(), any())).thenReturn(input("{\"summary\":\"Leads the platform.\"}"));
+
+		SpecAssistant.SummarySuggestion summary = assistant.jobSummary(blank, "backend lead for payments");
+
+		assertThat(summary.summary()).isEqualTo("Leads the platform.");
+		assertThat(summary.warnings()).isEmpty();
+		ArgumentCaptor<String> system = ArgumentCaptor.forClass(String.class);
+		ArgumentCaptor<ClaudeClient.Tool> tool = ArgumentCaptor.forClass(ClaudeClient.Tool.class);
+		verify(claude).callTool(system.capture(), any(), tool.capture());
+		assertThat(system.getValue()).contains("Writing the job summary", "Core Responsibilities");
+		assertThat(tool.getValue().name()).isEqualTo("suggest_summary");
+		assertThat((String) sentMessages(1).getFirst().get("content")).contains(
+				"The recruiter describes the job as: backend lead for payments", "\"title\":\"" + job.title() + "\"")
+			.doesNotContain("Its current summary");
+	}
+
+	@Test
+	void improvesTheCurrentSummaryAndFlagsOneHandedBack() {
+		when(claude.callTool(anyString(), any(), any())).thenReturn(
+				json.valueToTree(Map.of("summary", job.summary(), "note", "It already covers the role.")));
+
+		assertThat(assistant.jobSummary(job, null).warnings()).containsExactly("This is the current summary, unchanged.",
+				"Claude: It already covers the role.");
+		assertThat((String) sentMessages(1).getFirst().get("content")).contains("Its current summary is: ",
+				"Write an improved version").doesNotContain("The recruiter describes");
+	}
+
+	@Test
+	void aSummaryMustBeNonBlankAndShortEnoughToSendWithEveryResume() {
+		String tooLong = "word ".repeat(SpecAssistant.MAX_SUMMARY_WORDS + 1);
+		when(claude.callTool(anyString(), any(), any())).thenReturn(json.valueToTree(Map.of("summary", tooLong)),
+				input("{\"summary\":\"  \"}"));
+
+		assertThatThrownBy(() -> assistant.jobSummary(job, "shorter")).isInstanceOf(AssistException.class)
+			.hasMessageContaining("the summary is empty");
+		assertThat((String) sentMessages(2).get(2).get("content")).contains("the summary is 401 words; keep it to 400");
+
+		JobSpec blank = new JobSpec("x", "t", "l", " ", List.of(), job.skills(), job.thresholds());
+		assertThatThrownBy(() -> assistant.jobSummary(blank, " ")).isInstanceOf(IllegalArgumentException.class)
+			.hasMessage("Describe the job in a few words first.");
+	}
+
 }

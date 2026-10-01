@@ -91,7 +91,7 @@ A shared component, used on the Screen page, in the Results side panel and on ea
   - Save writes to a temp file and then moves it into place, the same pattern as `AnswerCache.put`. It writes snake_case YAML with the standard header comment, then swaps in the new spec.
   - The job map becomes safe for concurrent reads and writes (a `ConcurrentSkipListMap`).
   - Hand-written YAML comments beyond the standard header are lost on save. The editor will warn about this.
-- **Serving the app:** a small `SpaForwardController` forwards any path that isn't under `/api` and has no file extension to `index.html`, so client-side page URLs work on reload.
+- **Serving the app:** `web/SpaConfig` forwards any path that isn't under `/api` and has no file extension to `index.html`, so client-side page URLs work on reload.
 
 ## Front end
 
@@ -115,8 +115,9 @@ A shared component, used on the Screen page, in the Results side panel and on ea
 2.2. **Rename competencies to skills:** see [Phase 2.2](#phase-22-rename-competencies-to-skills) below. **Done** (commit `e6ca13c`).
 2.3. **Required `target_level` as context:** see [Phase 2.3](#phase-23-required-target_level-sent-as-context) below. **Done** (commit `eb18d86`).
 3. **Resume management:** the Resumes screen (upload, review, edit and save), plus the create-folder and save-resume endpoints.
-4. **Authoring:** the spec editor, the save endpoints and the repository changes. See [Phase 4](#phase-4-authoring-the-spec-editor) below. **Done** (committed with 4.1).
-4.1. **Claude suggestions in the editor:** suggest a skill's question, a skill's levels, a must-have's requirement, or a whole new skill. See [Phase 4.1](#phase-41-claude-suggestions-in-the-spec-editor) below. **Done**, including the manual check with a real key and the fix so suggestions improve existing text instead of repeating it.
+4. **Authoring:** the spec editor, the save endpoints and the repository changes. See [Phase 4](#phase-4-authoring-the-spec-editor) below. **Done** (commit `7d01e67`).
+4.1. **Claude suggestions in the editor:** suggest a skill's question, a skill's levels, a must-have's requirement, or a whole new skill. See [Phase 4.1](#phase-41-claude-suggestions-in-the-spec-editor) below. **Done** (commit `7d01e67`), including the manual check with a real key and the fix so suggestions improve existing text instead of repeating it.
+4.2. **Claude-drafted job overview:** describe the job in a few words and press **Draft job overview** to get a suggested summary. See [Phase 4.2](#phase-42-claude-drafted-job-overview) below. **Done**, including the manual check with a real key (2 calls).
 
 ## Phase 1.1: clearer scores and weights
 
@@ -482,7 +483,7 @@ Writing good questions and levels is the hard part of a spec. Each must stand on
 - **`assist/ClaudeClient`:** calls `POST /v1/messages` with the same `RestClient` style as `TypeSafeClient`. No new dependency.
   - Headers: `x-api-key` and `anthropic-version: 2023-06-01`.
   - Each suggestion type is a **forced tool call** with a JSON schema: `tool_choice` set to that tool. The answer is always typed JSON, for example `{question}`, `{levels: [...]}`, `{requirement}` or `{id, question, levels, weight}`.
-  - Retries 429, 529 and 5xx with backoff. A missing key gives the existing 503 pattern (`MissingApiKeyException` style), and an upstream failure gives 502.
+  - Retries 429, 529 and 5xx with backoff. A missing key throws `AssistUnavailableException` (503). An upstream failure throws `AssistException` (502), carrying the API's own error message.
 - **`assist/SpecAssistant`:** builds the prompts and checks the results.
   - **System prompt:** the spec-writing rules, kept in `src/main/resources/assist/spec-writing-rules.md`, drawn from section 7 of the job spec guide ("Writing a good spec") and `QuestionBuilder`'s fixed must-have question. The rules:
     - questions stand alone and refer to `` `resume` `` (and `` `job.summary` `` or `` `job.target_level` `` only when the question is about them)
@@ -498,9 +499,13 @@ Writing good questions and levels is the hard part of a spec. Each must stand on
     - the weight is between 0 and 1
 
     The checks also warn when a question doesn't reference `` `resume` ``. A suggestion that fails a check is retried once, then reported as an error.
+  - **Improve, don't copy** (added after the manual check, where Claude handed back existing levels word for word): when the item already has text, the prompt includes the current version and asks for an improved one.
+    - Each tool has an optional `note` field for "already as good as it can be". The note is shown in the review box as "Claude: …".
+    - A suggestion that repeats the current question or requirement comes back with a warning, for example "This is the current question, unchanged.".
+    - For levels, the warning counts the ones that kept their wording, for example "2 of 5 levels keep their current wording.".
 - **`web/AssistController`:**
   - `GET /api/assist` returns `{enabled, model}`, which the UI uses to enable or disable the buttons.
-  - `POST /api/assist/skill-question`, `POST /api/assist/skill-levels` (with `count`), `POST /api/assist/must-have` and `POST /api/assist/skill`. Each takes `{draft, target, hint?, count?}`.
+  - `POST /api/assist/skill-question`, `POST /api/assist/skill-levels` (with `count`), `POST /api/assist/must-have` and `POST /api/assist/skill`. Each takes `{draft, index, hint?, count?}`, where `index` is the 0-based skill or must-have (unused for a new skill, whose description goes in `hint`). A missing `index` gives 400. `count` defaults to 5.
 - **Privacy:** only spec text is sent to Anthropic, never resumes or candidate data. The app logs each call's token usage without the prompt text.
 
 ### Tests and verification
@@ -521,10 +526,46 @@ Writing good questions and levels is the hard part of a spec. Each must stand on
   - Suggest a question, levels (3 and 5) and a requirement for the Director of Engineering spec in a scratch copy of `jobs/`.
   - Draft one new skill from a description.
   - Check that each passes validation and reads well.
+  - **Done.** All calls passed validation. New skills and requirements were good, but existing levels came back unchanged, which led to the improve-don't-copy fix above. After the fix, levels were genuinely revised; a question for a skill that already had a well-written one could still come back more generic, which is what Discard is for.
 - **Docs:**
   - README: `ANTHROPIC_API_KEY`, and what the buttons do.
   - `CLAUDE.md`: the assist flow, and the note that the rules file must stay in sync with section 7 of the guide.
   - Job spec guide (md and html): a short "Suggestions" note.
+
+## Phase 4.2: Claude-drafted job overview
+
+### Why
+
+The summary is the job overview Jev reads with every resume, and `domain_relevance`-style questions compare against it (`` `job.summary` ``). Writing a good one from scratch is slow. You describe the job in a few words and Claude drafts the overview in the same style as the payments spec.
+
+### What you get in the editor
+
+- Under the **Summary** field, a titled panel, **"✨ Optional: describe the job and let AI draft the summary (job overview)"**, set apart with its own border so it's clearly a separate, optional step. (Changed after review: a bare one-line box under Summary didn't say what it was for.)
+  - A visible label, **Describe the job in a few words**, on a 2-line text area, with an example placeholder: "MD of product for our payments platform, owns pay-in, routing and settlement, leads directors, heavy PCI".
+  - A hint under it: Claude uses the description and the rest of the spec to draft a summary for you to review, and nothing changes until you accept it. When there's already a summary, the description can be left blank and Claude improves the current one.
+  - The **✨ Draft job overview** button sits inside the panel.
+- **Context sent:** your description plus the unsaved draft (title, target level, current summary, must-haves, skills), so the overview fits the rest of the spec. Never resumes.
+- **Format:** like `md_prod_payments.yaml`: an opening paragraph of 2–4 sentences on the role's scope and purpose, then a "Core Responsibilities" line and 4–6 bullets (`• Label: one or two sentences`). About 150–300 words, plain text, no Markdown.
+- **Review box** as in phase 4.1: **Accept** replaces the Summary field, **Try again** asks for another draft (edit the description to steer it), **Discard** closes it.
+- **When a summary already exists:** the description is optional, and Claude is asked to improve the current summary, not repeat it. The same `note` field and "This is the current summary, unchanged." warning apply.
+- **When the summary is empty:** the button is disabled until there is a description.
+- **Cost:** one small paid Claude call per press. Accepting changes the summary, which is sent to Jev with every resume, so the next save is paid and the next screening asks every resume again. Phase 4's cost note already says so.
+
+### Backend
+
+- **`POST /api/assist/summary`** with `{draft, hint}`, where `hint` holds the description (as for a new skill). 400 when both the description and the current summary are blank.
+- **`SpecAssistant.jobSummary(draft, description)`:** a forced `suggest_summary` tool returning `{summary, note?}`.
+  - **Checks (retried once):** the summary isn't blank and is at most 400 words, since it's sent with every resume.
+  - **Warnings:** unchanged from the current summary, and Claude's note.
+- **Rules:** a "Writing the job summary" section in `spec-writing-rules.md`: the format above; describe scope, responsibilities and the kind of experience the role needs; stay consistent with the title, target level and must-haves; job-related only (nothing about age, gender, nationality or "culture fit"); no salary, benefits, location logistics or equal-opportunity boilerplate, because Jev can't use them; no marketing language. The same guidance goes into section 7 of the job spec guide (md and html).
+
+### Tests and verification
+
+- **Java:** `SpecAssistantTest`: the prompt includes the description and the current summary with the improve instruction; an over-long or blank summary is retried and then reported; the unchanged warning and the note. `AssistApiTest`: the endpoint, and 400 when there's nothing to go on.
+- **Vitest:** the button is disabled with no description and no summary; accepting fills the Summary field; nothing changes before Accept; the cost note turns paid after Accept.
+- **Manual check with your key:** about 2 small paid calls, run only with your OK. Draft an overview for a new job from a one-line description, and improve the existing payments summary, in a scratch copy of `jobs/`.
+  - **Done.** Both passed first time (about 6 s each, 216 and 218 words, no warnings). The new-job draft was good as it stood. The improved payments summary was a real rewrite, but one sentence read as a requirement and it reused wording from the must-haves and skill levels, so review before accepting.
+- **Docs:** README (the endpoint and the button), `CLAUDE.md` (assist section), and the job spec guide.
 
 ## Verification
 

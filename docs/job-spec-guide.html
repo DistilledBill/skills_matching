@@ -263,14 +263,14 @@ thresholds:
   job:    { title, target_level, summary },
   resume: "&lt;resume text, contact details removed&gt;"
 }</div>
-    <p>Every question sees the whole state, but a question only <strong>points at</strong> the parts it names in backticks. In all five included specs, the only question that names <code>`job.summary`</code> is <code>domain_relevance</code>, weighted 0.10. So:</p>
+    <p>Every question sees the whole state, but a question only <strong>points at</strong> the parts it names in backticks. In all six included specs, the only question that names <code>`job.summary`</code> is <code>domain_relevance</code>, weighted 0.10. So:</p>
     <ul>
       <li><strong>The summary affects at most 10% of the composite</strong>, through one industry-relevance question.</li>
       <li><strong>The summary never affects the must-haves</strong>, so it can't change whether a candidate is <span class="pill meets">meets</span>, <span class="pill review">review</span> or <span class="pill missing">missing</span>.</li>
       <li><strong>Editing the summary re-asks every question.</strong> Answers are cached by the full request, and the summary is part of every request. See <a href="#cost">section 6</a>.</li>
     </ul>
     <p><code>target_level</code> is the seniority the role is hired at, for example <code>Vice President</code> or <code>Executive Director</code>. It is required. For now it is <strong>context only</strong>: no question names <code>`job.target_level`</code>, so Jev can see it but no answer is asked about it. To use it, add a skill whose question names it, for example "How closely does the seniority shown in <code>`resume`</code> match <code>`job.target_level`</code>?". Like the summary, editing it re-asks every question for the job.</p>
-    <p>Write the summary as a short description of the role and its setting (industry, product, stack, what "senior" means here). It is context, not a list of requirements. Put requirements in <code>must_haves</code> and <code>skills</code>, where each one gets its own answer.</p>
+    <p>Write the summary as a description of the role and its setting (industry, product, stack, what the target level means here): an opening paragraph of 2–4 sentences on the role's scope, then a "Core Responsibilities" line with 4–6 bullets, about 150–300 words in all (<a href="../jobs/md_prod_payments.yaml"><code>md_prod_payments</code></a> is an example). It is context, not a list of requirements. Put requirements in <code>must_haves</code> and <code>skills</code>, where each one gets its own answer. Leave out salary, benefits, location and equal-opportunity text: Jev can't use it, and it lengthens every request.</p>
 
     <h3 id="must-haves">3.2 <code>must_haves</code>: the gate</h3>
     <p>Each must-have becomes one <strong>Noul</strong>, a yes/no question. The question and answer definitions are the same for every must-have and are fixed in <a href="../src/main/java/com/example/resumescreening/screening/QuestionBuilder.java"><code>QuestionBuilder</code></a>. Only your <code>requirement</code> text changes:</p>
@@ -460,7 +460,7 @@ curl -X POST \
     <ul>
       <li><strong>Start from an existing spec.</strong> Use <strong>New job</strong> in the web app, or copy the closest spec in <a href="../jobs/"><code>jobs/</code></a> to <code>jobs/&lt;id&gt;.yaml</code> and press <strong>Reload specs from disk</strong>. Put resumes in <code>resumes/&lt;id&gt;_candidates/</code>.</li>
       <li><strong>Let the editor tell you the cost.</strong> It says whether a change is free (weights, thresholds, reordering) or paid (anything sent to Jev, which re-asks every resume), and it refuses to overwrite a file you changed on disk since opening it.</li>
-      <li><strong>Use suggestions as drafts.</strong> With <code>ANTHROPIC_API_KEY</code> set, the editor's ✨ buttons ask Claude to draft a question, levels, a requirement or a whole skill, following these rules. Read every draft before accepting it: you are responsible for what Jev is asked.</li>
+      <li><strong>Use suggestions as drafts.</strong> With <code>ANTHROPIC_API_KEY</code> set, the editor's ✨ buttons ask Claude to draft the job overview (from a few words describing the job), a question, levels, a requirement or a whole skill, following these rules. Read every draft before accepting it: you are responsible for what Jev is asked.</li>
       <li><strong>One idea per question.</strong> If a question or requirement needs "and", consider splitting it.</li>
       <li><strong>Use must-haves for true gates only.</strong> Anything that is a matter of degree belongs in a skill.</li>
       <li><strong>Write levels as concrete situations</strong>, least to most, each readable on its own.</li>
@@ -474,13 +474,14 @@ curl -X POST \
       <thead><tr><th>Job id</th><th>Title</th><th>Resumes</th></tr></thead>
       <tbody>
         <tr><td><a href="../jobs/director_of_engineering.yaml"><code>director_of_engineering</code></a></td><td>Director of Engineering</td><td><a href="../resumes/director_of_engineering_candidates/"><code>resumes/director_of_engineering_candidates/</code></a></td></tr>
+        <tr><td><a href="../jobs/md_prod_payments.yaml"><code>md_prod_payments</code></a></td><td>Managing Director of Product for the Payments Platform</td><td><a href="../resumes/md_prod_payments_candidates/"><code>resumes/md_prod_payments_candidates/</code></a></td></tr>
         <tr><td><a href="../jobs/senior_backend_engineer.yaml"><code>senior_backend_engineer</code></a></td><td>Senior Backend Engineer</td><td><a href="../resumes/senior_backend_engineer_candidates/"><code>resumes/senior_backend_engineer_candidates/</code></a></td></tr>
         <tr><td><a href="../jobs/senior_hr_product_owner.yaml"><code>senior_hr_product_owner</code></a></td><td>Senior Human Resources Product Owner</td><td><a href="../resumes/senior_hr_product_owner_candidates/"><code>resumes/senior_hr_product_owner_candidates/</code></a></td></tr>
         <tr><td><a href="../jobs/technical_product_owner.yaml"><code>technical_product_owner</code></a></td><td>Technical Product Owner</td><td><a href="../resumes/technical_product_owner_candidates/"><code>resumes/technical_product_owner_candidates/</code></a></td></tr>
         <tr><td><a href="../jobs/senior_software_application_designer.yaml"><code>senior_software_application_designer</code></a></td><td>Senior Software Application Designer</td><td><a href="../resumes/senior_software_application_designer_candidates/"><code>resumes/senior_software_application_designer_candidates/</code></a></td></tr>
       </tbody>
     </table></div>
-    <p>All five have five skills with weights that add up to 1.00, a <code>domain_relevance</code> skill at 0.10 that scores against <code>`job.summary`</code>, and the same thresholds. Four have two must-haves; <code>director_of_engineering</code> has three (it adds <code>people_management</code>) and weights leadership most heavily (<code>technical_leadership</code> 0.40).</p>
+    <p>All six have five skills with weights that add up to 1.00, a <code>domain_relevance</code> skill at 0.10 that scores against <code>`job.summary`</code>, and the same thresholds. Five have two must-haves; <code>director_of_engineering</code> has three (it adds <code>people_management</code>) and weights leadership most heavily (<code>technical_leadership</code> 0.40).</p>
   </main>
 </div>
 </body>

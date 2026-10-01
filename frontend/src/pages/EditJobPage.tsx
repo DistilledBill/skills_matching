@@ -9,6 +9,7 @@ import {
   type LevelsSuggestion,
   type Skill,
   type SkillSuggestion,
+  type SummarySuggestion,
   type VersionedJobSpec,
 } from '../api'
 import { ClearCache } from '../components/ClearCache'
@@ -188,6 +189,13 @@ function Editor({ saved: initial }: { saved: VersionedJobSpec | null }) {
             >
               <textarea rows={5} value={draft.summary} onChange={(e) => set({ summary: e.target.value })} />
             </Field>
+            <DraftSummary
+              enabled={assistOn}
+              hasSummary={!!draft.summary.trim()}
+              run={(description) => api.assist.summary(draft, description)}
+              onAccept={(summary) => set({ summary })}
+            />
+            <AssistNote status={assist.data} />
           </section>
 
           <section className="card">
@@ -512,6 +520,51 @@ function SuggestLevels({
       )}
       onAccept={(r) => onAccept(r.levels)}
     />
+  )
+}
+
+/**
+ * Drafts the job overview from a few words. With a summary already there the description is optional and
+ * Claude improves the current text; with none, there's nothing to go on until a description is typed.
+ */
+function DraftSummary({
+  enabled,
+  hasSummary,
+  run,
+  onAccept,
+}: {
+  enabled: boolean
+  hasSummary: boolean
+  run: (description: string) => Promise<SummarySuggestion>
+  onAccept: (summary: string) => void
+}) {
+  const [description, setDescription] = useState('')
+  return (
+    <section className="draft-summary" aria-labelledby="draft-summary-title">
+      <h3 id="draft-summary-title">✨ Optional: describe the job and let AI draft the summary (job overview)</h3>
+      <Field
+        label="Describe the job in a few words"
+        hint={
+          hasSummary
+            ? 'Claude drafts a summary from this and the rest of the spec, for you to review. You can leave it blank: Claude then improves the summary above. Nothing changes until you accept.'
+            : 'Claude drafts a summary from this and the rest of the spec, for you to review. Nothing changes until you accept.'
+        }
+      >
+        <textarea
+          rows={2}
+          placeholder="e.g. MD of product for our payments platform, owns pay-in, routing and settlement, leads directors, heavy PCI"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </Field>
+      <Suggest
+        label="Draft job overview"
+        enabled={enabled && (hasSummary || !!description.trim())}
+        run={() => run(description)}
+        render={(r) => <p className="suggestion">{r.summary}</p>}
+        onAccept={(r) => onAccept(r.summary)}
+      />
+    </section>
   )
 }
 

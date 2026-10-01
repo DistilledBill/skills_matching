@@ -125,7 +125,7 @@ state = {
 }
 ```
 
-Every question sees the whole state, but a question only **points at** the parts it names in backticks. In all five included specs, the only question that names `` `job.summary` `` is `domain_relevance`, weighted 0.10. So:
+Every question sees the whole state, but a question only **points at** the parts it names in backticks. In all six included specs, the only question that names `` `job.summary` `` is `domain_relevance`, weighted 0.10. So:
 
 - **The summary affects at most 10% of the composite**, through one industry-relevance question.
 - **The summary never affects the must-haves**, so it can't change whether a candidate is `meets`, `review` or `missing`.
@@ -133,7 +133,7 @@ Every question sees the whole state, but a question only **points at** the parts
 
 `target_level` is the seniority the role is hired at, for example `Vice President` or `Executive Director`. It is required. For now it is **context only**: no question names `` `job.target_level` ``, so Jev can see it but no answer is asked about it. To use it, add a skill whose question names it, for example "How closely does the seniority shown in `` `resume` `` match `` `job.target_level` ``?". Like the summary, editing it re-asks every question for the job.
 
-Write the summary as a short description of the role and its setting (industry, product, stack, what "senior" means here). It is context, not a list of requirements. Put requirements in `must_haves` and `skills`, where each one gets its own answer.
+Write the summary as a description of the role and its setting (industry, product, stack, what the target level means here): an opening paragraph of 2–4 sentences on the role's scope, then a "Core Responsibilities" line with 4–6 bullets, about 150–300 words in all ([`md_prod_payments`](../jobs/md_prod_payments.yaml) is an example). It is context, not a list of requirements. Put requirements in `must_haves` and `skills`, where each one gets its own answer. Leave out salary, benefits, location and equal-opportunity text: Jev can't use it, and it lengthens every request.
 
 ### 3.2 `must_haves`: the gate
 
@@ -313,7 +313,7 @@ Because every question for a resume travels in one request, changing any questio
 
 - **Start from an existing spec.** Use **New job** in the web app, or copy the closest spec in [`jobs/`](../jobs/) to `jobs/<id>.yaml` and press **Reload specs from disk**. Put resumes in `resumes/<id>_candidates/`.
 - **Let the editor tell you the cost.** It says whether a change is free (weights, thresholds, reordering) or paid (anything sent to Jev, which re-asks every resume), and it refuses to overwrite a file you changed on disk since opening it.
-- **Use suggestions as drafts.** With `ANTHROPIC_API_KEY` set, the editor's ✨ buttons ask Claude to draft a question, levels, a requirement or a whole skill, following these rules. Read every draft before accepting it: you are responsible for what Jev is asked.
+- **Use suggestions as drafts.** With `ANTHROPIC_API_KEY` set, the editor's ✨ buttons ask Claude to draft the job overview (from a few words describing the job), a question, levels, a requirement or a whole skill, following these rules. Read every draft before accepting it: you are responsible for what Jev is asked.
 - **One idea per question.** If a question or requirement needs "and", consider splitting it.
 - **Use must-haves for true gates only.** Anything that is a matter of degree belongs in a skill.
 - **Write levels as concrete situations**, least to most, each readable on its own.
@@ -326,9 +326,10 @@ Because every question for a resume travels in one request, changing any questio
 | Job id | Title | Resumes |
 | --- | --- | --- |
 | [`director_of_engineering`](../jobs/director_of_engineering.yaml) | Director of Engineering | [`resumes/director_of_engineering_candidates/`](../resumes/director_of_engineering_candidates/) |
+| [`md_prod_payments`](../jobs/md_prod_payments.yaml) | Managing Director of Product for the Payments Platform | [`resumes/md_prod_payments_candidates/`](../resumes/md_prod_payments_candidates/) |
 | [`senior_backend_engineer`](../jobs/senior_backend_engineer.yaml) | Senior Backend Engineer | [`resumes/senior_backend_engineer_candidates/`](../resumes/senior_backend_engineer_candidates/) |
 | [`senior_hr_product_owner`](../jobs/senior_hr_product_owner.yaml) | Senior Human Resources Product Owner | [`resumes/senior_hr_product_owner_candidates/`](../resumes/senior_hr_product_owner_candidates/) |
 | [`technical_product_owner`](../jobs/technical_product_owner.yaml) | Technical Product Owner | [`resumes/technical_product_owner_candidates/`](../resumes/technical_product_owner_candidates/) |
 | [`senior_software_application_designer`](../jobs/senior_software_application_designer.yaml) | Senior Software Application Designer | [`resumes/senior_software_application_designer_candidates/`](../resumes/senior_software_application_designer_candidates/) |
 
-All five have five skills with weights that add up to 1.00, a `domain_relevance` skill at 0.10 that scores against `` `job.summary` ``, and the same thresholds. Four have two must-haves; `director_of_engineering` has three (it adds `people_management`) and weights leadership most heavily (`technical_leadership` 0.40).
+All six have five skills with weights that add up to 1.00, a `domain_relevance` skill at 0.10 that scores against `` `job.summary` ``, and the same thresholds. Five have two must-haves; `director_of_engineering` has three (it adds `people_management`) and weights leadership most heavily (`technical_leadership` 0.40).

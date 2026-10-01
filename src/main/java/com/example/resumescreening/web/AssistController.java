@@ -31,6 +31,11 @@ public class AssistController {
 		return new Status(assistant.enabled(), assistant.model());
 	}
 
+	@PostMapping("/summary")
+	public SpecAssistant.SummarySuggestion summary(@RequestBody Request body) {
+		return assistant.jobSummary(body.draft(), body.hint());
+	}
+
 	@PostMapping("/skill-question")
 	public SpecAssistant.QuestionSuggestion skillQuestion(@RequestBody Request body) {
 		return assistant.skillQuestion(body.draft(), body.item(), body.hint());
@@ -56,8 +61,8 @@ public class AssistController {
 
 	/**
 	 * @param draft the editor's unsaved spec
-	 * @param index which skill or must-have (0-based); unused for a new skill
-	 * @param hint  optional guidance; for a new skill, its description
+	 * @param index which skill or must-have (0-based); unused for a new skill or the summary
+	 * @param hint  optional guidance; for a new skill or the summary, the description
 	 * @param count how many levels to write; 5 when left out
 	 */
 	public record Request(JobSpec draft, Integer index, String hint, Integer count) {

@@ -275,6 +275,11 @@ ol.suggestion, .suggestion ol { padding-left: 1.8em; }
 .new-skill { border-top: 1px solid var(--border); margin-top: 14px; padding-top: 10px; }
 .new-skill h3 { margin-top: 0; }
 .new-skill input { width: 100%; margin-bottom: 6px; }
+.draft-summary {
+  border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-top: 12px;
+}
+.draft-summary h3 { margin: 0 0 8px; font-size: 0.95em; }
+.draft-summary textarea { width: 100%; }
 @media (max-width: 900px) {
   .editor { grid-template-columns: 1fr; }
   .editor-side { position: static; }

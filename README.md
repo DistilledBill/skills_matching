@@ -27,7 +27,7 @@ The app starts without a key. Listing jobs and previewing requests still work, a
 
 **Editing job specs.** The Jobs page has **New job** and **Edit** buttons, and What-if tuning has **Save to spec**. The editor checks the same rules as the server as you type, shows the weight total, and says whether a change is free (weights and thresholds re-rank from cached answers) or paid (anything sent to Jev, so every resume is asked again). Saving writes `jobs/<id>.yaml` in a standard layout; hand-written comments other than the header aren't kept. If the file changed on disk since the editor loaded it (say, in your IDE), the save is refused and you can load the version on disk instead. **Reload specs from disk** on the Jobs page picks up IDE edits without a restart, and keeps the loaded version of any file that's invalid.
 
-**Claude suggestions.** With `ANTHROPIC_API_KEY` set, ✨ buttons in the editor ask Claude (`claude-sonnet-5`, set by `anthropic.model`) to draft a skill's question, its levels (you pick how many), a must-have's requirement, or a whole new skill from a one-line description. Claude gets the spec-writing rules and the unsaved draft, never resumes. Each press is one small paid call, suggestions are checked against the spec rules, and nothing changes until you press **Accept**.
+**Claude suggestions.** With `ANTHROPIC_API_KEY` set, ✨ buttons in the editor ask Claude (`claude-sonnet-5`, set by `anthropic.model`) to draft the job overview (the summary) from a few words describing the job, a skill's question, its levels (you pick how many), a must-have's requirement, or a whole new skill from a one-line description. Where the field already has text, Claude is asked to improve it, and the review box warns if it comes back unchanged. Claude gets the spec-writing rules and the unsaved draft, never resumes. Each press is one small paid call, suggestions are checked against the spec rules, and nothing changes until you press **Accept**.
 
 The app lives in `frontend/` (React, TypeScript and Vite). The Maven build downloads its own Node into `frontend/.node`, so you don't need Node installed. To work on the UI with live reload, run the Spring app, then in another terminal:
 
@@ -46,7 +46,7 @@ Add `-Dskip.frontend` to any Maven command to skip building and testing the web 
 | PUT | `/api/jobs/{id}` | Save a spec (`{version, spec}`); 409 if the file changed on disk since `version` |
 | POST | `/api/jobs/{id}/reload`, `/api/jobs/reload` | Re-read one spec, or all of them, from disk |
 | GET | `/api/assist` | Whether Claude suggestions are on (`{enabled, model}`) |
-| POST | `/api/assist/skill-question`, `/skill-levels`, `/must-have`, `/skill` | Claude drafts for the editor (`{draft, index, hint, count}`); 503 without `ANTHROPIC_API_KEY` |
+| POST | `/api/assist/summary`, `/skill-question`, `/skill-levels`, `/must-have`, `/skill` | Claude drafts for the editor (`{draft, index, hint, count}`); 503 without `ANTHROPIC_API_KEY` |
 | POST | `/api/screenings/{jobId}` | Screen uploaded resumes (multipart `files`: .txt, .md, .pdf) |
 | POST | `/api/screenings/{jobId}/folder?path=` | Screen a folder inside `resumes/`, normally the job's own folder such as `senior_backend_engineer_candidates` (a blank `path` means `resumes/` itself, which holds no resumes) |
 | POST | `/api/screenings/{jobId}/preview` | Show the TypeSafe request for one resume (uploaded `files` or `?path=`; `name` picks the resume, otherwise the first) without calling the API. The `X-Answer-Cached` header says whether screening it would be free |

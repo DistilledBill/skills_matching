@@ -47,6 +47,9 @@ export interface AssistStatus {
 interface Warned {
   warnings: string[]
 }
+export interface SummarySuggestion extends Warned {
+  summary: string
+}
 export interface QuestionSuggestion extends Warned {
   question: string
 }
@@ -272,6 +275,8 @@ export const api = {
   /** Claude suggestions for the spec editor. Each call sends the unsaved draft (never resumes) and is paid. */
   assist: {
     status: () => json<AssistStatus>('/api/assist'),
+    summary: (draft: JobSpec, description: string) =>
+      postJson<SummarySuggestion>('/api/assist/summary', { draft, hint: description }),
     skillQuestion: (draft: JobSpec, index: number, hint?: string) =>
       postJson<QuestionSuggestion>('/api/assist/skill-question', { draft, index, hint }),
     skillLevels: (draft: JobSpec, index: number, count: number) =>

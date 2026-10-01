@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 /**
- * Drafts parts of a job spec with Claude: a skill's question, a skill's levels, a must-have's requirement, or
- * a whole new skill. Claude gets the spec-writing rules and the editor's unsaved draft (never resumes). Each
+ * Drafts parts of a job spec with Claude: the job summary, a skill's question, a skill's levels, a must-have's
+ * requirement, or a whole new skill. Claude gets the spec-writing rules and the editor's unsaved draft (never resumes). Each
  * suggestion is checked against the same rules the spec validator uses; one that fails is retried once with
  * the problems spelled out.
  */
@@ -30,6 +30,9 @@ public class SpecAssistant {
 	static final int MIN_LEVELS = 2;
 
 	static final int MAX_LEVELS = 10;
+
+	/** The summary goes into the state of every request to Jev, so a long one costs on every resume. */
+	static final int MAX_SUMMARY_WORDS = 400;
 
 	private static final String ID_PATTERN = "[a-z0-9_]+";
 
@@ -56,6 +59,9 @@ public class SpecAssistant {
 
 	public record SkillSuggestion(String id, String question, List<String> levels, double weight,
 			List<String> warnings) {
+	}
+
+	public record SummarySuggestion(String summary, List<String> warnings) {
 	}
 
 	public SpecAssistant(ClaudeClient claude, JsonMapper mapper) {
@@ -183,6 +189,36 @@ public class SpecAssistant {
 			return new Checked<>(new SkillSuggestion(id, question, levels, weight, questionWarnings(question)),
 					problems);
 		});
+	}
+
+	/**
+	 * Drafts the job summary (the overview Jev reads with every resume) from a short description, or improves the
+	 * current one. The description may be left out only when there is a summary to improve.
+	 */
+	public SummarySuggestion jobSummary(JobSpec draft, String description) {
+		String current = draft == null ? null : draft.summary();
+		if (!StringUtils.hasText(description) && !StringUtils.hasText(current)) {
+			throw new IllegalArgumentException("Describe the job in a few words first.");
+		}
+		String task = "Write the job summary for this spec"
+				+ (StringUtils.hasText(description) ? ". The recruiter describes the job as: " + description.strip() : "")
+				+ ". Follow the rules for writing the job summary, and keep it consistent with the title, target level, "
+				+ "must-haves and skills." + improveOn("summary", current);
+		return ask(draft, task, tool("suggest_summary", "The job summary.",
+				Map.of("summary", Map.of("type", "string"), NOTE, NOTE_SCHEMA)), input -> {
+					String summary = input.path("summary").asString("").strip();
+					List<String> problems = new ArrayList<>();
+					if (summary.isEmpty()) {
+						problems.add("the summary is empty");
+					}
+					int words = summary.isEmpty() ? 0 : summary.split("\\s+").length;
+					if (words > MAX_SUMMARY_WORDS) {
+						problems.add("the summary is " + words + " words; keep it to " + MAX_SUMMARY_WORDS
+								+ " at most, since it is sent with every resume");
+					}
+					return new Checked<>(new SummarySuggestion(summary,
+							unchanged(input, same(summary, current), "This is the current summary, unchanged.")), problems);
+				});
 	}
 
 	/** A suggestion plus the problems that would make the spec invalid. */

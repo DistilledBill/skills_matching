@@ -35,3 +35,15 @@ Writing rules:
 - Don't repeat what an existing must-have or skill in the spec already covers.
 - Ids are snake_case: lowercase letters, digits and underscores.
 - Use plain, specific language a recruiter would recognise. No marketing words.
+
+Writing the job summary:
+- The summary is the job overview Jev reads with every resume, and questions that name
+  `job.summary` compare the candidate against it. Describe the role, not the company.
+- Format, as plain text with no Markdown: an opening paragraph of 2 to 4 sentences on the
+  role's scope and purpose, then a line "Core Responsibilities", then 4 to 6 bullets, each
+  on its own line as "• Label: one or two sentences". About 150 to 300 words.
+- Cover the scope (what the role owns), the main responsibilities, and the kind of
+  experience the work calls for, pitched at the target level. Stay consistent with the
+  title, target level, must-haves and skills; don't add requirements they contradict.
+- Leave out salary, benefits, location, working arrangements and equal-opportunity
+  statements: Jev can't use them and they add length to every request.

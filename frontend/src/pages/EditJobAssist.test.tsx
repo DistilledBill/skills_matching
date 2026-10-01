@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -48,7 +48,7 @@ describe('Claude suggestions in the editor', () => {
 
   it('turns the buttons off, with a reason, when no key is set', async () => {
     serve(false)
-    expect((await screen.findAllByText(/Suggestions are off. Set ANTHROPIC_API_KEY/)).length).toBe(2)
+    expect((await screen.findAllByText(/Suggestions are off. Set ANTHROPIC_API_KEY/)).length).toBe(3)
     for (const button of screen.getAllByRole('button', { name: /^✨/ })) expect(button).toBeDisabled()
   })
 
@@ -91,6 +91,33 @@ describe('Claude suggestions in the editor', () => {
 
     await user.click(within(box).getByRole('button', { name: 'Discard' }))
     expect(screen.getByDisplayValue(original)).toBeInTheDocument()
+  })
+
+  it('drafts the job overview from a description, and changes the summary only on Accept', async () => {
+    const user = userEvent.setup()
+    const sent = serve(true, () => ({ summary: 'Leads the payments platform.\nCore Responsibilities', warnings: [] }))
+    const summary = (await screen.findByLabelText('Summary')) as HTMLTextAreaElement
+    const before = summary.value
+    const button = screen.getByRole('button', { name: '✨ Draft job overview' })
+    const panel = screen.getByRole('region', { name: /describe the job and let AI draft the summary/ })
+    expect(within(panel).getByText(/Claude then improves the summary above/)).toBeInTheDocument()
+
+    // With a summary there, Claude can improve it without a description; with none, it needs one.
+    await waitFor(() => expect(button).toBeEnabled())
+    await user.clear(summary)
+    expect(button).toBeDisabled()
+    await user.type(summary, before.slice(0, 20))
+    await user.type(screen.getByLabelText('Describe the job in a few words'), 'MD of payments product')
+    await user.click(button)
+
+    const box = await screen.findByRole('region', { name: 'Draft job overview: suggestion' })
+    await within(box).findByText(/Leads the payments platform/)
+    expect(sent.at(-1)).toMatchObject({ url: '/api/assist/summary', body: { hint: 'MD of payments product' } })
+    expect(summary.value).toBe(before.slice(0, 20))
+    await user.click(within(box).getByRole('button', { name: 'Accept' }))
+
+    expect(summary.value).toBe('Leads the payments platform.\nCore Responsibilities')
+    expect(screen.getByRole('complementary')).toHaveTextContent('Paid: summary')
   })
 
   it('drafts a new skill from a description and adds it on Accept', async () => {

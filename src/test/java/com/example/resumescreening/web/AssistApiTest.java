@@ -85,6 +85,21 @@ class AssistApiTest {
 	}
 
 	@Test
+	void draftsTheSummaryFromADescription() throws Exception {
+		given(claude.callTool(anyString(), any(), any())).willReturn(json.readTree("{\"summary\":\"Leads backend.\"}"));
+		mvc.perform(post("/api/assist/summary").contentType(MediaType.APPLICATION_JSON).content(body(null, "backend", null)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.summary").value("Leads backend."));
+
+		JobSpec blank = new JobSpec(job.id(), job.title(), job.targetLevel(), "", job.mustHaves(), job.skills(),
+				job.thresholds());
+		mvc.perform(post("/api/assist/summary").contentType(MediaType.APPLICATION_JSON)
+			.content(json.writeValueAsString(new AssistController.Request(blank, null, null, null))))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.detail").value("Describe the job in a few words first."));
+	}
+
+	@Test
 	void badRequestsAre400AndAMissingKeyIs503() throws Exception {
 		mvc.perform(post("/api/assist/skill-levels").contentType(MediaType.APPLICATION_JSON).content(body(0, null, 1)))
 			.andExpect(status().isBadRequest());
