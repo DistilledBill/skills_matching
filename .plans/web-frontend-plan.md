@@ -552,6 +552,7 @@ The summary is the job overview Jev reads with every resume, and `domain_relevan
 - **Review box** as in phase 4.1: **Accept** replaces the Summary field, **Try again** asks for another draft (edit the description to steer it), **Discard** closes it.
 - **When a summary already exists:** the description is optional, and Claude is asked to improve the current summary, not repeat it. The same `note` field and "This is the current summary, unchanged." warning apply.
 - **When the summary is empty:** the button is disabled until there is a description.
+- **Summary box height** (added after review): the box grows to fit its text (at least 8 lines, at most 70% of the window, then it scrolls inside), so an accepted 150–300 word draft can be read without scrolling. It can still be resized by dragging.
 - **Cost:** one small paid Claude call per press. Accepting changes the summary, which is sent to Jev with every resume, so the next save is paid and the next screening asks every resume again. Phase 4's cost note already says so.
 
 ### Backend

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   ApiError,
@@ -187,7 +187,7 @@ function Editor({ saved: initial }: { saved: VersionedJobSpec | null }) {
               hint="Context for Jev. Only questions that name `job.summary` use it."
               errors={showErrors ? errorsAt('summary') : []}
             >
-              <textarea rows={5} value={draft.summary} onChange={(e) => set({ summary: e.target.value })} />
+              <AutoGrowTextarea value={draft.summary} onChange={(summary) => set({ summary })} />
             </Field>
             <DraftSummary
               enabled={assistOn}
@@ -641,6 +641,36 @@ function CostNote({ cost, jobId, resumeCount }: { cost: ChangeCost; jobId: strin
  * A number field that keeps its own text while you type, so clearing it or typing "0." doesn't snap to a
  * number mid-edit. The form only gets a value when the text parses.
  */
+/**
+ * A textarea that grows to fit its text, so a whole job overview can be read without scrolling inside it.
+ * At least `minRows` tall; past 70% of the window it scrolls inside instead (see `.auto-grow`).
+ */
+function AutoGrowTextarea({
+  value,
+  onChange,
+  minRows = 8,
+}: {
+  value: string
+  onChange: (value: string) => void
+  minRows?: number
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null)
+  useLayoutEffect(() => {
+    const box = ref.current
+    if (!box) return
+    const fit = () => {
+      box.style.height = 'auto'
+      box.style.height = `${box.scrollHeight + 2}px`
+    }
+    fit()
+    window.addEventListener('resize', fit)
+    return () => window.removeEventListener('resize', fit)
+  }, [value])
+  return (
+    <textarea ref={ref} className="auto-grow" rows={minRows} value={value} onChange={(e) => onChange(e.target.value)} />
+  )
+}
+
 function NumberInput({ value, onValue }: { value: number; onValue: (value: number) => void }) {
   const [text, setText] = useState(String(value))
   useEffect(() => {
