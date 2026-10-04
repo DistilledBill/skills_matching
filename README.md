@@ -2,7 +2,7 @@
 
 A Spring Boot REST API that ranks resumes against a job spec using [TypeSafe](https://docs.typesafe.ai) judgments, with weights, gates, and human-review rules kept in code.
 
-**Docs:** [How Jev works and what the scores mean](docs/jev-resume-screening.md) ([HTML version](docs/jev-resume-screening.html)) · [Job spec guide: structure, thresholds and validation](docs/job-spec-guide.md) ([HTML version](docs/job-spec-guide.html)).
+**Docs:** [How Jev works and what the scores mean](docs/jev-resume-screening.md) ([HTML version](docs/jev-resume-screening.html)) · [Job spec guide: structure, thresholds and validation](docs/job-spec-guide.md) ([HTML version](docs/job-spec-guide.html)) · [Screening workflow: animated diagram of the Java classes, with Jev as the only source of judgments](docs/screening-workflow.html) (open the file in a browser).
 
 ## Run
 

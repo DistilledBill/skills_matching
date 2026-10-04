@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Screening workflow</title>
+<meta name="description" content="Animated diagram of how the resume screener's Java classes match resumes against a job spec, with Jev as the only source of judgments.">
+<style>
+  :root {
+    --bg: #fbfbfa;
+    --surface: #ffffff;
+    --fg: #1d1d1f;
+    --muted: #5f6368;
+    --border: #d9d9d5;
+    --code-bg: #f3f3f1;
+    --accent: #b0368f;
+    --accent-soft: #f7e6f2;
+    --good: #1f7a4d;
+    --warn: #9a6400;
+    --bad: #b3261e;
+    --jev: #0f766e;
+    --jev-soft: #e3f3f0;
+    --edge: #a3a6ab;
+    --pkg-web: #2563eb;
+    --pkg-job: #7c3aed;
+    --pkg-screening: #b0368f;
+    --pkg-typesafe: #c2410c;
+    --pkg-config: #6b7280;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151517;
+      --surface: #1c1c1f;
+      --fg: #ececec;
+      --muted: #a2a5ab;
+      --border: #3a3a40;
+      --code-bg: #232327;
+      --accent: #f07ccf;
+      --accent-soft: #3a2233;
+      --good: #5cc98f;
+      --warn: #e0a84a;
+      --bad: #f08a80;
+      --jev: #2dd4bf;
+      --jev-soft: #12302d;
+      --edge: #5d6067;
+      --pkg-web: #6ea0ff;
+      --pkg-job: #a78bfa;
+      --pkg-screening: #f07ccf;
+      --pkg-typesafe: #fb923c;
+      --pkg-config: #9ca3af;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  a { color: var(--accent); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.88em;
+    background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+  main { max-width: 1440px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 1.7em; line-height: 1.2; margin: 0 0 8px; }
+  h2 { font-size: 1.2em; margin: 32px 0 8px; }
+  .lede { color: var(--muted); margin: 0 0 16px; max-width: 70ch; }
+  .crumbs { font-size: 0.9em; color: var(--muted); margin: 0 0 12px; }
+  .jev-word { color: var(--jev); font-weight: 700; }
+
+  /* Controls */
+  .controls { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 12px 0; }
+  .controls .group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .controls .label { font-size: 0.85em; color: var(--muted); }
+  button, .seg label {
+    font: inherit; font-size: 0.9em; color: var(--fg); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px; padding: 5px 12px; cursor: pointer;
+  }
+  button:hover, .seg label:hover { border-color: var(--accent); }
+  button:focus-visible, .seg input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; min-width: 84px; }
+  .seg { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+  .seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .seg label { position: relative; }
+  .seg label:has(input:checked) { background: var(--accent-soft); border-color: var(--accent); font-weight: 600; }
+
+  /* Caption */
+  .caption {
+    border: 1px solid var(--border); background: var(--surface); border-radius: 10px;
+    padding: 12px 16px; margin: 0 0 12px; min-height: 7.5em;
+  }
+  .caption h2 { margin: 0 0 4px; font-size: 1.05em; }
+  .caption p { margin: 4px 0; }
+  .caption .jev-line { border-left: 4px solid var(--jev); padding-left: 10px; color: var(--fg); }
+  .caption .jev-line strong { color: var(--jev); }
+
+  /* Diagram */
+  .diagram-wrap {
+    position: relative; overflow-x: auto; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--surface);
+  }
+  svg#diagram { display: block; width: 100%; min-width: 960px; height: auto; }
+  .scroll-hint { display: none; font-size: 0.85em; color: var(--muted); margin: 6px 0 0; }
+  @media (max-width: 980px) { .scroll-hint { display: block; } }
+
+  svg text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; fill: var(--fg); }
+  svg .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .band { fill: none; stroke: var(--border); stroke-dasharray: 4 4; }
+  .band-label { font-size: 14px; font-weight: 700; fill: var(--muted); }
+  .lane-label { font-size: 13px; fill: var(--muted); font-style: italic; }
+  .boundary { stroke: var(--jev); stroke-width: 1.5; stroke-dasharray: 6 5; opacity: 0.7; }
+  .boundary-label { font-size: 12.5px; fill: var(--jev); font-weight: 600; }
+
+  .node { cursor: pointer; transition: opacity 0.3s; }
+  .node .box { fill: var(--surface); stroke: var(--border); stroke-width: 1.2; transition: stroke 0.3s, stroke-width 0.3s; }
+  .node.kind-data .box { fill: var(--code-bg); }
+  .node.kind-list .title { font-weight: 600; }
+  .node.kind-store .box { fill: none; stroke-dasharray: 3 3; }
+  .node.kind-external .box { fill: none; stroke-dasharray: 6 4; stroke-width: 1.5; }
+  .node .title { font-size: 14.5px; font-weight: 700; }
+  .node.kind-data .title { font-weight: 600; font-style: italic; }
+  .node .title.tight { font-size: 13.5px; }
+  .node.kind-store .title { font-size: 12.5px; font-weight: 500; fill: var(--muted); }
+  .node .sub { font-size: 12px; fill: var(--muted); }
+  .node .sub.mono { font-size: 11.5px; }
+  .node.pkg-web .stripe { fill: var(--pkg-web); }
+  .node.pkg-job .stripe { fill: var(--pkg-job); }
+  .node.pkg-screening .stripe { fill: var(--pkg-screening); }
+  .node.pkg-typesafe .stripe { fill: var(--pkg-typesafe); }
+  .node.pkg-config .stripe, .node.pkg-root .stripe { fill: var(--pkg-config); }
+  .node .badge circle { fill: var(--fg); }
+  .node .badge text { fill: var(--bg); font-size: 10.5px; font-weight: 700; }
+  .node:hover .box, .node:focus-visible .box { stroke: var(--accent); stroke-width: 2; }
+  .node:focus { outline: none; }
+  .node.selected .box { stroke: var(--accent); stroke-width: 2.5; }
+  .node.active .box { stroke: var(--fg); stroke-width: 2.2; }
+  .dimmed .node:not(.active):not(.jev) { opacity: 0.32; }
+  .dimmed .edge:not(.active) { opacity: 0.25; }
+  .dimmed .edge-label:not(.active) { opacity: 0.3; }
+
+  .edge { fill: none; stroke: var(--edge); stroke-width: 1.4; transition: opacity 0.3s, stroke 0.3s; }
+  .edge.dashed { stroke-dasharray: 5 4; }
+  .edge.active { stroke: var(--fg); stroke-width: 2; }
+  .edge-label { font-size: 12px; fill: var(--muted); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+  .edge-label.active { fill: var(--fg); }
+  marker path { fill: var(--edge); }
+  marker#arrow-active path { fill: var(--fg); }
+
+  /* Jev */
+  .jev .jev-box { fill: var(--jev-soft); stroke: var(--jev); stroke-width: 3; }
+  .jev .jev-ring { fill: none; stroke: var(--jev); stroke-width: 2; opacity: 0; }
+  .jev.judging .jev-ring { animation: pulse 1.4s ease-out infinite; }
+  @keyframes pulse { 0% { opacity: 0.8; } 100% { opacity: 0; } }
+  .jev text { fill: var(--fg); }
+  .jev .jev-name { font-size: 40px; font-weight: 800; fill: var(--jev); }
+  .jev .jev-tag { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; fill: var(--jev); }
+  .jev .jev-h { font-size: 13px; font-weight: 700; fill: var(--jev); }
+  .jev .jev-t { font-size: 13px; }
+  .jev .jev-rule { stroke: var(--jev); opacity: 0.4; }
+  .jev .jev-status rect { fill: var(--surface); stroke: var(--jev); }
+  .jev.judging .jev-status rect { fill: var(--jev); }
+  .jev.judging .jev-status text { fill: var(--surface); font-weight: 700; }
+  .jev.down .jev-status rect { stroke: var(--bad); }
+  .jev.down .jev-status text { fill: var(--bad); font-weight: 700; }
+  .jev .jev-status text { font-size: 12.5px; }
+
+  /* Moving tokens and flash notes */
+  .token circle { stroke: var(--surface); stroke-width: 1.5; }
+  .token text { fill: #fff; font-size: 9.5px; font-weight: 800; }
+  .tok-req circle { fill: var(--accent); }
+  .tok-spec circle { fill: var(--pkg-job); }
+  .tok-jev circle { fill: var(--jev); }
+  .tok-meets circle { fill: var(--good); }
+  .tok-review circle { fill: var(--warn); }
+  .tok-missing circle, .tok-bad circle { fill: var(--bad); }
+  .tok-report circle { fill: var(--fg); }
+  .tok-report text { fill: var(--bg); }
+  .flash rect { fill: var(--surface); stroke: var(--fg); stroke-width: 1; }
+  .flash text { font-size: 12.5px; font-weight: 600; }
+  .flash.f-jev rect { stroke: var(--jev); fill: var(--jev-soft); }
+  .flash.f-jev text { fill: var(--jev); }
+  .flash.f-bad rect { stroke: var(--bad); }
+  .flash.f-bad text { fill: var(--bad); }
+  .flash.f-muted rect { stroke: var(--border); }
+  .flash.f-muted text { fill: var(--muted); }
+
+  /* Scrolling layout (phones, small windows, Zoom): caption above the diagram, class details below it. */
+  .stage { display: flex; flex-direction: column; gap: 12px; }
+  .side { display: contents; }
+  .caption { order: -1; margin: 0; }
+  #details { order: 1; }
+  .fit-only, .controls .fit-only, .controls .step-chips { display: none; }
+  .step-chips button { min-width: 2.2em; padding: 5px 8px; }
+  .step-chips button[aria-current="step"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 700; }
+  .about summary { cursor: pointer; color: var(--accent); font-size: 0.9em; }
+  .about p { position: absolute; z-index: 5; max-width: 48ch; margin: 6px 0 0; padding: 10px 14px; font-size: 0.92em;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); }
+
+  /* One screen, no vertical scrolling: on windows big enough, unless Zoom is on. */
+  @media (min-width: 1100px) and (min-height: 700px) {
+    .controls .fit-only { display: flex; }
+    details.fit-only { display: block; }
+    body:not(.zoomed) { height: 100vh; overflow: hidden; }
+    body:not(.zoomed) main {
+      max-width: none; height: 100vh; padding: 10px 16px 8px;
+      display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 8px;
+    }
+    body:not(.zoomed) .top { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; position: relative; }
+    body:not(.zoomed) .crumbs { margin: 0; flex-basis: 100%; font-size: 0.8em; }
+    body:not(.zoomed) h1 { font-size: 1.3em; margin: 0; }
+    body:not(.zoomed) .lede, body:not(.zoomed) .scroll-hint, body:not(.zoomed) .steps-panel { display: none; }
+    body:not(.zoomed) .controls { margin: 0; gap: 6px 12px; }
+    body:not(.zoomed) .controls .step-chips { display: flex; }
+    body:not(.zoomed) .stage { display: grid; grid-template-columns: minmax(0, 1fr) clamp(280px, 22vw, 340px); gap: 12px; min-height: 0; }
+    body:not(.zoomed) .diagram-wrap { height: 100%; overflow: hidden; }
+    body:not(.zoomed) svg#diagram { width: 100%; height: 100%; min-width: 0; }
+    body:not(.zoomed) .side { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+    body:not(.zoomed) .caption { flex: none; max-height: 55%; overflow-y: auto; min-height: 0; font-size: 0.93em; }
+    body:not(.zoomed) #details { flex: 1 1 auto; overflow-y: auto; min-height: 0; font-size: 0.93em; }
+    body:not(.zoomed) .below { display: block; margin: 0; }
+    body:not(.zoomed) .legend-panel { padding: 4px 12px; }
+    body:not(.zoomed) .legend-panel h2 { display: none; }
+    body:not(.zoomed) .legend { display: flex; flex-wrap: wrap; gap: 4px 22px; font-size: 0.8em; }
+  }
+
+  /* Details, legend, steps */
+  .below { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 16px; }
+  @media (max-width: 800px) { .below { grid-template-columns: 1fr; } }
+  .panel { border: 1px solid var(--border); background: var(--surface); border-radius: 10px; padding: 12px 16px; }
+  .panel h2 { margin: 0 0 6px; font-size: 1.05em; }
+  .panel .meta { font-size: 0.85em; color: var(--muted); margin: 0 0 8px; }
+  .panel ul { margin: 6px 0; padding-left: 1.2em; }
+  .panel .jev-note { border-left: 4px solid var(--jev); padding-left: 10px; }
+  .legend { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: 0.92em; }
+  .legend li { display: flex; gap: 8px; align-items: center; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; display: inline-block; }
+  .bar { width: 6px; height: 16px; border-radius: 2px; flex: none; display: inline-block; }
+  ol.steps { padding-left: 0; list-style: none; margin: 0; counter-reset: none; }
+  ol.steps li { margin: 0 0 6px; }
+  ol.steps button { width: 100%; text-align: left; display: flex; gap: 10px; align-items: flex-start; }
+  ol.steps button[aria-current="step"] { border-color: var(--accent); background: var(--accent-soft); }
+  ol.steps .num { font-weight: 800; min-width: 1.2em; }
+  ol.steps .print-text { display: none; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  @media print {
+    body { background: #fff; font-size: 11pt; }
+    main { max-width: none; padding: 0; }
+    .controls, .caption, .scroll-hint, #details, .token, .flash, .fit-only { display: none !important; }
+    body { height: auto !important; overflow: visible !important; }
+    main { display: block !important; height: auto !important; }
+    .lede, .steps-panel { display: block !important; }
+    .diagram-wrap { border: none; overflow: visible; }
+    svg#diagram { min-width: 0; }
+    .dimmed .node, .dimmed .edge, .dimmed .edge-label { opacity: 1 !important; }
+    .node.active .box { stroke: var(--border); stroke-width: 1.2; }
+    .edge.active { stroke: var(--edge); stroke-width: 1.4; }
+    .below { display: block; }
+    .panel { border: none; padding: 0; break-inside: avoid; }
+    ol.steps button { border: none; padding: 0; background: none !important; }
+    ol.steps .print-text { display: block; color: #333; font-size: 0.95em; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <p class="crumbs"><a href="jev-resume-screening.html">How the screener uses Jev</a> · <a href="job-spec-guide.html">Job spec guide</a></p>
+    <h1>Screening workflow</h1>
+    <details class="about fit-only"><summary>About</summary><p>How the Java classes match resumes against a job spec, one request at a time. <span class="jev-word">Jev</span> makes every judgment; the Java code prepares what Jev reads, calls it, caches its answers, and applies the spec's weights and thresholds afterwards. Select any class for details.</p></details>
+    <p class="lede">How the Java classes match resumes against a job spec, one request at a time. <span class="jev-word">Jev</span> makes every judgment; the Java code prepares what Jev reads, calls it, caches its answers, and applies the spec's weights and thresholds afterwards. Select any class for details.</p>
+    <div class="controls" role="group" aria-label="Animation controls">
+      <div class="group">
+        <button type="button" class="primary" id="play" aria-pressed="true">Pause</button>
+        <button type="button" id="prev" aria-label="Previous step">◀ Back</button>
+        <button type="button" id="next" aria-label="Next step">Next ▶</button>
+        <button type="button" id="restart">Restart</button>
+      </div>
+      <div class="group step-chips" id="step-chips" role="group" aria-label="Go to step"></div>
+      <div class="group fit-only">
+        <button type="button" id="zoom" aria-pressed="false">Zoom</button>
+      </div>
+      <div class="group">
+        <span class="label" id="speed-label">Speed</span>
+        <span class="seg" role="radiogroup" aria-labelledby="speed-label">
+          <label><input type="radio" name="speed" value="0.5"><span>0.5×</span></label>
+          <label><input type="radio" name="speed" value="1" checked><span>1×</span></label>
+          <label><input type="radio" name="speed" value="2"><span>2×</span></label>
+        </span>
+      </div>
+      <div class="group">
+        <span class="label" id="scenario-label">Scenario</span>
+        <span class="seg" role="radiogroup" aria-labelledby="scenario-label">
+          <label><input type="radio" name="scenario" value="cached"><span>All cached</span></label>
+          <label><input type="radio" name="scenario" value="miss" checked><span>Cache miss</span></label>
+          <label><input type="radio" name="scenario" value="error"><span>Error</span></label>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="diagram-wrap">
+      <svg id="diagram" viewBox="0 0 1500 930" role="img" aria-labelledby="diagram-title diagram-desc">
+        <title id="diagram-title">Screening workflow diagram</title>
+        <desc id="diagram-desc">Classes of the resume screener grouped by step: startup, request, load, build request, Jev judging, decide and respond. Jev, the external TypeSafe model, is the only source of judgments.</desc>
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker>
+          <marker id="arrow-active" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z"/></marker>
+        </defs>
+        <g id="layer-static"></g>
+        <g id="layer-edges"></g>
+        <g id="layer-nodes"></g>
+        <g id="layer-tokens"></g>
+        <g id="layer-flash"></g>
+      </svg>
+    </div>
+    <aside class="side">
+      <section class="caption" aria-live="polite" id="caption">
+        <h2 id="cap-title"></h2>
+        <p id="cap-text"></p>
+        <p class="jev-line" id="cap-jev"></p>
+      </section>
+      <section class="panel" id="details" aria-live="polite"></section>
+    </aside>
+  </div>
+  <p class="scroll-hint">Scroll the diagram sideways to see all of it.</p>
+
+  <div class="below">
+    <section class="panel steps-panel">
+      <h2>Steps</h2>
+      <ol class="steps" id="steps"></ol>
+    </section>
+    <section class="panel legend-panel">
+      <h2>Legend</h2>
+      <ul class="legend">
+        <li><span class="dot" style="background:var(--accent)"></span> Request data: a resume on its way to Jev (A, B, C are three resumes in parallel)</li>
+        <li><span class="dot" style="background:var(--jev)"></span> Jev's judgments: probabilities, levels and confidences</li>
+        <li><span class="dot" style="background:var(--good)"></span><span class="dot" style="background:var(--warn)"></span><span class="dot" style="background:var(--bad)"></span> Status set by code: meets, review, missing</li>
+        <li><span class="bar" style="background:var(--pkg-web)"></span> <code>web</code> <span class="bar" style="background:var(--pkg-screening)"></span> <code>screening</code> <span class="bar" style="background:var(--pkg-typesafe)"></span> <code>typesafe</code> <span class="bar" style="background:var(--pkg-job)"></span> <code>job</code> <span class="bar" style="background:var(--pkg-config)"></span> <code>config</code></li>
+        <li>Italic boxes are records (data); dashed boxes are files on disk or outside callers.</li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<script>
+(() => {
+  const NS = 'http://www.w3.org/2000/svg'
+  const SRC = 'src/main/java/com/example/resumescreening/'
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  // ---- Classes, records and stores. Coordinates are in the 1500 x 930 viewBox. ----
+  const NODES = [
+    // 1 · Startup
+    { id: 'app', pkg: 'root', step: 1, x: 40, y: 90, w: 230, h: 52, label: 'ResumeScreeningApplication', sub: ['Spring Boot entry point'],
+      file: 'ResumeScreeningApplication.java', role: 'Starts Spring Boot, which creates the classes below and binds their settings.', methods: ['main(String[] args)'] },
+    { id: 'sprops', pkg: 'config', step: 1, x: 310, y: 54, w: 200, h: 34, label: 'ScreeningProperties',
+      file: 'config/ScreeningProperties.java', role: 'Binds screening.jobs-dir and screening.resumes-dir.', methods: ['jobsDir()', 'resumesDir()'] },
+    { id: 'tprops', pkg: 'config', step: 1, x: 310, y: 96, w: 200, h: 34, label: 'TypeSafeProperties',
+      file: 'config/TypeSafeProperties.java', role: 'Binds the typesafe settings: api-key, base-url, model (jev-latest), max-concurrent (8), max-attempts (4), initial-backoff (500ms, doubled after each retry), timeout and cache-dir.', methods: ['apiKey()', 'model()', 'maxConcurrent()', 'maxAttempts()'] },
+    { id: 'http', pkg: 'config', step: 1, x: 310, y: 138, w: 200, h: 34, label: 'HttpClientConfig',
+      file: 'config/HttpClientConfig.java', role: 'Builds the RestClient.Builder for TypeSafe (TypeSafeClient adds the base URL), with a 10 s connect timeout and a read timeout of typesafe.timeout (60 s). It also builds one for Claude, which screening doesn\'t use.', methods: ['typeSafeRestClientBuilder(props)'] },
+    { id: 'yaml', kind: 'store', x: 560, y: 54, w: 170, h: 30, label: 'jobs/*.yaml', mono: true,
+      role: 'One job spec per file; the file name is the job id.' },
+    { id: 'repo', pkg: 'job', step: 1, x: 560, y: 108, w: 210, h: 58, label: 'JobSpecRepository', sub: ['get(id) · validate(job)'],
+      file: 'job/JobSpecRepository.java', role: 'Loads every jobs/*.yaml at startup and validates it; an invalid spec stops the app. Serves specs by id to the controller.', methods: ['get(id)', 'validate(job)', 'all()'] },
+    { id: 'jobspec', kind: 'data', pkg: 'job', x: 810, y: 112, w: 150, h: 50, label: 'JobSpec', sub: ['title · skills · thresholds'],
+      file: 'job/JobSpec.java', role: 'The spec as a record: title, target_level, summary, must_haves, skills (question, levels, weight) and thresholds.', methods: ['mustHaves()', 'skills()', 'thresholds()', 'totalWeight()'] },
+    { id: 'cachedir', kind: 'store', x: 1000, y: 54, w: 200, h: 30, label: '.cache/<jobId>/', mono: true,
+      role: "Jev's saved answers, one folder per job." },
+    { id: 'mig', pkg: 'screening', step: 1, x: 1000, y: 108, w: 200, h: 58, label: 'CacheMigration', sub: ['on ApplicationReadyEvent'],
+      file: 'screening/CacheMigration.java', role: 'Once the app is ready, moves any answers still in the old flat .cache/ layout into their job\'s folder, and deletes the ones that match no resume in a job\'s <jobId>_candidates folder under the current spec (answers from uploads, other folders or older spec wording).', methods: ['onStartup()', 'migrate()'] },
+
+    // 2 · Request
+    { id: 'client', kind: 'external', step: 2, x: 40, y: 270, w: 170, h: 60, label: 'Browser or curl', sub: ['the web app, or a script'],
+      role: 'Sends POST /api/screenings/{jobId}/folder?path=… (a folder in resumes/) or POST /api/screenings/{jobId} with uploaded files. Add format=csv for CSV.' },
+    { id: 'ctrl', pkg: 'web', step: 2, x: 40, y: 380, w: 170, h: 90, label: 'ScreeningController', sub: ['screenFolder(…)', 'screenUploads(…)', 'respond(…)'],
+      file: 'web/ScreeningController.java', role: 'Looks up the job, loads the resumes, hands both to ScreeningService, and returns the report as JSON or CSV.', methods: ['screenFolder(jobId, path, format)', 'screenUploads(jobId, files, format)', 'respond(job, report, format)'] },
+
+    // 3 · Load
+    { id: 'resdir', kind: 'store', x: 270, y: 262, w: 200, h: 30, label: 'resumes/<id>_candidates/', mono: true,
+      role: 'Resume files: .txt, .md or .pdf. Folder screening never reads outside resumes/.' },
+    { id: 'loader', pkg: 'screening', step: 3, x: 270, y: 312, w: 200, h: 66, label: 'ResumeLoader', sub: ['fromFolder(path)', 'fromUploads(files)'],
+      file: 'screening/ResumeLoader.java', role: 'Reads .txt, .md and .pdf resumes (PDF text via PDFBox) from a folder inside resumes/ (paths outside it are rejected) or from uploads.', methods: ['fromFolder(relativePath)', 'fromUploads(files)'] },
+    { id: 'doc', kind: 'data', pkg: 'screening', x: 270, y: 404, w: 200, h: 48, label: 'ResumeDocument', sub: ['name · text'],
+      file: 'screening/ResumeDocument.java', role: 'One resume: its name (file name without extension) and its extracted text, contact details still included.' },
+
+    // 4 · Build the request
+    { id: 'svc', pkg: 'screening', step: 4, x: 520, y: 296, w: 250, h: 94, label: 'ScreeningService', sub: ['screen(job, resumes)', 'one virtual thread per resume', 'then sorts and ranks'],
+      file: 'screening/ScreeningService.java', role: 'Builds one request per resume and runs them in parallel on virtual threads (TypeSafeClient caps how many reach Jev at once). Collects the CandidateResults, sorts them with CandidateResult.RANKING and numbers them.', methods: ['screen(job, resumes)', 'request(job, resume)'] },
+    { id: 'qb', pkg: 'screening', step: 4, tight: true, x: 520, y: 410, w: 122, h: 48, label: 'QuestionBuilder', sub: ['build(job)'],
+      file: 'screening/QuestionBuilder.java', role: 'Turns the spec into questions once per screening: each must-have becomes a yes/no (Noul) question with fixed wording, "Does `resume` show evidence that the candidate meets `requirement`?"; each skill becomes a scored question with its levels.', methods: ['build(job)', 'mustHaveId(m) → must_<id>', 'skillId(s) → skill_<id>'] },
+    { id: 'red', pkg: 'screening', step: 4, x: 648, y: 410, w: 122, h: 48, label: 'Redactor', sub: ['redact(text)'],
+      file: 'screening/Redactor.java', role: 'Replaces emails, phone numbers and GitHub/LinkedIn links with [email], [phone] and [link] before the resume goes into the request. Names, postal addresses and other links are left as they are.', methods: ['redact(text)'] },
+    { id: 'question', kind: 'data', pkg: 'typesafe', x: 520, y: 476, w: 122, h: 38, label: 'Question', sub: [],
+      file: 'typesafe/Question.java', role: 'A question for Jev: Noul (yes/no, with true/false criteria) or Score (a list of levels).' },
+    { id: 'sor', kind: 'data', pkg: 'typesafe', x: 520, y: 538, w: 250, h: 60, label: 'SystemOneRequest', sub: ['state {job, resume} · model · questions'],
+      file: 'typesafe/SystemOneRequest.java', role: 'Exactly what Jev reads: state {job: {title, target_level, summary}, resume: redacted text}, model jev-latest, and the questions. Weights and thresholds are not in it.' },
+
+    // 5 · Jev judges
+    { id: 'tsc', pkg: 'typesafe', step: 5, x: 820, y: 296, w: 220, h: 104, label: 'TypeSafeClient', sub: ['evaluate(jobId, request)', 'cache first, then Jev', '≤ 8 in flight · 4 attempts'],
+      file: 'typesafe/TypeSafeClient.java', role: 'Asks AnswerCache first. On a miss, posts the request to Jev (POST /v1/systemone, Bearer key), with at most 8 requests in flight (a semaphore) and retries on 429, 500, 502, 503, 504, 529 and connection errors, with exponential backoff and jitter. Saves the raw answer, then parses it.', methods: ['evaluate(jobId, request)'] },
+    { id: 'cache', pkg: 'typesafe', step: 5, x: 820, y: 440, w: 220, h: 58, label: 'AnswerCache', sub: ['key · get · put'],
+      file: 'typesafe/AnswerCache.java', role: "Stores Jev's raw answer per job, keyed by the SHA-256 of the canonical (key-sorted) request JSON. The same request always gets the same answer, for free.", methods: ['key(request)', 'get(jobId, key)', 'put(jobId, key, json)'] },
+    { id: 'cachefile', kind: 'store', x: 820, y: 516, w: 220, h: 30, label: '.cache/<jobId>/<sha256>.json', mono: true,
+      role: "One of Jev's answers, exactly as Jev returned it." },
+
+    // 6 · Decide
+    { id: 'resp', kind: 'data', pkg: 'typesafe', step: 6, x: 860, y: 716, w: 220, h: 52, label: 'SystemOneResponse', sub: ['noul(id) · score(id)'],
+      file: 'typesafe/SystemOneResponse.java', role: "Jev's answers by question id, plus token usage.", methods: ['noul(id)', 'score(id)'] },
+    { id: 'answer', kind: 'data', pkg: 'typesafe', x: 860, y: 788, w: 220, h: 46, label: 'Answer', sub: ['Noul · Score'],
+      file: 'typesafe/Answer.java', role: "One judgment from Jev. Noul: the probability the must-have is shown. Score: the level, Jev's confidence and the probability of each level." },
+    { id: 'policy', pkg: 'screening', step: 6, x: 600, y: 716, w: 210, h: 74, label: 'ScreeningPolicy', sub: ['decide(name, job, response)', 'weights + thresholds'],
+      file: 'screening/ScreeningPolicy.java', role: 'All policy lives here, none in the model. Status: a must-have below must_have_fail → missing; below must_have_pass, or a skill weighted 0.2 or more with confidence below min_confidence → review; otherwise meets. Composite = the weighted average of the normalized skill scores. Writes the reasons.', methods: ['decide(name, job, response)'] },
+    { id: 'cr', kind: 'data', pkg: 'screening', x: 600, y: 810, w: 210, h: 48, label: 'CandidateResult', sub: ['status · composite · reasons'],
+      file: 'screening/CandidateResult.java', role: "One candidate's outcome: status, composite, reasons, and Jev's must-have probabilities, scores and confidences.", methods: ['RANKING (status, then composite)', 'withRank(rank)'] },
+
+    // 7 · Respond
+    { id: 'report', kind: 'data', pkg: 'screening', step: 7, x: 330, y: 716, w: 200, h: 52, label: 'ScreeningReport', sub: ['jobId · title · candidates'],
+      file: 'screening/ScreeningReport.java', role: 'The ranked candidates for one job. Returned as JSON.' },
+    { id: 'csv', pkg: 'screening', x: 330, y: 798, w: 200, h: 48, label: 'CsvWriter', sub: ['write(job, results)'],
+      file: 'screening/CsvWriter.java', role: 'Writes the ranked results as CSV when the request has format=csv.', methods: ['write(job, results)'] },
+    { id: 'handler', pkg: 'web', x: 40, y: 716, w: 170, h: 58, label: 'ApiExceptionHandler', sub: ['→ ProblemDetail'],
+      file: 'web/ApiExceptionHandler.java', role: 'Turns exceptions into RFC 9457 ProblemDetail responses, so every expected error has the same JSON shape.' },
+    { id: 'exc', kind: 'list', x: 40, y: 796, w: 170, h: 112, label: 'Exceptions', sub: ['JobNotFound… → 404', 'InvalidResume… → 400', 'MissingApiKey… → 503', 'TypeSafe… → 502'],
+      role: 'JobNotFoundException (404) for an unknown job id; InvalidResumeException (400) for a bad folder or file; MissingApiKeyException (503) when no TYPESAFE_API_KEY is set and an answer isn\'t cached; TypeSafeException (502) when Jev keeps failing.' },
+  ]
+  const JEV = { id: 'jev', x: 1162, y: 250, w: 310, h: 430 }
+
+  // ---- Arrows: polylines through the given points. ----
+  const EDGES = {
+    cfg: { pts: [[270, 113], [310, 113]] },
+    yaml: { pts: [[645, 84], [645, 108]] },
+    spec: { pts: [[770, 137], [810, 137]] },
+    mig: { pts: [[960, 137], [1000, 137]] },
+    migc: { pts: [[1100, 108], [1100, 84]] },
+    req: { pts: [[85, 330], [85, 380]], label: 'request', at: [79, 359], anchor: 'end' },
+    out: { pts: [[165, 380], [165, 330]], label: 'JSON or CSV', at: [171, 359] },
+    job: { pts: [[210, 396], [222, 396], [222, 214], [665, 214], [665, 166]], label: 'jobs.get(jobId)', at: [300, 208] },
+    load: { pts: [[210, 425], [236, 425], [236, 345], [270, 345]] },
+    files: { pts: [[370, 292], [370, 312]] },
+    doc: { pts: [[370, 378], [370, 404]] },
+    screen: { pts: [[470, 428], [495, 428], [495, 343], [520, 343]] },
+    qb: { pts: [[581, 390], [581, 410]] },
+    red: { pts: [[709, 390], [709, 410]] },
+    q: { pts: [[581, 458], [581, 476]] },
+    toreqQ: { pts: [[581, 514], [581, 538]] },
+    toreqR: { pts: [[709, 458], [709, 538]] },
+    eval: { pts: [[770, 568], [795, 568], [795, 348], [820, 348]] },
+    cache: { pts: [[915, 400], [915, 440]], label: 'get · put', at: [909, 424], anchor: 'end' },
+    cacheBack: { pts: [[955, 440], [955, 400]], label: 'hit', at: [961, 424] },
+    cfile: { pts: [[930, 498], [930, 516]] },
+    jevOut: { pts: [[1040, 322], [1162, 322]], label: 'POST /v1/systemone', at: [1101, 313], anchor: 'middle' },
+    jevBack: { pts: [[1162, 372], [1040, 372]], label: 'answers', at: [1101, 364], anchor: 'middle' },
+    resp: { pts: [[1040, 392], [1100, 392], [1100, 742], [1080, 742]], label: 'parse', at: [1094, 560], anchor: 'end' },
+    ans: { pts: [[970, 768], [970, 788]] },
+    dec: { pts: [[860, 811], [835, 811], [835, 753], [810, 753]] },
+    cr: { pts: [[705, 790], [705, 810]] },
+    rank: { pts: [[600, 834], [565, 834], [565, 742], [530, 742]], label: 'RANKING', at: [559, 792], anchor: 'end' },
+    csv: { pts: [[430, 768], [430, 798]], label: 'format=csv', at: [436, 788], dashed: true },
+    back: { pts: [[330, 742], [254, 742], [254, 455], [210, 455]], label: 'respond(…)', at: [260, 600] },
+    err: { pts: [[125, 470], [125, 716]], label: 'exception', at: [131, 600], dashed: true },
+    exc: { pts: [[125, 796], [125, 774]] },
+    problem: { pts: [[40, 745], [22, 745], [22, 300], [40, 300]], label: 'ProblemDetail', at: [16, 520], vertical: true, dashed: true },
+  }
+
+  // ---- Steps. Moves send tokens along edges; times are in ms at 1× speed. ----
+  const ABC = ['A', 'B', 'C']
+  const common = [
+    {
+      title: 'Startup (once)', jev: 'idle',
+      text: '<code>ResumeScreeningApplication.main</code> starts Spring Boot, which binds the settings. <code>JobSpecRepository</code> reads and validates every <code>jobs/*.yaml</code> into a <code>JobSpec</code>; an invalid spec stops the app. <code>CacheMigration</code> then tidies <code>.cache/</code> into one folder per job.',
+      jevText: 'Not involved. Nothing is sent to Jev at startup.',
+      nodes: ['app', 'sprops', 'tprops', 'http', 'yaml', 'repo', 'jobspec', 'cachedir', 'mig'],
+      moves: [{ e: 'cfg', at: 0, c: 'spec' }, { e: 'yaml', at: 300, c: 'spec' }, { e: 'spec', at: 900, c: 'spec' }, { e: 'mig', at: 1500, c: 'spec' }, { e: 'migc', at: 2100, c: 'spec' }],
+    },
+    {
+      title: 'A screening request arrives', jev: 'idle',
+      text: 'The web app or a script sends <code>POST /api/screenings/{jobId}/folder?path=…</code> (or uploads files). <code>ScreeningController</code> fetches the <code>JobSpec</code> from <code>JobSpecRepository</code>; an unknown job id is a 404.',
+      jevText: 'Not involved yet.',
+      nodes: ['client', 'ctrl', 'repo', 'jobspec'],
+      moves: [{ e: 'req', at: 0, c: 'req' }, { e: 'job', at: 700, c: 'spec' }],
+    },
+    {
+      title: 'Load the resumes', jev: 'idle',
+      text: '<code>ResumeLoader</code> reads every <code>.txt</code>, <code>.md</code> and <code>.pdf</code> in the folder (PDF text through PDFBox; nothing outside <code>resumes/</code>), or the uploaded files, into one <code>ResumeDocument</code> per resume. Here, three resumes: A, B and C.',
+      jevText: 'Not involved yet. The text still has contact details at this point.',
+      nodes: ['ctrl', 'resdir', 'loader', 'doc'],
+      moves: [{ e: 'load', at: 0, c: 'req' }, { e: 'files', at: 500, c: 'req', tok: ABC }, { e: 'doc', at: 1100, c: 'req', tok: ABC }],
+    },
+    {
+      title: 'Redact and build one request per resume', jev: 'idle',
+      text: '<code>ScreeningService.screen</code> first has <code>QuestionBuilder</code> build the <code>Question</code>s once: a yes/no question per must-have and a scored question per skill. It then starts one virtual thread per resume, and each thread has <code>Redactor</code> replace emails, phone numbers and GitHub/LinkedIn links with placeholders. Each resume becomes a <code>SystemOneRequest</code>: state <code>{job: {title, target_level, summary}, resume}</code>, model <code>jev-latest</code> and the questions.',
+      jevText: 'Not yet, but this request is everything Jev will read. Weights and thresholds are never in it.',
+      nodes: ['svc', 'qb', 'red', 'question', 'sor', 'doc'],
+      moves: [{ e: 'screen', at: 0, c: 'req', tok: ABC }, { e: 'qb', at: 900, c: 'spec' }, { e: 'q', at: 1300, c: 'spec' },
+        { e: 'red', at: 1700, c: 'req', tok: ABC }, { e: 'toreqQ', at: 1800, c: 'spec' }, { e: 'toreqR', at: 2400, c: 'req', tok: ABC }],
+    },
+  ]
+
+  const decide = {
+    title: 'Decide: apply the spec to Jev\'s answers', jev: 'idle',
+    text: 'The raw answer is parsed into a <code>SystemOneResponse</code> of <code>Answer</code>s (Noul: a probability; Score: a level and a confidence). <code>ScreeningPolicy.decide</code> then applies what Jev never sees: a must-have below <code>must_have_fail</code> → missing; below <code>must_have_pass</code>, or a skill weighted 0.2 or more with low confidence → review; otherwise meets. The composite is the weighted average of the skill scores. The result is a <code>CandidateResult</code> with its reasons.',
+    jevText: 'Done judging. Must-have probabilities and confidences pass through unchanged, and skill levels are only rescaled to 0–1; the code weighs and thresholds them but adds no judgment, so every number traces back to Jev.',
+    nodes: ['tsc', 'resp', 'answer', 'policy', 'cr'],
+    moves: [{ e: 'resp', at: 0, c: 'jev', tok: ABC }, { e: 'ans', at: 1300, c: 'jev', tok: ABC }, { e: 'dec', at: 1800, c: 'jev', tok: ABC },
+      { e: 'cr', at: 2700, c: ['meets', 'review', 'missing'], tok: ABC }],
+    flashes: [{ at: 2400, node: 'policy', dx: 0, dy: -18, text: '+ weights and thresholds', cls: '' }],
+  }
+  const respond = {
+    title: 'Rank and respond', jev: 'idle',
+    text: '<code>ScreeningService</code> sorts the results with <code>CandidateResult.RANKING</code> (status first, then the highest composite) and numbers them into a <code>ScreeningReport</code>. <code>ScreeningController</code> returns it as JSON, or as CSV through <code>CsvWriter</code> when <code>format=csv</code>.',
+    jevText: 'Not involved. Changing weights or thresholds later re-ranks from Jev\'s cached answers, without asking Jev again.',
+    nodes: ['cr', 'svc', 'report', 'csv', 'ctrl', 'client'],
+    moves: [{ e: 'rank', at: 0, c: ['meets', 'review', 'missing'], tok: ABC }, { e: 'csv', at: 1200, c: 'report', tok: ['R'] },
+      { e: 'back', at: 1200, c: 'report', tok: ['R'] }, { e: 'out', at: 2500, c: 'report', tok: ['R'] }],
+  }
+
+  const SCENARIOS = {
+    miss: [...common, {
+      title: 'Jev judges each resume', jev: 'judging',
+      text: '<code>TypeSafeClient.evaluate</code> asks <code>AnswerCache</code> first: no answer for this exact request. It posts the request to Jev, at most 8 at a time. Here B gets a 429, waits (backoff with jitter) and retries. Jev answers every question for each resume, and each raw answer is saved to <code>.cache/&lt;jobId&gt;/</code>, so the same request is free next time.',
+      jevText: 'Judging. This is the only place any judgment is made: every must-have probability, skill level and confidence comes from Jev.',
+      nodes: ['sor', 'tsc', 'cache', 'cachefile'],
+      moves: [{ e: 'eval', at: 0, c: 'req', tok: ABC }, { e: 'cache', at: 1100, c: 'req', tok: ABC },
+        { e: 'jevOut', at: 1900, c: 'req', tok: ABC },
+        { e: 'jevBack', at: 3300, c: 'jev', tok: ['A', 'C'] }, { e: 'jevOut', at: 3500, c: 'req', tok: ['B'] },
+        { e: 'jevBack', at: 4700, c: 'jev', tok: ['B'] },
+        { e: 'cache', at: 4000, c: 'jev', tok: ['A', 'C'] }, { e: 'cache', at: 5300, c: 'jev', tok: ['B'] },
+        { e: 'cfile', at: 4600, c: 'jev', tok: ['A', 'C'] }, { e: 'cfile', at: 5900, c: 'jev', tok: ['B'] }],
+      flashes: [{ at: 1600, until: 2600, node: 'cache', dx: 0, dy: 74, text: 'miss: not asked before', cls: 'f-muted' },
+        { at: 2700, until: 3500, node: 'tsc', dx: 0, dy: -18, text: 'B: 429 → back off, retry', cls: 'f-bad' },
+        { at: 2300, until: 4700, node: 'jev', dx: 0, dy: 448, text: 'reading resumes, answering questions', cls: 'f-jev' }],
+    }, decide, respond],
+    cached: [...common, {
+      title: 'Jev\'s earlier answers come from the cache', jev: 'cached',
+      text: '<code>TypeSafeClient.evaluate</code> asks <code>AnswerCache</code> first. These exact requests were screened before, so their answers are read from <code>.cache/&lt;jobId&gt;/&lt;sha256&gt;.json</code>. Nothing is sent to TypeSafe and nothing is paid. Any change to the request (title, target level, summary, a must-have, a skill\'s question or levels, a question id, the model, or the resume text) is a miss.',
+      jevText: 'Not called now, but still the source: the cached answers are Jev\'s own, from an earlier screening, replayed unchanged.',
+      nodes: ['sor', 'tsc', 'cache', 'cachefile'],
+      moves: [{ e: 'eval', at: 0, c: 'req', tok: ABC }, { e: 'cache', at: 1100, c: 'req', tok: ABC },
+        { e: 'cfile', at: 1700, c: 'req', tok: ABC }, { e: 'cacheBack', at: 2500, c: 'jev', tok: ABC }],
+      flashes: [{ at: 1900, node: 'cache', dx: 0, dy: 74, text: "hit: Jev's earlier answer", cls: 'f-jev' },
+        { at: 1200, node: 'jevOut', edge: true, dx: 0, dy: -24, text: 'skipped: no call, no cost', cls: 'f-muted' }],
+    }, decide, respond],
+    error: [...common, {
+      title: 'TypeSafe keeps failing', jev: 'down',
+      text: 'No cached answer, so <code>TypeSafeClient</code> posts to Jev, and TypeSafe returns 503 every time. It retries with growing waits (500 ms, 1 s, 2 s, plus jitter); after the 4th attempt it gives up and throws <code>TypeSafeException</code>. (Without <code>TYPESAFE_API_KEY</code> it would throw <code>MissingApiKeyException</code> before any call.)',
+      jevText: 'Unavailable, so no judgments are made, nothing is cached, and no candidate gets a result.',
+      nodes: ['sor', 'tsc', 'cache'],
+      moves: [{ e: 'eval', at: 0, c: 'req', tok: ['A'] }, { e: 'cache', at: 1100, c: 'req', tok: ['A'] },
+        { e: 'jevOut', at: 1900, c: 'req', tok: ['A'] }, { e: 'jevOut', at: 3100, c: 'req', tok: ['A'] },
+        { e: 'jevOut', at: 4300, c: 'req', tok: ['A'] }, { e: 'jevOut', at: 5500, c: 'req', tok: ['A'] }],
+      flashes: [{ at: 2500, until: 3100, node: 'tsc', dx: 0, dy: -18, text: 'attempt 1: 503 → wait 0.5 s', cls: 'f-bad' },
+        { at: 3700, until: 4300, node: 'tsc', dx: 0, dy: -18, text: 'attempt 2: 503 → wait 1 s', cls: 'f-bad' },
+        { at: 4900, until: 5500, node: 'tsc', dx: 0, dy: -18, text: 'attempt 3: 503 → wait 2 s', cls: 'f-bad' },
+        { at: 6100, node: 'tsc', dx: 0, dy: -18, text: 'attempt 4: 503 → TypeSafeException', cls: 'f-bad' }],
+    }, {
+      title: 'Error response', jev: 'down',
+      text: 'The exception travels back up through <code>ScreeningService</code> and <code>ScreeningController</code> to <code>ApiExceptionHandler</code>, which returns an RFC 9457 <code>ProblemDetail</code>: <code>TypeSafeException</code> → 502 (with the upstream status), <code>MissingApiKeyException</code> → 503, <code>InvalidResumeException</code> → 400, <code>JobNotFoundException</code> → 404. No partial ranking is returned.',
+      jevText: 'Still unavailable. The run waits for every resume first, so any that Jev did answer in the same run are cached and free next time, even though the response is an error.',
+      nodes: ['tsc', 'svc', 'ctrl', 'handler', 'exc', 'client'],
+      moves: [{ e: 'err', at: 0, c: 'bad' }, { e: 'exc', at: 300, c: 'bad' }, { e: 'problem', at: 1300, c: 'bad' }],
+      flashes: [{ at: 0, node: 'svc', dx: 0, dy: -18, text: 'TypeSafeException rethrown', cls: 'f-bad' },
+        { at: 2600, node: 'client', dx: 0, dy: -18, text: '502 Bad Gateway', cls: 'f-bad' }],
+    }],
+  }
+
+  // ---- Drawing ----
+  const $ = (id) => document.getElementById(id)
+  const svg = $('diagram')
+  function el(tag, attrs, parent, text) {
+    const e = document.createElementNS(NS, tag)
+    for (const k in attrs || {}) e.setAttribute(k, attrs[k])
+    if (text != null) e.textContent = text
+    if (parent) parent.appendChild(e)
+    return e
+  }
+  const byId = Object.fromEntries(NODES.map((n) => [n.id, n]))
+
+  const stat = $('layer-static')
+  el('rect', { x: 20, y: 30, width: 1460, height: 160, rx: 12, class: 'band' }, stat)
+  el('text', { x: 36, y: 52, class: 'band-label' }, stat, '1 · Startup')
+  el('text', { x: 1220, y: 120, class: 'lane-label' }, stat, 'Jev is not called')
+  el('text', { x: 1220, y: 138, class: 'lane-label' }, stat, 'at startup.')
+  el('text', { x: 280, y: 250, class: 'lane-label' }, stat, 'Request path →')
+  el('text', { x: 520, y: 700, class: 'lane-label' }, stat, '← Results path')
+  el('line', { x1: 1120, y1: 228, x2: 1120, y2: 915, class: 'boundary' }, stat)
+  el('text', { x: 1112, y: 244, class: 'boundary-label', 'text-anchor': 'end' }, stat, 'Java app')
+  el('text', { x: 1128, y: 244, class: 'boundary-label' }, stat, 'TypeSafe API')
+
+  const edgeEls = {}
+  const edgeLayer = $('layer-edges')
+  for (const [id, e] of Object.entries(EDGES)) {
+    const d = 'M' + e.pts.map((p) => p.join(' ')).join(' L')
+    const path = el('path', { d, class: 'edge' + (e.dashed ? ' dashed' : ''), 'marker-end': 'url(#arrow)' }, edgeLayer)
+    let label = null
+    if (e.label) {
+      const attrs = { x: e.at[0], y: e.at[1], class: 'edge-label', 'text-anchor': e.anchor || 'start' }
+      if (e.vertical) Object.assign(attrs, { transform: `rotate(-90 ${e.at[0]} ${e.at[1]})`, 'text-anchor': 'middle' })
+      label = el('text', attrs, edgeLayer, e.label)
+    }
+    edgeEls[id] = { path, label, len: path.getTotalLength() }
+  }
+
+  const nodeEls = {}
+  const nodeLayer = $('layer-nodes')
+  for (const n of NODES) {
+    const kind = n.kind || 'class'
+    const g = el('g', { class: `node kind-${kind} pkg-${n.pkg || 'none'}`, tabindex: 0, role: 'button', 'aria-label': `${n.label}: show details` }, nodeLayer)
+    el('rect', { x: n.x, y: n.y, width: n.w, height: n.h, rx: kind === 'data' ? 14 : kind === 'store' ? 4 : 8, class: 'box' }, g)
+    if (kind === 'class') el('rect', { x: n.x, y: n.y + 6, width: 5, height: n.h - 12, rx: 2, class: 'stripe' }, g)
+    const lines = [n.label, ...(n.sub || [])]
+    const lineH = 15
+    const top = n.y + n.h / 2 - ((lines.length - 1) * lineH) / 2 + 4.5
+    lines.forEach((t, i) =>
+      el('text', { x: n.x + n.w / 2 + (kind === 'class' ? 2 : 0), y: top + i * lineH, 'text-anchor': 'middle',
+        class: i === 0 ? 'title' + (n.mono ? ' mono' : '') + (n.tight ? ' tight' : '') : 'sub' + (/[(){}·→]/.test(t) && !/ · /.test(t) ? ' mono' : '') }, g, t))
+    if (n.step) {
+      const b = el('g', { class: 'badge', 'aria-hidden': 'true' }, g)
+      el('circle', { cx: n.x + 2, cy: n.y + 2, r: 9 }, b)
+      el('text', { x: n.x + 2, y: n.y + 5.8, 'text-anchor': 'middle' }, b, String(n.step))
+    }
+    g.addEventListener('click', () => select(n.id))
+    g.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); select(n.id) } })
+    nodeEls[n.id] = g
+  }
+
+  // Jev: the one external judge, drawn larger than everything else.
+  const j = JEV
+  const jg = el('g', { class: 'node jev', tabindex: 0, role: 'button', 'aria-label': 'Jev: show details' }, nodeLayer)
+  el('rect', { x: j.x - 6, y: j.y - 6, width: j.w + 12, height: j.h + 12, rx: 20, class: 'jev-ring' }, jg)
+  el('rect', { x: j.x, y: j.y, width: j.w, height: j.h, rx: 16, class: 'jev-box' }, jg)
+  const jx = j.x + 22
+  el('text', { x: jx, y: j.y + 30, class: 'jev-tag' }, jg, 'THE ONLY SOURCE OF JUDGMENTS')
+  el('text', { x: jx, y: j.y + 76, class: 'jev-name' }, jg, 'Jev')
+  el('text', { x: jx + 82, y: j.y + 62, class: 'jev-t' }, jg, 'TypeSafe System One')
+  el('text', { x: jx + 82, y: j.y + 78, class: 'jev-t mono' }, jg, 'model jev-latest')
+  el('line', { x1: jx, y1: j.y + 98, x2: j.x + j.w - 22, y2: j.y + 98, class: 'jev-rule' }, jg)
+  const jLines = [
+    ['h', 'Reads, for each resume'], ['t', 'job: title, target level, summary'], ['t', 'resume: the redacted text'],
+    ['t', "questions: the spec's must-haves and skills"],
+    ['h', 'Answers every question'], ['t', 'must-have: probability it is shown'], ['t', 'skill: level, confidence, and the'], ['t', '    probability of each level'],
+    ['h', 'Never sees'], ['t', 'weights or thresholds, emails, phone'], ['t', 'numbers, GitHub/LinkedIn links, or'], ['t', 'any other candidate'],
+  ]
+  let jy = j.y + 124
+  for (const [k, t] of jLines) {
+    if (k === 'h' && jy > j.y + 124) jy += 8
+    el('text', { x: jx, y: jy, class: k === 'h' ? 'jev-h' : 'jev-t' }, jg, t)
+    jy += 19
+  }
+  const js = el('g', { class: 'jev-status' }, jg)
+  el('rect', { x: jx, y: j.y + j.h - 54, width: j.w - 44, height: 34, rx: 17 }, js)
+  const jevStatus = el('text', { x: j.x + j.w / 2, y: j.y + j.h - 32, 'text-anchor': 'middle' }, js, '')
+  jg.addEventListener('click', () => select('jev'))
+  jg.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); select('jev') } })
+  nodeEls.jev = jg
+
+  // ---- Details panel ----
+  const JEV_DETAILS = {
+    label: 'Jev', meta: 'External: TypeSafe System One API · model jev-latest',
+    role: "Jev reads one resume and the job's title, target level and summary, then answers the spec's questions. It is the only part of the system that judges a resume: every must-have probability, skill level and confidence in the results comes from Jev. Everything in Java either prepares what Jev reads, calls it, saves its answers, or applies the spec's weights and thresholds to them afterwards.",
+    methods: ['POST /v1/systemone (from TypeSafeClient)'],
+  }
+  function select(id) {
+    Object.values(nodeEls).forEach((g) => g.classList.remove('selected'))
+    nodeEls[id].classList.add('selected')
+    const n = id === 'jev' ? JEV_DETAILS : byId[id]
+    const meta = id === 'jev' ? n.meta
+      : n.file ? `${n.pkg && n.pkg !== 'root' ? 'Package ' + n.pkg + ' · ' : ''}<code>${SRC}${n.file}</code>`
+      : n.kind === 'store' ? 'On disk' : n.kind === 'external' ? 'Outside the app' : ''
+    const methods = n.methods && n.methods.length ? `<ul>${n.methods.map((m) => `<li><code>${esc(m)}</code></li>`).join('')}</ul>` : ''
+    const jevNote = id === 'jev' ? '' : jevRelation(id)
+    $('details').innerHTML = `<h2>${esc(n.label)}</h2><p class="meta">${meta}</p><p>${esc(n.role || '')}</p>${methods}${jevNote ? `<p class="jev-note">${jevNote}</p>` : ''}`
+  }
+  function jevRelation(id) {
+    const notes = {
+      tsc: '<strong>Talks to Jev.</strong> The only class that calls it.',
+      cache: "<strong>Holds Jev's answers.</strong> A hit replays Jev's earlier judgment.",
+      cachefile: "<strong>Jev's answer, verbatim.</strong>",
+      sor: '<strong>What Jev reads.</strong>',
+      red: '<strong>Decides what Jev never sees:</strong> emails, phone numbers and GitHub/LinkedIn links. Names and postal addresses still reach Jev.',
+      qb: '<strong>Writes the questions Jev answers.</strong>',
+      resp: "<strong>Jev's judgments,</strong> parsed but unchanged.",
+      answer: "<strong>One of Jev's judgments.</strong>",
+      policy: "<strong>Applies the spec to Jev's numbers;</strong> it adds no judgment of its own.",
+      cr: "<strong>Jev's numbers plus the policy's status.</strong>",
+    }
+    return notes[id] || ''
+  }
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
+
+  // ---- Animation ----
+  const tokenLayer = $('layer-tokens')
+  const flashLayer = $('layer-flash')
+  const state = { scenario: 'miss', i: 0, playing: !reduceMotion, once: false, speed: 1, t: 0, end: 0, last: null, tokens: [], flashes: [] }
+  const steps = () => SCENARIOS[state.scenario]
+
+  function duration(len) { return reduceMotion ? 1 : Math.min(1500, Math.max(500, len * 2.4)) }
+
+  function show(i) {
+    const list = steps()
+    state.i = (i + list.length) % list.length
+    state.t = 0
+    const s = list[state.i]
+    tokenLayer.replaceChildren()
+    flashLayer.replaceChildren()
+    state.tokens = []
+    state.flashes = []
+
+    svg.classList.add('dimmed')
+    Object.entries(nodeEls).forEach(([id, g]) => g.classList.toggle('active', s.nodes.includes(id)))
+    const activeEdges = new Set(s.moves.map((m) => m.e))
+    Object.entries(edgeEls).forEach(([id, e]) => {
+      const on = activeEdges.has(id)
+      e.path.classList.toggle('active', on)
+      e.path.setAttribute('marker-end', on ? 'url(#arrow-active)' : 'url(#arrow)')
+      if (e.label) e.label.classList.toggle('active', on)
+    })
+    jg.classList.toggle('judging', s.jev === 'judging')
+    jg.classList.toggle('down', s.jev === 'down')
+    jevStatus.textContent = { idle: 'Not involved in this step', judging: 'Judging every question', cached: 'Answered earlier (cached)', down: 'Unavailable: 503' }[s.jev]
+
+    let end = 0
+    for (const m of s.moves) {
+      const edge = edgeEls[m.e]
+      const toks = m.tok || ['']
+      toks.forEach((label, k) => {
+        const start = m.at + k * 220
+        const dur = duration(edge.len)
+        const cls = Array.isArray(m.c) ? m.c[k] : m.c
+        const g = el('g', { class: `token tok-${cls}`, visibility: 'hidden' }, tokenLayer)
+        el('circle', { r: label ? 8 : 6 }, g)
+        if (label) el('text', { 'text-anchor': 'middle', y: 3.4 }, g, label)
+        state.tokens.push({ g, edge, start, dur })
+        end = Math.max(end, start + dur)
+      })
+    }
+    for (const f of s.flashes || []) {
+      const anchor = f.edge ? midpoint(edgeEls[f.node]) : center(f.node)
+      const x = anchor[0] + f.dx
+      const y = (f.edge ? anchor[1] : (f.node === 'jev' ? JEV.y : byId[f.node].y)) + f.dy
+      const g = el('g', { class: `flash ${f.cls || ''}`, visibility: 'hidden' }, flashLayer)
+      const w = f.text.length * 6.6 + 18
+      el('rect', { x: x - w / 2, y: y - 14, width: w, height: 22, rx: 11 }, g)
+      el('text', { x, y: y + 1.5, 'text-anchor': 'middle' }, g, f.text)
+      state.flashes.push({ g, at: f.at, until: f.until ?? Infinity })
+      end = Math.max(end, f.at + 600)
+    }
+    state.end = end + (reduceMotion ? 0 : 1600)
+
+    $('cap-title').textContent = `Step ${state.i + 1} of ${list.length}: ${s.title}`
+    $('cap-text').innerHTML = s.text
+    $('cap-jev').innerHTML = `<strong>Jev:</strong> ${s.jevText}`
+    renderSteps()
+    update()
+  }
+  function center(id) {
+    if (id === 'jev') return [JEV.x + JEV.w / 2, JEV.y + JEV.h / 2]
+    const n = byId[id]
+    return [n.x + n.w / 2, n.y + n.h / 2]
+  }
+  function midpoint(edge) {
+    const p = edge.path.getPointAtLength(edge.len / 2)
+    return [p.x, p.y]
+  }
+  function update() {
+    const t = reduceMotion ? Infinity : state.t
+    for (const tok of state.tokens) {
+      const p = (t - tok.start) / tok.dur
+      // A token shows while it travels and for a moment after it arrives.
+      const visible = p >= 0 && p <= 1 + 350 / tok.dur
+      tok.g.setAttribute('visibility', visible || reduceMotion ? 'visible' : 'hidden')
+      const pt = tok.edge.path.getPointAtLength(Math.min(1, Math.max(0, p)) * tok.edge.len)
+      tok.g.setAttribute('transform', `translate(${pt.x} ${pt.y})`)
+    }
+    for (const f of state.flashes) {
+      const on = reduceMotion ? f.until === Infinity : t >= f.at && t < f.until
+      f.g.setAttribute('visibility', on ? 'visible' : 'hidden')
+    }
+  }
+  function frame(ts) {
+    const dt = state.last == null ? 0 : Math.min(100, ts - state.last)
+    state.last = ts
+    if (state.playing || state.once) {
+      state.t += dt * state.speed
+      update()
+      if (state.t >= state.end) {
+        if (state.playing) show(state.i + 1)
+        else state.once = false
+      }
+    }
+    requestAnimationFrame(frame)
+  }
+
+  // ---- Controls ----
+  const playBtn = $('play')
+  function setPlaying(on) {
+    state.playing = on
+    playBtn.textContent = on ? 'Pause' : 'Play'
+    playBtn.setAttribute('aria-pressed', String(on))
+  }
+  function go(i) { show(i); if (!state.playing) state.once = true }
+  playBtn.addEventListener('click', () => {
+    if (!state.playing && state.t >= state.end) show(state.i + 1)
+    setPlaying(!state.playing)
+  })
+  $('next').addEventListener('click', () => go(state.i + 1))
+  $('prev').addEventListener('click', () => go(state.i - 1))
+  $('restart').addEventListener('click', () => go(0))
+  document.querySelectorAll('input[name=speed]').forEach((r) => r.addEventListener('change', () => { state.speed = Number(r.value) }))
+  document.querySelectorAll('input[name=scenario]').forEach((r) => r.addEventListener('change', () => {
+    state.scenario = r.value
+    // Keep the current step when it exists in the new scenario, so switching shows the difference in place.
+    go(Math.min(state.i, steps().length - 1))
+  }))
+
+  function renderSteps() {
+    const ol = $('steps')
+    ol.replaceChildren()
+    steps().forEach((s, i) => {
+      const li = document.createElement('li')
+      const b = document.createElement('button')
+      b.type = 'button'
+      if (i === state.i) b.setAttribute('aria-current', 'step')
+      b.innerHTML = `<span class="num">${i + 1}</span><span>${esc(s.title)}<span class="print-text">${s.text} <em>Jev: ${s.jevText}</em></span></span>`
+      b.addEventListener('click', () => go(i))
+      li.appendChild(b)
+      ol.appendChild(li)
+    })
+    // The same steps as numbered buttons, for the one-screen layout's top row.
+    const chips = $('step-chips')
+    chips.replaceChildren()
+    steps().forEach((s, i) => {
+      const b = document.createElement('button')
+      b.type = 'button'
+      b.textContent = String(i + 1)
+      b.title = s.title
+      b.setAttribute('aria-label', `Step ${i + 1}: ${s.title}`)
+      if (i === state.i) b.setAttribute('aria-current', 'step')
+      b.addEventListener('click', () => go(i))
+      chips.appendChild(b)
+    })
+  }
+
+  // Zoom leaves the one-screen layout for the full-width scrolling view, and back.
+  const zoomBtn = $('zoom')
+  zoomBtn.addEventListener('click', () => {
+    const zoomed = document.body.classList.toggle('zoomed')
+    zoomBtn.textContent = zoomed ? 'Fit to screen' : 'Zoom'
+    zoomBtn.setAttribute('aria-pressed', String(zoomed))
+  })
+
+  setPlaying(state.playing)
+  select('jev')
+  show(0)
+  if (!state.playing) state.once = true
+  requestAnimationFrame(frame)
+})()
+</script>
+</body>
+</html>

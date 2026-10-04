@@ -120,6 +120,7 @@ A shared component, used on the Screen page, in the Results side panel and on ea
 4.2. **Claude-drafted job overview:** describe the job in a few words and press **Draft job overview** to get a suggested summary. See [Phase 4.2](#phase-42-claude-drafted-job-overview) below. **Done**, including the manual check with a real key (2 calls).
 4.3. **Must-have names on the Jobs and Results pages:** a subtitle above each must-have's requirement, and one Results column per must-have. See [Phase 4.3](#phase-43-must-have-names-on-the-jobs-and-results-pages) below. **Done**, including reasons that use the same names.
 4.4. **Candidate panel docked beside the results, with a splitter:** see [Phase 4.4](#phase-44-candidate-panel-docked-beside-the-results) below. **Done**.
+4.5. **Screening workflow diagram (docs):** an animated page of the screening classes, with Jev as the only source of judgments, fitting one screen on laptops and desktops. See [Phase 4.5](#phase-45-screening-workflow-diagram-docs) below. **Done**.
 
 ## Phase 1.1: clearer scores and weights
 
@@ -616,6 +617,32 @@ The candidate panel opens over the results table, covering it. You want it docke
 
 - **Vitest:** selecting a row opens the split with the separator; arrow keys change the width; double-click resets it; a remembered width is used; Escape and Close remove the split.
 - **In the browser,** on cached results with no API key (no paid calls): drag the splitter and check the limits; scroll the table sideways and down with the panel open; close and check the table returns to normal; 390px dark mode falls back to the full-screen panel with no sideways page scroll.
+
+## Phase 4.5: screening workflow diagram (docs)
+
+### Why
+
+A visual explanation of how the Java classes screen resumes against a job spec, and of Jev's role: it is the only source of judgments, and the code only prepares what it reads, calls it, caches its answers and applies the spec afterwards.
+
+### The page (built)
+
+- `docs/screening-workflow.html`, a standalone page (no .md pair, no build step), linked from the README and `CLAUDE.md`.
+- The screening classes by package, with arrows for calls and data, in seven steps: startup, request, load, redact and build the request, Jev judges, decide, rank and respond.
+- Jev is the largest node, outside a dashed "Java app | TypeSafe API" line, labelled "the only source of judgments", with what it reads, answers and never sees, and a live status (not involved, judging, answered earlier, unavailable). Its answers keep Jev's colour until `ScreeningPolicy` applies the spec.
+- Controls: play/pause, back, next, restart, speed, and scenarios: all cached, cache miss (with a 429 retry) and error (503s → `TypeSafeException` → 502). Selecting a class shows its file, role, methods and relation to Jev.
+- Light and dark themes; reduced motion shows each step without movement; print gives the diagram plus the seven steps written out.
+- Facts were checked against the code by an independent agent; its 8 wording fixes are in.
+
+### One screen without vertical scrolling
+
+- **Laptop and desktop windows (about 1100 × 700 and larger):** the page fills the window and never scrolls vertically.
+  - One top row: title, playback controls, speed, scenario, and step buttons 1–7 (replacing the full steps list). The intro moves into an "About" toggle.
+  - The diagram fills the remaining space and scales to fit; a right sidebar (about 340px) holds the step caption with its Jev line, and the selected class's details below (that panel scrolls on its own if needed).
+  - The legend is one line along the bottom.
+  - Text inside the diagram is enlarged where the boxes allow, to stay readable when scaled down.
+  - A **Zoom** button switches to the full-width scrolling view for small laptop screens, and back with **Fit to screen**.
+- **Phones and small windows:** the current scrolling layout. **Print:** unchanged.
+- **Checks:** screenshots at 1920×1080, 1440×900 and 1280×720 with no vertical page scroll and no text overflowing its box; Zoom; phone width in dark mode; print.
 
 ## Verification
 

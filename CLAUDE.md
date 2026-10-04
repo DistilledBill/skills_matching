@@ -73,5 +73,6 @@ Tests read the checked-in sample data rather than fixtures, so editing the sampl
 ## Docs
 
 - `docs/jev-resume-screening.{md,html}` explains Jev and the scoring; `docs/job-spec-guide.{md,html}` explains the job spec format. Keep each .md and .html pair in sync.
+- `docs/screening-workflow.html` is a standalone animated diagram of the screening classes (no .md pair). Its facts (class names, methods, call flow, settings, step captions) live in the `NODES`, `EDGES` and `SCENARIOS` constants in its script: update them when those classes or `application.yml` defaults change.
 - The HTML versions are print-ready. Keep code-block lines at 70 characters or fewer so nothing is cut off when printed or saved to PDF. `pre` wraps as a fallback and never scrolls, and `@media print` rules hide the table of contents and fit tables and SVGs to the page.
 - The real numbers in the docs (for example candidate_c's 0.03, candidate_a's composite 0.906) come from a recorded run on 2026-09-24 of backend candidates A–D. Don't change them without re-running the screener.
